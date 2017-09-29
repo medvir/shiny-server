@@ -1,0 +1,83 @@
+---
+title: "VirMet Report"
+output: pdf_document
+params:
+   orgs_file: ""
+   reads_file: ""
+   sample_name: ""
+---
+
+```{r, include = FALSE}
+library(tidyverse)
+library(knitr)
+
+orgs_data = read.table(params$orgs_file, sep = '\t', header = TRUE)
+reads_data = read.table(params$reads_file, sep = '\t', header = TRUE)
+run_name = reads_data$run[1]
+filtered_reads = reads_data %>%
+        filter(category == "passing_filter") %>%
+        filter(sample %in% params$sample_name) %>%
+        select(reads) %>%
+        mutate(reads = sum(reads)) %>%
+        sample_n(1) %>%
+        as.integer()
+if (filtered_reads*0.00001 > 10) {min_reads = round(filtered_reads*0.00001, 0)} else {min_reads = 10}
+```
+
+## Run Information
+```{r, echo = FALSE, comment=NA, tidy=TRUE}
+t_info = data.frame()
+t_info = rbind(t_info, data.frame(key = "Run name", value = run_name))
+t_info = rbind(t_info, data.frame(key = "Sample name", value = params$sample_name))
+t_info = rbind(t_info, data.frame(key = "Total filtered reads", value = paste(round(filtered_reads/1000000, 3), "M")))
+t_info = rbind(t_info, data.frame(key = "Minimal reads threshold", value = paste(min_reads, "(0.001% or 10)")))
+t_info = rbind(t_info, data.frame(key = "Report date", value = date()))
+t_info = rbind(t_info, data.frame(key = "User name", value = Sys.info()[7]))
+row.names(t_info) = NULL
+colnames(t_info) = NULL
+
+kable(t_info)
+```
+
+## Domain level taxonomy profile
+```{r, echo = FALSE}
+t_domain = reads_data %>%
+        filter(sample %in% params$sample_name) %>%
+        filter(!(category == "raw_reads" | category == "passing_filter" | category == "reads_to_blast")) %>%
+        mutate(domain = case_when(
+                category %in% c("matching_bact1", "matching_bact2", "matching_bact3") ~ "bacterial",
+                category %in% c("viral_reads") ~ "viral",
+                category %in% c("matching_humanGRCh38") ~ "human",
+                category %in% c("undetermined_reads") ~ "unknown",
+                category %in% c("matching_bt_ref", "matching_fungi1") ~ "other",
+                TRUE ~ "none"
+                )) %>%
+        filter(!(domain == "none")) %>%
+        select(domain, reads) %>%
+        group_by(domain) %>%
+        mutate(reads = sum(reads)) %>%
+        sample_n(1) %>%
+        ungroup() %>%
+        mutate(percent = round(reads/sum(reads)*100, 3)) %>%
+        mutate(abundance = strrep("+", 1+round(percent/max(percent)*19)))
+
+kable(t_domain)
+```
+
+## Virus species
+```{r, echo = FALSE}
+t_species = orgs_data %>%
+        filter(sample %in% params$sample_name) %>%
+        group_by(organism) %>%
+        mutate(reads = sum(reads)) %>%
+        sample_n(1) %>%
+        ungroup() %>%
+        select(organism, reads) %>%
+        mutate(percent = round(reads/sum(reads)*100, 3)) %>%
+        mutate(abundance = strrep("+", 1+round(percent/max(percent)*19))) %>%
+        mutate(abundance = ifelse(reads < min_reads, "-", abundance)) %>%
+        arrange(desc(reads))
+
+kable(t_species)
+```
+

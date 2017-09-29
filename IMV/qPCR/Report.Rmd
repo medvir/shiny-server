@@ -1,0 +1,35 @@
+---
+title: "qPCR Report"
+output: pdf_document
+params:
+   virus: ""
+   cycler: ""
+   results: ""
+   visum: ""
+---
+
+```{r, include = FALSE}
+library(tidyverse)
+library(knitr)
+```
+
+## Run Infos
+```{r, echo = FALSE, comment = FALSE, tidy = TRUE}
+t_info = data.frame()
+t_info = rbind(t_info, data.frame(key = "Virus/Test", value = params$virus))
+t_info = rbind(t_info, data.frame(key = "Instrument", value = params$cycler))
+t_info = rbind(t_info, data.frame(key = "Datum", value = date()))
+t_info = rbind(t_info, data.frame(key = "Benutzername", value = Sys.info()[7]))
+t_info = rbind(t_info, data.frame(key = "Visum", value = params$visum))
+row.names(t_info) = NULL
+colnames(t_info) = NULL
+
+kable(t_info)
+```
+
+## Resultate
+```{r, echo = FALSE, comment = FALSE, tidy = TRUE}
+t_res = params$results
+kable(t_res)
+```
+
