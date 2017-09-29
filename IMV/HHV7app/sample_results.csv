@@ -1,0 +1,31 @@
+sample_name,sample_type,age,sex,symptoms,HHV7,group,student
+abc123,Blood,22,male,NA,24526,4,1
+def456,Throat swab,23,female,NA,3734,3,2
+abc123,Throat swab,24,male,fever,23456,2,3
+def456,Urine,25,female,fever,0,1,4
+abc123,Blood,22,male,NA,46745,1,5
+def456,Throat swab,22,male,NA,0,2,6
+abc123,Throat swab,23,male,NA,6766,4,7
+def456,Urine,23,female,NA,0,3,8
+abc123,Urine,24,female,NA,7855,2,9
+def456,Blood,24,male,NA,3734,1,10
+abc123,Throat swab,25,female,NA,6785,1,11
+def456,Throat swab,25,male,NA,0,2,12
+abc123,Blood,26,male,NA,34534,4,13
+def456,Blood,22,male,NA,0,4,14
+abc123,Blood,23,female,NA,0,1,15
+def456,Blood,24,male,coughing,3434,4,16
+abc123,Throat swab,25,female,NA,345,3,17
+def456,Throat swab,22,male,NA,0,2,18
+abc123,Urine,22,female,NA,0,1,19
+def456,Blood,23,male,NA,0,1,20
+abc123,Throat swab,23,male,NA,0,2,21
+def456,Throat swab,24,male,NA,6766,4,22
+abc123,Urine,24,male,cold,0,3,23
+def456,Urine,25,female,NA,7855,2,24
+abc123,Blood,25,male,NA,3734,1,25
+def456,Throat swab,26,female,NA,24526,1,26
+abc123,Throat swab,26,male,NA,3734,2,27
+def456,Blood,21,male,NA,23456,4,28
+abc123,Blood,23,male,NA,0,4,29
+def456,Blood,24,female,NA,46745,1,30
