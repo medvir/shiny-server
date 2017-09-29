@@ -5,6 +5,6 @@ Other subfolder than `IMV` can be created.
 
 http://172.23.175.116:3838
 or
-http://172.23.175.116:3838/IMV/
+http://172.23.175.116:3838/folder_name/app_name
 
 Please have a look at the issues.
