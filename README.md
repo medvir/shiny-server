@@ -1,3 +1,6 @@
 # shiny-server
 
-You can put your shiny apps in this repository. It can be synchronized with `/srv/shiny-server/` on the ScienceCloud shiny server.
+Shiny apps can be put into this repository and synchronized with `/srv/shiny-server/` on our ScienceCloud shiny server.
+Other subfolder than `IMV` can also be created.
+
+Please have a look at the issues.
