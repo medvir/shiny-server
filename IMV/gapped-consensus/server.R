@@ -1,9 +1,13 @@
 library(shiny)
-library(tidyverse)
+#library(tidyverse)
 library(stringr)
 library(seqinr)
 library(cowplot)
 library(shinyFiles)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(readr)
 
 shinyServer(function(input, output, session) {
 
@@ -64,24 +68,12 @@ shinyServer(function(input, output, session) {
                 sub(".fasta", "_covgaps.fasta", input$cons_file[1])
                 })
         
-        # observeEvent(input$save, {
-        #         write.fasta(sequence(), filename(), filename(), open = "w", nbchar = 60)
-        #         })
-        
         observe({
                 volumes = c("UserFolder" = "/")
                 shinyFileSave(input, "save", roots = volumes, session = session)
                 fileinfo = parseSavePath(volumes, input$save)
-                #data <- data.frame(a=c(1,2))
-                if (nrow(fileinfo) > 0) {
-                        write.fasta(sequence(), filename(), as.character(fileinfo$datapath), open = "w", nbchar = 60)
-                        #write.xlsx(data, as.character(fileinfo$datapath))
-                }
-        })
-        
-        
-        
-        
+                if (nrow(fileinfo) > 0) {write.fasta(sequence(), filename(), as.character(fileinfo$datapath), open = "w", nbchar = 60)}
+                })
         
         output$warning <- renderText({
                 if (cons_name() != depth_name()) {paste("References do not match!", cons_name(), depth_name())}     
@@ -94,5 +86,5 @@ shinyServer(function(input, output, session) {
         output$filename <- renderText({
                 req(input$cons_file)
                 paste("File name:", filename())
-        })
+                })
  })
