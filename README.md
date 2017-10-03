@@ -2,11 +2,11 @@
 
 ## Installation
 
-I created a open source shiny server on ScienceCloud. The IP is 172.23.175.116, shiny server uses the port 3838. It should be accessible within the University of Zurich network.
+I created an open source shiny server on ScienceCloud. The IP is 172.23.175.116, shiny server uses the port 3838. It should be accessible within the University of Zurich network.
 
 ((Permissions: user ubuntu, group shiny))  
 
-There is an image called shiny server 170928 in ScienceCloud in case we have to restart the instance. This are the instruction I followed to install the server: https://www.rstudio.com/products/shiny/download-server/
+There is an image called "shiny server 170928" in ScienceCloud in case we have to restart the instance. This are the instruction I followed to install the server: https://www.rstudio.com/products/shiny/download-server/
 
 R packages can be installed with the following commands:  
 `sudo su - -c "R -e \"install.packages('shiny', repos='https://cran.rstudio.com/')\""`  
