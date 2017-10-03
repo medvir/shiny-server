@@ -1,2 +1,12 @@
 index.html_SAMPLE
 sample-apps
+.DS_Store
+._.DS_Store
+IMV/.DS_Store
+IMV/._.DS_Store
+IMV/StudyPlot/.Rhistory
+IMV/VirMetRunAnalysis/.DS_Store
+IMV/VirMetRunAnalysis/._.DS_Store
+IMV/gapped-consensus/.DS_Store
+IMV/gapped-consensus/.Rhistory
+IMV/gapped-consensus/._.DS_Store
