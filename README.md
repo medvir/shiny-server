@@ -28,4 +28,4 @@ In case the shiny server has to be re-started:
 Shiny apps can be put into in a new directory in this repository and synchronized with the `/srv/shiny-server/` directory on the ScienceCloud shiny server. Other subfolders than `IMV` can be created.
 
 ## Web adress 
-`http://172.23.175.116:3838` or `http://172.23.175.116:3838/folder_name/app_name`
+http://172.23.175.116:3838 or http://172.23.175.116:3838/folder_name/app_name
