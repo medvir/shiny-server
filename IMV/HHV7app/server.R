@@ -33,6 +33,7 @@ shinyServer(function(input, output, session) {
                         geom_boxplot(outlier.color = "white", alpha = 0.1) +
                         geom_jitter(height = 0, width = 0.2, size = 4) +
                         facet_grid(. ~ sample_type, scales = "free") +
+                        panel_border() + background_grid(major = "y", minor = "") +
                         xlab("Sample type")
                 p = p + plot_labels + plot_theme
                 return(p)
@@ -43,6 +44,7 @@ shinyServer(function(input, output, session) {
                         geom_boxplot(outlier.color = "white", alpha = 0.1) +
                         geom_jitter(height = 0, width = 0.2, size = 4) +
                         facet_grid(. ~ sample_type) +
+                        panel_border() + background_grid(major = "y", minor = "") +
                         xlab("Sex")
                 p = p + plot_labels + plot_theme
                 return(p)
@@ -53,6 +55,7 @@ shinyServer(function(input, output, session) {
                         geom_boxplot(outlier.color = "white", alpha = 0.1) +
                         geom_jitter(height = 0, width = 0.2, size = 4) +
                         facet_grid(. ~ sample_type) +
+                        panel_border() + background_grid(major = "y", minor = "") +
                         xlab("Student group")
                 p = p + plot_labels + plot_theme
                 return(p)
@@ -69,6 +72,7 @@ shinyServer(function(input, output, session) {
                         geom_point(size = 4) +
                         geom_smooth(method = lm, se = FALSE, fullrange = TRUE) +
                         facet_grid(. ~ sample_type) +
+                        panel_border() + background_grid(major = "xy", minor = "") +
                         xlab("Age")
                 p = p + plot_labels + plot_theme
                 return(p)

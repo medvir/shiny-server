@@ -34,10 +34,10 @@ shinyUI(fluidPage(
                                          verticalLayout(h2("HHV-7 concentrations depending on age"),
                                                         plotOutput("plot_age", height = 800)
                                          )),
-                                tabPanel("Symptoms",
-                                         verticalLayout(h2("HHV-7 concentrations depending on symptoms"),
-                                                        plotOutput("plot_symtpoms", height = 800)
-                                         )),
+                                # tabPanel("Symptoms",
+                                #          verticalLayout(h2("HHV-7 concentrations depending on symptoms"),
+                                #                         plotOutput("plot_symtpoms", height = 800)
+                                #          )),
                                 tabPanel("Group",
                                          verticalLayout(h2("HHV-7 concentrations measured by the four student groups"),
                                                         plotOutput("plot_group", height = 800)
