@@ -2,6 +2,7 @@
 
 library(shiny)
 library(tidyverse)
+library(cowplot)
 
 shinyServer(function(input, output, session) {
         
