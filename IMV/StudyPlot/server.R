@@ -1,9 +1,5 @@
 library(shiny)
-#library(tidyverse)
-library(tidyr)
-library(dplyr)
-library(readr)
-library(ggplot2)
+library(tidyverse)
 library(cowplot)
 
 shinyServer(function(input, output) {
@@ -32,6 +28,8 @@ shinyServer(function(input, output) {
                 data() %>% filter(vis_type == "Routine Transplantation") %>% select(id) %>% unique()
                 })
         
+	lung_transplant_ids = c("")
+ 
         kidney_pairs_ids = c("aag951", "bgk952", "drr356", "fed741", "flr704", "hmf012", "hyd494",
                              "ihf319", "iwv346", "jns976", "kht322", "knb739", "mek642", "pip445", "poo581",
                              "pqg516", "qfv506", "qnx429", "qyg532", "sjp926", "tqm938", "tvy653", "twn073",
@@ -42,7 +40,8 @@ shinyServer(function(input, output) {
                 data_filtered = data() %>% filter(organ_type %in% input$organs)
                 ### filter for ids
                 if (input$ids == "Kidney Pairs") {data_filtered = data_filtered %>% filter(id %in% kidney_pairs_ids)}
-                return(data_filtered)
+                if (input$ids == "Lung transplants") {data_filtered = data_filtered %>% filter(id %in% lung_transplant_ids)}
+		return(data_filtered)
                 })
         
         output$plot = renderPlot({
