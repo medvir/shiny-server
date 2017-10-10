@@ -25,7 +25,7 @@ In case the shiny server has to be re-started:
 `sudo systemctl status shiny-server`
 
 ## Deployment of shiny apps
-Shiny apps can be put into in a new directory in this repository and synchronized with `/srv/shiny-server/` on the ScienceCloud shiny server. Other subfolders than `IMV` can be created.
+Shiny apps can be put into in a new directory in this repository and synchronized with `/srv/shiny-server/` on the ScienceCloud shiny server.
 
 ## Web adress 
 http://172.23.175.116:3838 or http://172.23.175.116:3838/folder_name/app_name
