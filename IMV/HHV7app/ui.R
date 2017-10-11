@@ -16,6 +16,9 @@ shinyUI(fluidPage(
                         uiOutput("sample_selection"),
                         actionButton("select_all_samples", "Select all"),
                         hr(),
+                        uiOutput("group_selection"),
+                        actionButton("select_all_groups", "Select all"),
+                        hr(),
                         uiOutput("student_selection"),
                         actionButton("select_all_students", "Select all"),
                         width = 2),
@@ -34,13 +37,13 @@ shinyUI(fluidPage(
                                          verticalLayout(h2("HHV-7 concentrations depending on age"),
                                                         plotOutput("plot_age", height = 800)
                                          )),
-                                # tabPanel("Symptoms",
-                                #          verticalLayout(h2("HHV-7 concentrations depending on symptoms"),
-                                #                         plotOutput("plot_symtpoms", height = 800)
-                                #          )),
-                                tabPanel("Group",
-                                         verticalLayout(h2("HHV-7 concentrations measured by the four student groups"),
-                                                        plotOutput("plot_group", height = 800)
+                                 tabPanel("Symptoms",
+                                          verticalLayout(h2("HHV-7 concentrations depending on symptoms"),
+                                                         plotOutput("plot_symptoms", height = 800)
+                                          )),
+                                tabPanel("Replicates",
+                                         verticalLayout(h2("HHV-7 concentrations measured by different students"),
+                                                        plotOutput("plot_repli", height = 800)
                                          ))
                                 )
                         )
