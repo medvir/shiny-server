@@ -65,6 +65,7 @@ shinyServer(function(input, output, session) {
                 p = ggplot(plot_data(), aes(x = as.character(replicate), y = HHV7, color = sample_name, group = sample_name)) +
                         geom_line(size = 1) +
                         geom_jitter(height = 0, width = 0, size = 4) +
+                        geom_text(aes(label = student),hjust = -0.25, vjust = -0.75) +
                         facet_grid(. ~ sample_type) +
                         panel_border() + background_grid(major = "y", minor = "") +
                         xlab("Replicates")
