@@ -1,11 +1,8 @@
 ### HHV7app
 
 library(shiny)
-library(shinythemes)
 
 shinyUI(fluidPage(
-        #theme = shinytheme("cerulean"),
-        
         titlePanel("HHV7app"),
         sidebarLayout(
                 
@@ -25,10 +22,14 @@ shinyUI(fluidPage(
                 
                 mainPanel(
                         tabsetPanel(
-                                tabPanel("Sample",
+                                tabPanel("Quantitative",
                                          verticalLayout(h2("HHV-7 concentrations in different sample types"),
-                                                        plotOutput("plot_sample", height = 800)
+                                                        plotOutput("plot_quant", height = 800)
                                                         )),
+                                tabPanel("Qualitative",
+                                         verticalLayout(h2("HHV-7 results in different sample types"),
+                                                        plotOutput("plot_qual", height = 800)
+                                         )),
                                 tabPanel("Sex",
                                          verticalLayout(h2("HHV-7 concentrations in male and female individuals"),
                                                         plotOutput("plot_sex", height = 800)
@@ -45,7 +46,10 @@ shinyUI(fluidPage(
                                          verticalLayout(h2("HHV-7 concentrations measured by different students"),
                                                         plotOutput("plot_repli", height = 800)
                                          ))
-                                )
+                                ),
+                        hr(),
+                        h2("Data table"),
+                        tableOutput("data_table")
                         )
                 )
 ))
