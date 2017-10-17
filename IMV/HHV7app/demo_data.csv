@@ -1,0 +1,15 @@
+sample_name,age,sex,vaccination_satus,previous_influenza,symptoms
+17001,25,male,yes,no,fever
+17002,24,female,no,no,NA
+17003,22,male,yes,no,NA
+17004,20,female,no,no,NA
+17005,25,male,yes,no,NA
+17006,19,male,no,yes,coughing
+17007,23,female,no,no,coughing
+17008,22,female,yes,no,NA
+17009,21,female,no,no,NA
+17010,24,male,no,no,coughing
+17011,22,female,yes,no,NA
+17012,20,female,no,no,NA
+17013,22,male,yes,no,NA
+17014,22,male,yes,no,NA
