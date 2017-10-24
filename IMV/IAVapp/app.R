@@ -40,14 +40,6 @@ shinyApp(
                                         tabPanel("Sex",
                                                  verticalLayout(h2("IAV titer in male and female individuals"),
                                                                 plotOutput("plot_sex", height = 600)
-                                                 )),
-                                        tabPanel("Age",
-                                                 verticalLayout(h2("IAV titer depending on age"),
-                                                                plotOutput("plot_age", height = 600)
-                                                 )),
-                                        tabPanel("Replicates",
-                                                 verticalLayout(h2("IAV titer measured by different students"),
-                                                                plotOutput("plot_repli", height = 600)
                                                  ))
                                 ),
                                 hr(),
@@ -80,10 +72,10 @@ shinyApp(
                 
                 output$plot_quant = renderPlot({
                         req(input$results$datapath)
-                        p = ggplot(plot_data(), aes(x = "", y = IAV_titer, colour = "black" , fill = "black")) +
+                        p = ggplot(plot_data(), aes(x = group, y = IAV_titer, colour = group , fill = group)) +
                                 geom_boxplot(outlier.color = "white", alpha = 0.1) +
                                 geom_jitter(height = 0, width = 0.2, size = 4) +
-                                facet_grid(vaccination_status ~ previous_influenza) +
+                                facet_grid(. ~ group, scales = "free") +
                                 panel_border() + background_grid(major = "y", minor = "") +
                                 xlab("") +
                                 ylab("IAV titer")
@@ -92,9 +84,9 @@ shinyApp(
                         })
                 
                 output$plot_qual = renderPlot({
-                        p = ggplot(plot_data(), aes(x = result, color = "black", fill = "black")) +
+                        p = ggplot(plot_data(), aes(x = result, colour = result , fill = result)) +
                                 geom_bar(alpha = 0.5) +
-                                facet_grid(vaccination_status ~ previous_influenza) +
+                                facet_grid(. ~ group) +
                                 panel_border() + background_grid(major = "y", minor = "") +
                                 xlab("") +
                                 ylab("Number of samples")
@@ -109,31 +101,6 @@ shinyApp(
                                 facet_grid(. ~ group) +
                                 panel_border() + background_grid(major = "y", minor = "") +
                                 xlab("Sex") +
-                                ylab("IAV titer")
-                        p = p + plot_theme
-                        return(p)
-                        })
-                
-                output$plot_repli = renderPlot({
-                        p = ggplot(plot_data(), aes(x = as.character(replicate), y = IAV_titer, color = sample_name, group = sample_name)) +
-                                geom_line(size = 1) +
-                                geom_jitter(height = 0, width = 0, size = 4) +
-                                geom_text(aes(label = student),hjust = -0.25, vjust = -0.75) +
-                                facet_grid(. ~ group) +
-                                panel_border() + background_grid(major = "y", minor = "") +
-                                xlab("Replicates") +
-                                ylab("IAV titer")
-                        p = p + plot_theme
-                        return(p)
-                        })
-                
-                output$plot_age = renderPlot({
-                        p = ggplot(plot_data(), aes(x = age, y = IAV_titer)) +
-                                geom_point(size = 4) +
-                                geom_smooth(method = lm, se = FALSE, fullrange = TRUE) +
-                                facet_grid(. ~ group) +
-                                panel_border() + background_grid(major = "xy", minor = "") +
-                                xlab("Age") +
                                 ylab("IAV titer")
                         p = p + plot_theme
                         return(p)
