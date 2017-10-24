@@ -5,8 +5,38 @@ library(cowplot)
 ### Define the fields we want to save from the form
 # fields = c("sample_name", "IAV_titer")
 
+<<<<<<< HEAD
 # ### Save a response
 # # ---- This is one of the two functions we will change for every storage type ----
+=======
+outputDir = "/Users/Michael/Dropbox/Science/Repositories/shiny-server/IMV/IAVapp/responses"
+
+saveData <- function(data) {
+  data = t(data)
+  # Create a unique file name
+  fileName <- sprintf("%s_%s.csv", as.integer(Sys.time()), digest::digest(data))
+  # Write the file to the local system
+  write.csv(
+    x = data,
+    file = file.path(outputDir, fileName), 
+    row.names = FALSE, quote = TRUE
+  )
+}
+
+loadData <- function() {
+  # Read all the files into a list
+  files = list.files(outputDir, full.names = TRUE)
+  data = lapply(files, read.csv, stringsAsFactors = FALSE) 
+  # Concatenate all data together into one data.frame
+  data <- do.call(rbind, data)
+  data
+}
+
+
+####################### only temporary data #######################
+### Save a response
+# ---- This is one of the two functions we will change for every storage type ----
+>>>>>>> 61c416e7d7c4d3c567012c5c9b08ce9e8bf95bbe
 # saveData <- function(data) {
 #         data <- as.data.frame(t(data))
 #         if (exists("responses")) {
@@ -15,14 +45,30 @@ library(cowplot)
 #                 responses <<- data
 #                 }
 #         }
+<<<<<<< HEAD
 # 
 # ### Load all previous responses
 # # ---- This is one of the two functions we will change for every storage type ----
+=======
+
+### Load all previous responses
+# ---- This is one of the two functions we will change for every storage type ----
+>>>>>>> 61c416e7d7c4d3c567012c5c9b08ce9e8bf95bbe
 # loadData <- function() {
 #         if (exists("responses")) {
 #                 responses
 #                 }
 #         }
+<<<<<<< HEAD
+=======
+###################################################################
+
+
+
+
+
+
+>>>>>>> 61c416e7d7c4d3c567012c5c9b08ce9e8bf95bbe
 
 ### Load demographic data
 demo_data = read_csv("demo_data.csv") %>%
@@ -38,17 +84,26 @@ demo_data = read_csv("demo_data.csv") %>%
         mutate(vaccination_status = ifelse(vaccination_status == "yes", "vaccinated", "never vaccinated")) %>%
         select(-symptoms)
 
-### Shiny appss
+### Shiny apps
 shinyApp(
         
         ### ui
         ui = fluidPage(
                 titlePanel("IAV assay"),
                 sidebarLayout(
+<<<<<<< HEAD
                         sidebarPanel(# numericInput("sample_name", "Sample Name", 17000, 17000, 17999),
                                      # numericInput("IAV_titer", "IAV titer", 0, 0, 10000, 10),
                                      # actionButton("submit", "Submit"),
                                      # hr(),
+=======
+                        sidebarPanel(textInput("outdir", "Results directory"),
+                                     hr(),
+                                     numericInput("sample_name", "Sample Name", 17001, 17001, 17999),
+                                     numericInput("IAV_titer", "IAV titer", 0, 0, 10000, 10),
+                                     actionButton("submit", "Submit"),
+                                     hr(),
+>>>>>>> 61c416e7d7c4d3c567012c5c9b08ce9e8bf95bbe
                                      fileInput("results", "Upload IAV results"),
                                      hr(),
                                      checkboxGroupInput("sex", "Sex", choices = c("male", "female"), selected = c("male", "female")),
@@ -86,6 +141,7 @@ shinyApp(
         
         ### server
         server = function(input, output, session) {
+<<<<<<< HEAD
                 
                 # ### Whenever a field is filled, aggregate all form data
                 # formData <- reactive({
@@ -100,6 +156,18 @@ shinyApp(
 
                 results = reactive({
                         read_csv(input$results$datapath)
+=======
+          
+                ### Whenever a field is filled, aggregate all form data
+                formData <- reactive({
+                        data <- sapply(fields, function(x) input[[x]])
+                        data
+                        })
+                
+                ### When the Submit button is clicked, save the form data
+                observeEvent(input$submit, {
+                        saveData(formData())
+>>>>>>> 61c416e7d7c4d3c567012c5c9b08ce9e8bf95bbe
                         })
                 
                 plot_data = reactive({
@@ -122,7 +190,12 @@ shinyApp(
                 plot_theme = theme(legend.position="none", axis.text=element_text(size = 15), axis.title=element_text(size = 20, face = "bold"))
                 
                 output$plot_quant = renderPlot({
+<<<<<<< HEAD
                         req(input$results$datapath)
+=======
+
+                        print(input$outdir)
+>>>>>>> 61c416e7d7c4d3c567012c5c9b08ce9e8bf95bbe
                         p = ggplot(plot_data(), aes(x = "", y = IAV_titer, colour = "black" , fill = "black")) +
                                 geom_boxplot(outlier.color = "white", alpha = 0.1) +
                                 geom_jitter(height = 0, width = 0.2, size = 4) +
