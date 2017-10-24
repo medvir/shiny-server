@@ -3,26 +3,26 @@ library(tidyverse)
 library(cowplot)
 
 ### Define the fields we want to save from the form
-fields = c("sample_name", "IAV_titer")
+# fields = c("sample_name", "IAV_titer")
 
-### Save a response
-# ---- This is one of the two functions we will change for every storage type ----
-saveData <- function(data) {
-        data <- as.data.frame(t(data))
-        if (exists("responses")) {
-                responses <<- rbind(responses, data)
-        } else {
-                responses <<- data
-                }
-        }
-
-### Load all previous responses
-# ---- This is one of the two functions we will change for every storage type ----
-loadData <- function() {
-        if (exists("responses")) {
-                responses
-                }
-        }
+# ### Save a response
+# # ---- This is one of the two functions we will change for every storage type ----
+# saveData <- function(data) {
+#         data <- as.data.frame(t(data))
+#         if (exists("responses")) {
+#                 responses <<- rbind(responses, data)
+#         } else {
+#                 responses <<- data
+#                 }
+#         }
+# 
+# ### Load all previous responses
+# # ---- This is one of the two functions we will change for every storage type ----
+# loadData <- function() {
+#         if (exists("responses")) {
+#                 responses
+#                 }
+#         }
 
 ### Load demographic data
 demo_data = read_csv("demo_data.csv") %>%
@@ -45,34 +45,36 @@ shinyApp(
         ui = fluidPage(
                 titlePanel("IAV assay"),
                 sidebarLayout(
-                        sidebarPanel(numericInput("sample_name", "Sample Name", 17000, 17000, 17999),
-                                     numericInput("IAV_titer", "IAV titer", 0, 0, 10000, 10),
-                                     actionButton("submit", "Submit"),
-                                     hr(),
+                        sidebarPanel(# numericInput("sample_name", "Sample Name", 17000, 17000, 17999),
+                                     # numericInput("IAV_titer", "IAV titer", 0, 0, 10000, 10),
+                                     # actionButton("submit", "Submit"),
+                                     # hr(),
                                      fileInput("results", "Upload IAV results"),
-                                     width = 2
+                                     hr(),
+                                     checkboxGroupInput("sex", "Sex", choices = c("male", "female"), selected = c("male", "female")),
+                                     width = 3
                                      ),
                         mainPanel(
                                 tabsetPanel(
                                         tabPanel("Quantitative",
                                                  verticalLayout(h2("IAV titer by status"),
-                                                                plotOutput("plot_quant", height = 800)
+                                                                plotOutput("plot_quant", height = 600)
                                                  )),
                                         tabPanel("Qualitative",
                                                  verticalLayout(h2("IAV titer by status"),
-                                                                plotOutput("plot_qual", height = 800)
+                                                                plotOutput("plot_qual", height = 600)
                                                  )),
                                         tabPanel("Sex",
                                                  verticalLayout(h2("IAV titer in male and female individuals"),
-                                                                plotOutput("plot_sex", height = 800)
+                                                                plotOutput("plot_sex", height = 600)
                                                  )),
                                         tabPanel("Age",
                                                  verticalLayout(h2("IAV titer depending on age"),
-                                                                plotOutput("plot_age", height = 800)
+                                                                plotOutput("plot_age", height = 600)
                                                  )),
                                         tabPanel("Replicates",
                                                  verticalLayout(h2("IAV titer measured by different students"),
-                                                                plotOutput("plot_repli", height = 800)
+                                                                plotOutput("plot_repli", height = 600)
                                                  ))
                                 ),
                                 hr(),
@@ -85,37 +87,42 @@ shinyApp(
         ### server
         server = function(input, output, session) {
                 
-                ### Whenever a field is filled, aggregate all form data
-                formData <- reactive({
-                        data <- sapply(fields, function(x) input[[x]])
-                        data
-                        })
-                
-                ### When the Submit button is clicked, save the form data
-                observeEvent(input$submit, {
-                        saveData(formData())
-                        })
-                
-                ### Show the previous responses (update with current response when Submit is clicked)
-                output$data_table = renderTable({
-                        input$submit
-                        plot_data()
-                        })
+                # ### Whenever a field is filled, aggregate all form data
+                # formData <- reactive({
+                #         data <- sapply(fields, function(x) input[[x]])
+                #         data
+                #         })
+                # 
+                # ### When the Submit button is clicked, save the form data
+                # observeEvent(input$submit, {
+                #         saveData(formData())
+                #         })
 
+                results = reactive({
+                        read_csv(input$results$datapath)
+                        })
+                
                 plot_data = reactive({
-                        input$submit
-                        as.data.frame(loadData()) %>%
+                        # input$submit
+                        # as.data.frame(loadData()) %>%
+                        results() %>%
                                 mutate(sample_name = as.character(sample_name)) %>%
                                 mutate(IAV_titer = as.numeric(as.character(IAV_titer))) %>%
                                 mutate(result = ifelse(IAV_titer >= 20, "positive", "negative"))  %>%
-                                left_join(., demo_data, by = "sample_name")
+                                left_join(., demo_data, by = "sample_name") %>%
+                                filter(sex %in% input$sex)
+                        })
+        
+                output$data_table = renderTable({
+                        # input$submit
+                        req(input$results$datapath)
+                        plot_data()
                         })
                 
                 plot_theme = theme(legend.position="none", axis.text=element_text(size = 15), axis.title=element_text(size = 20, face = "bold"))
                 
                 output$plot_quant = renderPlot({
-                        
-                        print(plot_data())
+                        req(input$results$datapath)
                         p = ggplot(plot_data(), aes(x = "", y = IAV_titer, colour = "black" , fill = "black")) +
                                 geom_boxplot(outlier.color = "white", alpha = 0.1) +
                                 geom_jitter(height = 0, width = 0.2, size = 4) +

@@ -1,4 +1,4 @@
-sample_name,age,sex,vaccination_satus,previous_influenza,symptoms
+sample_name,age,sex,vaccination_status,previous_influenza,symptoms
 17001,25,male,yes,no,fever
 17002,24,female,no,no,NA
 17003,22,male,yes,no,NA
