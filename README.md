@@ -1,4 +1,4 @@
-# Shiny Server on UZH SienceCloud
+# Shiny Server on UZH ScienceCloud
 
 ## Installation
 
