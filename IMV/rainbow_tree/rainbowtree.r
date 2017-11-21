@@ -2,14 +2,12 @@ library(ape)
 
 outputformat <- 'png'
 
-
 mypalette=c(
   "#ED1C24", "#F7941D", "#FFC20E", "#8DC73F",
   "#00A651", "#008FD4", "#235192", "#662D91",
   "#C51B7D", "#F768A1", "#F1B6DA", "#8C510A",
   "#DFC27D", "#FFFFBF", "#01665E", "#80CDC1",
-  "#92C5DE", "#9970AB", "#7B68EE",
-  "#888888" );
+  "#92C5DE", "#9970AB", "#7B68EE", "#888888");
 
 
 
@@ -63,7 +61,7 @@ color_interior_edges = function(edgecolors, mytree) {
 }
 
 rainbowtree <- function ( 
-                mytree,                    # the tree
+                mytree,                     # the tree
                 tablefile,                  # the lookup table file name 
                                             #   a 3- or 5-column table. Sequence name (1st column), 
                                             #   integer index (1-20) to colors on palette (2nd), 
@@ -72,18 +70,18 @@ rainbowtree <- function (
                                             #   When label='symbol',  the 4,5th colums should be specified.
                 treetype,                   # 
                 treetitle,                  # tree title  
-                label = 'seqname',          # a string specifying the type of tip labels:
+                label,                      # a string specifying the type of tip labels:
                                             #   'category', 'seqname',  'none'(no tip label)  or 'symbol'
-                label4ut = 'axial',         # a string specifying the display of tip labels
+                label4ut,                   # a string specifying the display of tip labels
                                             #   for unrooted trees: 'axial' or 'horizontal'
-                legend = 'none',        # a string specifying the legend style: 
+                legend,                     # a string specifying the legend style: 
                                             #   'vertical', 'horizontal' or 'none'(no legend)
-                legendpos = 'bottomleft',   # legend location: 'bottomright', 'bottom', ‘bottomleft’, 
+                legendpos,                  # legend location: 'bottomright', 'bottom', ‘bottomleft’, 
                                             #   ‘left’, ‘topleft’, ‘top’, ‘topright’, ‘right’ or ‘center'
-                branchwidth = 1,            # a positive number specifying the width of the branches
+                branchwidth,                # a positive number specifying the width of the branches
                 outgroup,                   # a vector of numeric or character specifying the new outgroup
-                color.int.edges = TRUE,     # to propagate leaf colors upward into a tree until a mismatch is encountered 
-                show.node.lab = TRUE        # to displays the node labels 
+                color.int.edges,            # to propagate leaf colors upward into a tree until a mismatch is encountered 
+                show.node.lab               # to displays the node labels 
               ) {
 
     ## read inputTree

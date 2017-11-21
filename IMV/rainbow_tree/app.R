@@ -1,25 +1,13 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
-
 library(shiny)
 library(dplyr)
 library(ape)
+library(seqinr)
 source('rainbowtree.R')
-# library(seqinr)
 
 
 unrootedNJtree <- function(alignment, type)
 {
   # this function requires the ape and seqinR packages:
-  # library(ape)
-  library(seqinr)
   # define a function for making a tree:
   makemytree <- function(alignmentmat){
     alignment <- ape::as.alignment(alignmentmat)
@@ -84,25 +72,53 @@ rootedNJtree <- function(alignment, theoutgroup, type){
 ui <- fluidPage(
    
    # Application title
-   titlePanel("Old Faithful Geyser Data"),
+   titlePanel("Rainbow Tree"),
    
    # Sidebar with a slider input for number of bins 
    sidebarLayout(
       sidebarPanel(
         fileInput("msaFile", "Upload multiple sequence alignment",
                   accept = c("fasta", "fna", "fas")),
-        size = 2
+        textInput("treetitle", "Tree title"),
+        radioButtons("treetype", "Tree Type",
+                     choiceNames = c("phylogram", "unrooted", "fan"),
+                     choiceValues = c("p", "u", "fan")),
+        radioButtons("label", "Label",
+                     choices = c("seqname", "category", "symbol", "none"),
+                     selected = "seqname"),
+        radioButtons("label4ut", "label4ut",
+                     choices = c("axial", "horizontal"),
+                     selected = "axial"),
+        radioButtons("legend", "Legend",
+                     choices = c("vertical", "horizontal", "none"),
+                     selected = "vertical"),
+        selectInput("legendpos", "Legend position",
+                     choices = c("bottomright", "bottom", "bottomleft", "left",
+                                 "topleft", "top", "topright", "right", "center"),
+                     selected = "bottomright"),
+        sliderInput("branchwidth", "Branch width", 0, 10, 1, 1, ticks = FALSE),
+        sliderInput("textsize", "Text size", 0, 10, 1, 1, ticks = FALSE),
+        radioButtons("color.int.edges", "color.int.edges",
+                     choices = c(TRUE, FALSE),
+                     selected = TRUE),
+        radioButtons("show.node.lab", "Show node labels",
+                     choices = c(TRUE, FALSE),
+                     selected = TRUE),
+        width = 3
       ),
       
       # Show a plot of the generated distribution
       mainPanel(
-        #downloadButton("unrootedDownload", label = "Download unrooted tree in Newick format", class = NULL),
-        plotOutput("rainbowTreePlot", height = 800)
+        plotOutput("rainbowTreePlot", height = 800),
+        downloadButton("unrootedDownload", label = "Download unrooted tree in Newick format", class = NULL)
       )
    )
 )
 
-# Define server logic required to draw a histogram
+
+
+
+### Define server logic required to draw a histogram
 server <- function(input, output) {
 
   msa_in <- reactive({
@@ -126,8 +142,18 @@ server <- function(input, output) {
      }
    )
    
-  output$rainbowTreePlot <- renderPlot(rainbowtree(unrooted_tree(), treetype = 'u'))
+  output$rainbowTreePlot <- renderPlot(rainbowtree(unrooted_tree(),
+                                                   treetype = input$treetype,
+                                                   treetitle = input$treetitle,
+                                                   label = input$label,
+                                                   label4ut = input$lable4ut,
+                                                   legend = input$legend,
+                                                   legendpos = input$legendpos,
+                                                   branchwidth = input$branchwidth,
+                                                   color.int.edges = input$color.int.edges,
+                                                   show.node.lab = input$show.node.lab))
 }
 
-# Run the application 
+
+### Run the application 
 shinyApp(ui = ui, server = server)
