@@ -83,7 +83,7 @@ rainbowtree <- function (
                 color.int.edges,            # to propagate leaf colors upward into a tree until a mismatch is encountered 
                 show.node.lab,              # to displays the node labels
                 textsize,
-                color,
+                cat,
                 first.chars,
                 field,
                 delim) {
@@ -111,7 +111,7 @@ rainbowtree <- function (
     tipcolors = rep('#000000', length(mytree$edge))
 
     
-   if (color == "color_fc") {
+   if (cat == "cat_fc") {
      mytable <- data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label), V3 = substr(mytree$tip.label, 1, first.chars))
    } else {
      mytable <- data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label), V3 = strsplit(mytree$tip.label, delim)[[1]][field])

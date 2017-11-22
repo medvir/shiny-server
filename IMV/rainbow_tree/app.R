@@ -87,12 +87,12 @@ ui <- fluidPage(
       sliderInput("branchwidth", "Branch width", 1, 10, 2, 1, ticks = FALSE),
       sliderInput("textsize", "Text size", 1, 5, 1.5, .25, ticks = FALSE),
       hr(),
-      radioButtons("color", "Coloring",
+      radioButtons("cat", "Category",
                    choiceNames = c("by first character(s)", "by column/field"),
-                   choiceValues = c("color_fc", "color_field")),
-      uiOutput("color_fc"),
-      uiOutput("color_field"),
-      uiOutput("color_delim"),
+                   choiceValues = c("cat_fc", "cat_field")),
+      uiOutput("cat_fc"),
+      uiOutput("cat_field"),
+      uiOutput("cat_delim"),
       hr(),
       radioButtons("legend", "Legend",
                    choices = c("none", "vertical", "horizontal"),
@@ -141,7 +141,7 @@ server <- function(input, output) {
                       color.int.edges = input$color.int.edges,
                       show.node.lab = input$show.node.lab,
                       textsize = input$textsize,
-                      color = input$color,
+                      cat = input$cat,
                       first.chars = input$first.chars,
                       field = input$field,
                       delim = input$delim)
@@ -157,20 +157,20 @@ server <- function(input, output) {
     }
   })
   
-  output$color_fc <- renderUI({
-    if (input$color == "color_fc") {
+  output$cat_fc <- renderUI({
+    if (input$cat == "cat_fc") {
     numericInput("first.chars", "Number characters", 1 , min = 1, step = 1)
     }
   })
   
-  output$color_field <- renderUI({
-    if (input$color == "color_field") {
+  output$cat_field <- renderUI({
+    if (input$cat == "cat_field") {
         numericInput("field", "Field number", 1 , min = 1, step = 1)
     }
   })
   
-  output$color_delim <- renderUI({
-    if (input$color == "color_field") {
+  output$cat_delim <- renderUI({
+    if (input$cat == "cat_field") {
       textInput("delim", "Delimiter", value = "\\.")
     }
   })
@@ -202,7 +202,7 @@ server <- function(input, output) {
                   color.int.edges = input$color.int.edges,
                   show.node.lab = input$show.node.lab,
                   textsize = input$textsize,
-                  color = input$color,
+                  cat = input$cat,
                   first.chars = input$first.chars,
                   field = input$field,
                   delim = input$delim)
