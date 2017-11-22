@@ -18,7 +18,7 @@ unrootedNJtree <- function(alignment, type) {
       mydist <- dist.dna(alignmentbin)
     }
     mytree <- nj(mydist)
-    # mytree <- makeLabel(mytree, space = "") # get rid of spaces in tip names.
+    mytree <- makeLabel(mytree, space = "") # get rid of spaces in tip names.
     return(mytree)
   }
   # infer a tree
@@ -37,7 +37,7 @@ unrootedNJtree <- function(alignment, type) {
 rootedNJtree <- function(alignment, theoutgroup, type) {
   # this function requires the ape and seqinR packages
   # define a function for making a tree
-  makemytree <- function(alignmentmat, outgroup=`theoutgroup`){
+  makemytree <- function(alignmentmat, outgroup = theoutgroup) {
     alignment <- ape::as.alignment(alignmentmat)
     if (type == "protein"){
       mydist <- dist.alignment(alignment)
@@ -47,20 +47,20 @@ rootedNJtree <- function(alignment, theoutgroup, type) {
       mydist <- dist.dna(alignmentbin)
     }
     mytree <- nj(mydist)
-    # mytree <- makeLabel(mytree, space ="") # get rid of spaces in tip names.
-    myrootedtree <- root(mytree, outgroup, r=TRUE)
+    mytree <- makeLabel(mytree, space = "") # get rid of spaces in tip names.
+    myrootedtree <- root(mytree, outgroup, r = TRUE)
     return(myrootedtree)
   }
   # infer a tree
   mymat  <- as.matrix.alignment(alignment)
-  myrootedtree <- makemytree(mymat, outgroup=theoutgroup)
+  myrootedtree <- makemytree(mymat, outgroup = theoutgroup)
   # bootstrap the tree
   myboot <- boot.phylo(myrootedtree, mymat, makemytree)
   # plot the tree:
   # plot.phylo(myrootedtree, type="p")  # plot the rooted phylogenetic tree
   # nodelabels(myboot,cex=0.7)          # plot the bootstrap values
-  mytree$node.label <- myboot   # make the bootstrap values be the node labels
-  return(mytree)
+  myrootedtree$node.label <- myboot   # make the bootstrap values be the node labels
+  return(myrootedtree)
 }
 
 
@@ -83,10 +83,8 @@ ui <- fluidPage(
                    choices = c("seqname", "category", "none"), #"symbol", ### not using symbol at the moment
                    selected = "seqname"),
       uiOutput("label4ut"),
-      hr(),
       sliderInput("branchwidth", "Branch width", 1, 10, 2, 1, ticks = FALSE),
       sliderInput("textsize", "Text size", 1, 5, 1.5, .25, ticks = FALSE),
-      hr(),
       radioButtons("cat", "Category",
                    choiceNames = c("by first character(s)", "by column/field", "by table"),
                    choiceValues = c("cat_fc", "cat_field", "cat_table")),
@@ -94,12 +92,10 @@ ui <- fluidPage(
       uiOutput("cat_field"),
       uiOutput("cat_delim"),
       uiOutput("cat_table"),
-      hr(),
       radioButtons("legend", "Legend",
                    choices = c("none", "vertical", "horizontal"),
                    selected = "none"),
       uiOutput("legendpos"),
-      hr(),
       h5("Options"),
       checkboxInput("show.node.lab", "Show node labels"),
       checkboxInput("color.int.edges", "Color internal edges"),
@@ -135,13 +131,12 @@ server <- function(input, output) {
   rooted_tree <- reactive({
     # no req here because input$upload already required in msa_in
     msa_in() %>%
-      rootedNJtree(type = "DNA")
+      rootedNJtree(theoutgroup = input$select_outgroup, type = "DNA")
   })
   
-  
-    rainbowtreeplot <- reactive({
-      if (input$outgroup) {
-        rainbowtree(rooted_tree(),
+  rainbowtreeplot <- reactive({
+     if (input$outgroup) {
+             rainbowtree(rooted_tree(),
                     treetype = input$treetype,
                     treetitle = input$treetitle,
                     label = input$label,
@@ -159,7 +154,7 @@ server <- function(input, output) {
                      delim = input$delim,
                      cat_file = input$cat_file$datapath)
     } else {
-      rainbowtree(unrooted_tree(),
+            rainbowtree(unrooted_tree(),
                      treetype = input$treetype,
                      treetitle = input$treetitle,
                      label = input$label,
@@ -186,7 +181,7 @@ server <- function(input, output) {
       selectInput("legendpos", "Legend position",
                 choices = c("bottomright", "bottom", "bottomleft", "left",
                           "topleft", "top", "topright", "right", "center"),
-                selected = "bottomright")
+                selected = "bottomleft")
     }
   })
   
@@ -224,7 +219,7 @@ server <- function(input, output) {
   output$select_outgroup <- renderUI({
     if (input$outgroup) {
       selectInput("select_outgroup", "Select outgroup",
-                  choices = c("haplotype_4-freq_6.1_Local_nt_haplo"))
+                  choices = unrooted_tree()$tip.label)
     }
   })
   

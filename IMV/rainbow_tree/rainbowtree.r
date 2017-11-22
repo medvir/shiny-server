@@ -106,7 +106,6 @@ rainbowtree <- function (
 
     
     # outgroup
-  print(outgroup)
     if(!missing(outgroup)) mytree = root(mytree, outgroup, resolve.root=TRUE) 
    
     mytree = ladderize(mytree) 
