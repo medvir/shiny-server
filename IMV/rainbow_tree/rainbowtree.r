@@ -76,13 +76,17 @@ rainbowtree <- function (
                                             #   for unrooted trees: 'axial' or 'horizontal'
                 legend,                     # a string specifying the legend style: 
                                             #   'vertical', 'horizontal' or 'none'(no legend)
-                legendpos,                  # legend location: 'bottomright', 'bottom', ‘bottomleft’, 
-                                            #   ‘left’, ‘topleft’, ‘top’, ‘topright’, ‘right’ or ‘center'
+                legendpos,                  # legend location: 'bottomright', 'bottom', ???bottomleft???, 
+                                            #   ???left???, ???topleft???, ???top???, ???topright???, ???right??? or ???center'
                 branchwidth,                # a positive number specifying the width of the branches
                 outgroup,                   # a vector of numeric or character specifying the new outgroup
                 color.int.edges,            # to propagate leaf colors upward into a tree until a mismatch is encountered 
-                show.node.lab               # to displays the node labels 
-              ) {
+                show.node.lab,              # to displays the node labels
+                textsize,
+                color,
+                first.chars,
+                field,
+                delim) {
 
     ## read inputTree
     # mytree = read.tree(treefile)
@@ -106,18 +110,25 @@ rainbowtree <- function (
     # tip colors: 
     tipcolors = rep('#000000', length(mytree$edge))
 
-    mytable <- data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label), V3 = 'whatever')
+    
+   #if (color == "color_fc") {
+      mytable <- data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label), V3 = substr(mytree$tip.label, 1, first.chars))
+   #} else {
+     #mytable <- data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label), V3 = strsplit(mytree$tip.label, delim)[[1]][field])
+   #}
+   
+    
     # iterate over leaves in the tree
     # populate values in edgecolors vector with colors 
     # replace tip.label with category if label == category
     edgecolors = rep('black', length(mytree$edge[,1])) 
 
     for (myi in c(1:length(mytree$tip.label))) {
-        seqid=mytree$tip.label[myi]
+        seqid = mytree$tip.label[myi]
         myinx = mytable$V2[which(mytable$V1 == seqid)]   # palette index
 
         # ensure that myinx is not null! as error check
-        if (length(myinx) == 0)  stop('No color code for ', seqid, 'in *.txt')
+        if (length(myinx) == 0) stop ('No color code for ', seqid, 'in *.txt')
         
         if (myinx > length(mypalette)) myinx = length(mypalette)
     
@@ -166,9 +177,9 @@ rainbowtree <- function (
         symLegenditems = sort(symLegenditems)
 
         for (t in 1:length(symLegenditems)) {
-            tmp=unlist(strsplit(symLegenditems[t], ":::"))
-            legenditems =c(legenditems, tmp[1])
-            legendcolors =c(legendcolors,'black')
+            tmp = unlist(strsplit(symLegenditems[t], ":::"))
+            legenditems = c(legenditems, tmp[1])
+            legendcolors = c(legendcolors,'black')
             mypch = c(mypch, as.numeric(tmp[2]))
             mylty = c(mylty, NA)
 
@@ -189,8 +200,8 @@ rainbowtree <- function (
     showtiplabel = if (label == 'none' ) F else T
     
     # set margins
-#    par(oma=c(0,0,1.5,0))
-#    par(mai=c(0,0,0,0), adj=0)
+    par(oma=c(0,0,1.5,0))
+    par(mai=c(0,0,0,0), adj=0)
     
     # these influence how line ends are drawn and joined
     par(ljoin=1, lend=1)
@@ -198,19 +209,23 @@ rainbowtree <- function (
     # this call to plot() is the main drawing method!
     # many available options can influence the layout and tree appearance
     # see ape documentation at http://cran.r-project.org/web/packages/ape/ape.pdf
-    cexvalue = 1 # if (label == 'category' ) 1 else ( if (treetype == 'fan') 0.35 else 0.5)
+    cexvalue = 1 #if (label == 'category' ) 1 else ( if (treetype == 'fan') 0.35 else 0.5)
+
+    #outFile = paste( sub('\\.[^\\.]*$', '', treefile, perl=T) , treetype, outputformat, sep='.')
+    #outFile = "tree.png"
+    #png(file=outFile, height=11*100, width=8.5*100, bg='white')
     
     if (label != 'symbol') {
-      plot(mytree, show.node.label = show.node.lab, edge.width=branchwidth, edge.col=edgecolors, show.tip.label=showtiplabel, no.margin=T, type=treetype, font=1.5, lab4ut=label4ut, label.offset=0.001, cex=cexvalue, tip.color=tipcolors) 
+      plot(mytree, show.node.label = show.node.lab, edge.width=branchwidth, edge.col=edgecolors, show.tip.label=showtiplabel, no.margin=T, type=treetype, font=1.5, lab4ut=label4ut, label.offset=0.001, cex=cexvalue*textsize, tip.color=tipcolors) 
     } else {
       plot(mytree, show.node.label = show.node.lab, edge.width=branchwidth, edge.col=edgecolors, show.tip.label=F, no.margin=T, type=treetype ) 
-      tiplabels(pch=symbols, col = symbolcolors, lwd=branchwidth) 
+      tiplabels(pch=symbols, col=symbolcolors, lwd=branchwidth) 
     }
     
     # title                    
     if(!missing(treetitle))  {
       par(font.main=2, cex=1.5)
-      title(main=treetitle, outer=TRUE);
+      title(main=treetitle, outer=FALSE);
     }
     
     # legend    
@@ -224,8 +239,8 @@ rainbowtree <- function (
     
     # scale bar
     #usr=par('usr') # vector of x and y coordinates for the plot space
-    #add.scale.bar(usr[2]-usr[2]*0.1 , usr[4]-usr[4]*0.02, 0.01, cex=0.5)
     #add.scale.bar(usr[2]-usr[2]*0.1 , usr[4]-usr[4]*0.02, cex=0.5)
+    #add.scale.bar(usr[2]-usr[2]*0.1 , usr[4]-usr[4]*0.02, 0.01, cex=0.5)
     #add.scale.bar(usr[2]-usr[2]*0.1 , usr[4]-usr[4]*0.02)
     add.scale.bar(cex=0.75)
     

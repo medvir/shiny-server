@@ -2,8 +2,7 @@ library(shiny)
 library(dplyr)
 library(ape)
 library(seqinr)
-source('rainbowtree.R')
-
+source('rainbowtree.r')
 
 unrootedNJtree <- function(alignment, type)
 {
@@ -68,61 +67,65 @@ rootedNJtree <- function(alignment, theoutgroup, type){
 
 
 
-# Define UI for application that draws a histogram
+### UI
 ui <- fluidPage(
-   
-   # Application title
-   titlePanel("Rainbow Tree"),
-   
-   # Sidebar with a slider input for number of bins 
-   sidebarLayout(
-      sidebarPanel(
-        fileInput("msaFile", "Upload multiple sequence alignment",
-                  accept = c("fasta", "fna", "fas")),
-        textInput("treetitle", "Tree title"),
-        radioButtons("treetype", "Tree Type",
-                     choiceNames = c("phylogram", "unrooted", "fan"),
-                     choiceValues = c("p", "u", "fan")),
-        radioButtons("label", "Label",
-                     choices = c("seqname", "category", "symbol", "none"),
-                     selected = "seqname"),
-        radioButtons("label4ut", "label4ut",
-                     choices = c("axial", "horizontal"),
-                     selected = "axial"),
-        radioButtons("legend", "Legend",
-                     choices = c("vertical", "horizontal", "none"),
-                     selected = "vertical"),
-        selectInput("legendpos", "Legend position",
-                     choices = c("bottomright", "bottom", "bottomleft", "left",
-                                 "topleft", "top", "topright", "right", "center"),
-                     selected = "bottomright"),
-        sliderInput("branchwidth", "Branch width", 0, 10, 1, 1, ticks = FALSE),
-        sliderInput("textsize", "Text size", 0, 10, 1, 1, ticks = FALSE),
-        radioButtons("color.int.edges", "color.int.edges",
-                     choices = c(TRUE, FALSE),
-                     selected = TRUE),
-        radioButtons("show.node.lab", "Show node labels",
-                     choices = c(TRUE, FALSE),
-                     selected = TRUE),
-        width = 3
-      ),
-      
-      # Show a plot of the generated distribution
-      mainPanel(
-        plotOutput("rainbowTreePlot", height = 800),
-        downloadButton("unrootedDownload", label = "Download unrooted tree in Newick format", class = NULL)
-      )
-   )
+  
+  ### Application title
+  titlePanel("Rainbow Tree"),
+  
+  ### Sidebar panel
+  sidebarLayout(
+    sidebarPanel(
+      fileInput("msaFile", "Upload multiple sequence alignment",
+                accept = c("fasta", "fna", "fas")),
+      textInput("treetitle", "Tree title"),
+      radioButtons("treetype", "Tree Type",
+                   choiceNames = c("phylogram", "unrooted", "fan"),
+                   choiceValues = c("p", "u", "fan")),
+      radioButtons("label", "Label",
+                   choices = c("seqname", "category", "symbol", "none"),
+                   selected = "seqname"),
+      hr(),
+      radioButtons("color", "Color",
+                   choiceNames = c("first character(s)", "column"),
+                   choiceValues = c("color_fc", "color_field")),
+      uiOutput("color_fc"),
+      uiOutput("color_field"),
+      uiOutput("color_delim"),
+      hr(),
+      # radioButtons("label4ut", "label4ut",
+      #              choices = c("axial", "horizontal"),
+      #              selected = "axial"),
+      # hr(),
+      radioButtons("legend", "Legend",
+                   choices = c("vertical", "horizontal", "none"),
+                   selected = "vertical"),
+      uiOutput("legendpos"),
+      hr(),
+      sliderInput("branchwidth", "Branch width", 1, 10, 1, 1, ticks = FALSE),
+      sliderInput("textsize", "Text size", 1, 5, 1, .25, ticks = FALSE),
+      checkboxInput("color.int.edges", "Color internal edges"),
+      checkboxInput("show.node.lab", "Show node labels"),
+      width = 3
+    ),
+    
+    ### Output
+    mainPanel(
+      plotOutput("rainbowTreePlot", height = 800),
+      downloadButton("download", label = "Download image")
+    )
+  )
 )
 
 
 
 
-### Define server logic required to draw a histogram
-server <- function(input, output) {
 
+
+### Server
+server <- function(input, output) {
+  
   msa_in <- reactive({
-    # require input to be specified
     req(input$msaFile)
     seqinr::read.alignment(file = input$msaFile$datapath, format = "fasta")
   })
@@ -133,27 +136,74 @@ server <- function(input, output) {
       unrootedNJtree(type = "DNA")
   })
   
-   output$unrootedDownload <- downloadHandler(
-     filename = function(){
-       paste0("newick_unrooted-", Sys.Date(), ".nwy")
-     },
-     content <- function(file){
-       write.tree(unrooted_tree(), file)
-     }
-   )
-   
-  output$rainbowTreePlot <- renderPlot(rainbowtree(unrooted_tree(),
-                                                   treetype = input$treetype,
-                                                   treetitle = input$treetitle,
-                                                   label = input$label,
-                                                   label4ut = input$lable4ut,
-                                                   legend = input$legend,
-                                                   legendpos = input$legendpos,
-                                                   branchwidth = input$branchwidth,
-                                                   color.int.edges = input$color.int.edges,
-                                                   show.node.lab = input$show.node.lab))
+  output$unrootedDownload <- downloadHandler(
+    filename = function(){
+      paste0("newick_unrooted-", Sys.Date(), ".nwy")
+    },
+    content <- function(file){
+      write.tree(unrooted_tree(), file)
+    }
+  )
+  
+  plot <- reactive({rainbowtree(unrooted_tree(),
+                      treetype = input$treetype,
+                      treetitle = input$treetitle,
+                      label = input$label,
+                      label4ut = input$lable4ut,
+                      legend = input$legend,
+                      legendpos = input$legendpos,
+                      branchwidth = input$branchwidth,
+                      color.int.edges = input$color.int.edges,
+                      show.node.lab = input$show.node.lab,
+                      textsize = input$textsize,
+                      color = input$color,
+                      first.chars = input$first.chars,
+                      field = input$field,
+                      delim = input$delim)
+    })
+  
+  ### dynamic UI outputs
+  output$legendpos <- renderUI({
+    if (input$legend != "none") {
+      selectInput("legendpos", "Legend position",
+                choices = c("bottomright", "bottom", "bottomleft", "left",
+                          "topleft", "top", "topright", "right", "center"),
+                selected = "bottomright")
+    }
+  })
+  
+  output$color_fc <- renderUI({
+    if (input$color == "color_fc") {
+    numericInput("first.chars", "First n characters", 1 , min = 1, step = 1)
+    }
+  })
+  
+  output$color_field <- renderUI({
+    if (input$color == "color_field") {
+        numericInput("field", "Column in field n", 1 , min = 1, step = 1)
+    }
+  })
+  
+  output$color_delim <- renderUI({
+    if (input$color == "color_field") {
+      textInput("delim", "Delimiter",value = "_")
+    }
+  })
+  
+  ### Plot
+  output$rainbowTreePlot <- renderPlot(plot())
+  
+  ### Download
+  output$download <- downloadHandler(
+    filename = "tree.png",
+    content <- function(file) {
+      png(file)
+      plot()
+      dev.off()
+    })
+  
+
 }
 
-
-### Run the application 
+### Run the application
 shinyApp(ui = ui, server = server)
