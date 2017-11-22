@@ -1,5 +1,5 @@
 library(shiny)
-library(dplyr)
+library(tidyverse)
 library(ape)
 library(seqinr)
 source('rainbowtree.r')
@@ -73,29 +73,38 @@ ui <- fluidPage(
   ### Sidebar panel
   sidebarLayout(
     sidebarPanel(
-      fileInput("msaFile", "Upload multiple sequence alignment",
+      fileInput("msaFile", "Upload multiple sequence alignment (fasta)",
                 accept = c("fasta", "fna", "fas")),
       #textInput("treetitle", "Tree title"), ### not using tree title at the moment
+      hr(),
       radioButtons("treetype", "Tree Type",
                    choiceNames = c("phylogram", "unrooted", "fan"),
-                   choiceValues = c("p", "u", "fan")),
-      radioButtons("label", "Label",
-                   choices = c("seqname", "category", "none"), #"symbol", ### not using symbol at the moment
-                   selected = "seqname"),
+                   choiceValues = c("p", "u", "fan"),
+                   inline = TRUE),
+      hr(),
+      radioButtons("label", "Labels",
+                   choices = c("seqname", "category", "symbol", "none"),
+                   selected = "seqname",
+                   inline = TRUE),
       uiOutput("label4ut"),
-      sliderInput("branchwidth", "Branch width", 1, 10, 2, 1, ticks = FALSE),
-      sliderInput("textsize", "Text size", 1, 5, 1.5, .25, ticks = FALSE),
-      radioButtons("cat", "Category",
-                   choiceNames = c("by first character(s)", "by column/field", "by table"),
+      hr(),
+      radioButtons("cat", "Define categories according to",
+                   choiceNames = c("first character(s) in sequence name", "column in delimited sequence names", "an uploaded table"),
                    choiceValues = c("cat_fc", "cat_field", "cat_table")),
       uiOutput("cat_fc"),
       uiOutput("cat_field"),
       uiOutput("cat_delim"),
       uiOutput("cat_table"),
+      hr(),
+      sliderInput("branchwidth", "Branch width", 1, 10, 2, 1, ticks = FALSE),
+      sliderInput("textsize", "Text size", 1, 5, 1.5, .25, ticks = FALSE),
+      hr(),
       radioButtons("legend", "Legend",
                    choices = c("none", "vertical", "horizontal"),
-                   selected = "none"),
+                   selected = "none",
+                   inline = TRUE),
       uiOutput("legendpos"),
+      hr(),
       h5("Options"),
       checkboxInput("show.node.lab", "Show node labels"),
       checkboxInput("color.int.edges", "Color internal edges"),
@@ -107,14 +116,14 @@ ui <- fluidPage(
     ### Main Panel
     mainPanel(
       plotOutput("rainbowTreePlot", height = 1000),
-      downloadButton("plotDownload", label = "Download rainbow plot (png)"),
-      downloadButton("unrootedDownload", label = "Download unrooted tree (nwy)")
+      downloadButton("plotDownload", label = "Download unrooted plot (png)"),
+      downloadButton("unrootedDownload", label = "Download unrooted file (nwy)")
       )
   )
 )
 
 
-#-#-#-#-#-#-# Server #-#-#-#-#-#-#
+#-#-#-#-#-#-# SERVER #-#-#-#-#-#-#
 server <- function(input, output) {
   
   msa_in <- reactive({
@@ -134,6 +143,7 @@ server <- function(input, output) {
       rootedNJtree(theoutgroup = input$select_outgroup, type = "DNA")
   })
   
+  ### plot for rooted and unrooted tree
   rainbowtreeplot <- reactive({
      if (input$outgroup) {
              rainbowtree(rooted_tree(),
@@ -142,35 +152,35 @@ server <- function(input, output) {
                     label = input$label,
                     label4ut = input$label4ut,
                     legend = input$legend,
-                     legendpos = input$legendpos,
-                     branchwidth = input$branchwidth,
-                     outgroup = input$select_outgroup,
-                     color.int.edges = input$color.int.edges,
-                     show.node.lab = input$show.node.lab,
-                     textsize = input$textsize,
-                     cat = input$cat,
-                     first.chars = input$first.chars,
-                     field = input$field,
-                     delim = input$delim,
-                     cat_file = input$cat_file$datapath)
+                    legendpos = input$legendpos,
+                    branchwidth = input$branchwidth,
+                    outgroup = input$select_outgroup,
+                    color.int.edges = input$color.int.edges,
+                    show.node.lab = input$show.node.lab,
+                    textsize = input$textsize,
+                    cat = input$cat,
+                    first.chars = input$first.chars,
+                    field = input$field,
+                    delim = input$delim,
+                    cat_file = input$cat_file$datapath)
     } else {
             rainbowtree(unrooted_tree(),
-                     treetype = input$treetype,
-                     treetitle = input$treetitle,
-                     label = input$label,
-                     label4ut = input$label4ut,
-                     legend = input$legend,
-                     legendpos = input$legendpos,
-                     branchwidth = input$branchwidth,
-                     #outgroup = input$select_outgroup,
-                     color.int.edges = input$color.int.edges,
-                     show.node.lab = input$show.node.lab,
-                     textsize = input$textsize,
-                     cat = input$cat,
-                     first.chars = input$first.chars,
-                     field = input$field,
-                     delim = input$delim,
-                     cat_file = input$cat_file$datapath)
+                    treetype = input$treetype,
+                    treetitle = input$treetitle,
+                    label = input$label,
+                    label4ut = input$label4ut,
+                    legend = input$legend,
+                    legendpos = input$legendpos,
+                    branchwidth = input$branchwidth,
+                    #outgroup = input$select_outgroup,
+                    color.int.edges = input$color.int.edges,
+                    show.node.lab = input$show.node.lab,
+                    textsize = input$textsize,
+                    cat = input$cat,
+                    first.chars = input$first.chars,
+                    field = input$field,
+                    delim = input$delim,
+                    cat_file = input$cat_file$datapath)
     }
   })
   
@@ -187,13 +197,13 @@ server <- function(input, output) {
   
   output$cat_fc <- renderUI({
     if (input$cat == "cat_fc") {
-      numericInput("first.chars", "Number characters", 1 , min = 1, step = 1)
+      numericInput("first.chars", "Number of characters", 1 , min = 1, step = 1)
     }
   })
   
   output$cat_field <- renderUI({
     if (input$cat == "cat_field") {
-        numericInput("field", "Field number", 1 , min = 1, step = 1)
+        numericInput("field", "Field number of delimited sequence names", 1 , min = 1, step = 1)
     }
   })
   
@@ -205,14 +215,15 @@ server <- function(input, output) {
   
   output$cat_table <- renderUI({
     if (input$cat == "cat_table") {
-      fileInput("cat_file", "Category Table (csv)", accept = ".csv")
+      fileInput("cat_file", "Categories table (ID,category)", accept = ".csv")
     }
   })
   
   output$label4ut <- renderUI({
-    if (input$treetype != "p" & input$label != "none") {
+    if (input$treetype != "p" & input$label != "symbol" & input$label != "none") {
       radioButtons("label4ut", "Label direction",
-                   choices = c("axial", "horizontal"))
+                   choices = c("axial", "horizontal"),
+                   inline = TRUE)
     }
   })
   
@@ -224,7 +235,7 @@ server <- function(input, output) {
   })
   
   
-  ### Plot
+  ### Output plot
   output$rainbowTreePlot <- renderPlot(rainbowtreeplot())
   
   ### Download
@@ -257,9 +268,7 @@ server <- function(input, output) {
     filename = "newick_unrooted.nwy",
     content <- function(file) {
       write.tree(unrooted_tree(), file)
-    }
-  )
-  
+    })
 }
 
 ### Run the application

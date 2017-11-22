@@ -1,8 +1,6 @@
 library(ape)
 library(tidyverse)
 
-outputformat <- 'png'
-
 mypalette=c(
   "#ED1C24", "#F7941D", "#FFC20E", "#8DC73F",
   "#00A651", "#008FD4", "#235192", "#662D91",
@@ -10,58 +8,56 @@ mypalette=c(
   "#DFC27D", "#FFFFBF", "#01665E", "#80CDC1",
   "#92C5DE", "#9970AB", "#7B68EE", "#888888");
 
-
-
 color_edge = function(edgecolors, mytree, node) {
-### The purpose of this function is to color a parent edge of an interior node such that
-### any edge with decendent leaves that are all the same color
-### (monophyletic) gets the same color as its leaves.  If descendents
-### of the node are different colors (polyphyletic), the edge is
-### colored black.
-
-    # root                   
-    if (length(mytree$edge[which(mytree$edge[,2] == node), 2]) <1 ) 
-       return (edgecolors)
-
-    # already visitied node
-    if (edgecolors[which(mytree$edge[,2] == node)] != 'black'  ) {
-        return (edgecolors)
-    }
-
-    if (length(mytree$edge[which(mytree$edge[,1] == node),2]) > 0) {
-        mycolor =  NULL
-        siblings = mytree$edge[which(mytree$edge[,1] == node), 2]
-        is_same_color = T
-
-        # compare color of sibling nodes 
-        if (length(siblings) > 0) {
-
-            for (sibling in c(2:length(siblings))) {
-                mycolor = edgecolors[which(mytree$edge[,2] == siblings[sibling])]
-                if (edgecolors[which(mytree$edge[,2] == siblings[(sibling-1)])] != 
-                    edgecolors[which(mytree$edge[,2] == siblings[sibling])]) { 
-                        is_same_color = F
-                }
-            }
+  ### The purpose of this function is to color a parent edge of an interior node such that
+  ### any edge with decendent leaves that are all the same color
+  ### (monophyletic) gets the same color as its leaves.  If descendents
+  ### of the node are different colors (polyphyletic), the edge is
+  ### colored black.
+  
+  # root                   
+  if (length(mytree$edge[which(mytree$edge[,2] == node), 2]) <1 ) 
+    return (edgecolors)
+  
+  # already visitied node
+  if (edgecolors[which(mytree$edge[,2] == node)] != 'black'  ) {
+    return (edgecolors)
+  }
+  
+  if (length(mytree$edge[which(mytree$edge[,1] == node),2]) > 0) {
+    mycolor =  NULL
+    siblings = mytree$edge[which(mytree$edge[,1] == node), 2]
+    is_same_color = T
+    
+    # compare color of sibling nodes 
+    if (length(siblings) > 0) {
+      
+      for (sibling in c(2:length(siblings))) {
+        mycolor = edgecolors[which(mytree$edge[,2] == siblings[sibling])]
+        if (edgecolors[which(mytree$edge[,2] == siblings[(sibling-1)])] != 
+            edgecolors[which(mytree$edge[,2] == siblings[sibling])]) { 
+          is_same_color = F
         }
-        if (is_same_color) 
-            # monophyletic,
-            edgecolors[which(mytree$edge[,2] == node)] = mycolor  
       }
-    edgecolors
+    }
+    if (is_same_color) 
+      # monophyletic,
+      edgecolors[which(mytree$edge[,2] == node)] = mycolor  
+  }
+  edgecolors
 }
 
 color_interior_edges = function(edgecolors, mytree) {
-    depth_first = reorder.phylo(mytree, "pruningwise")   # reorder tree$edge. depth-first traversal
-    
-    for (i in c(1:length(mytree$edge[,1]))) {
-        edge=depth_first$edge[i,]
-        edgecolors = color_edge(edgecolors, mytree, edge[1])
-    }
-    edgecolors
+  depth_first = reorder.phylo(mytree, "pruningwise")   # reorder tree$edge. depth-first traversal
+  
+  for (i in c(1:length(mytree$edge[,1]))) {
+    edge=depth_first$edge[i,]
+    edgecolors = color_edge(edgecolors, mytree, edge[1])
+  }
+  edgecolors
 }
 
-rainbowtree <- function ( 
+rainbowtree <- function (
                 mytree,                     # the tree
                 tablefile,                  # the lookup table file name 
                                             #   a 3- or 5-column table. Sequence name (1st column), 
@@ -80,7 +76,7 @@ rainbowtree <- function (
                 legendpos,                  # legend location: 'bottomright', 'bottom', ???bottomleft???, 
                                             #   ???left???, ???topleft???, ???top???, ???topright???, ???right??? or ???center'
                 branchwidth,                # a positive number specifying the width of the branches
-                outgroup = 1,               # a vector of numeric or character specifying the new outgroup
+                outgroup,                  # a vector of numeric or character specifying the new outgroup
                 color.int.edges,            # to propagate leaf colors upward into a tree until a mismatch is encountered 
                 show.node.lab,              # to displays the node labels
                 textsize,
@@ -88,10 +84,8 @@ rainbowtree <- function (
                 first.chars,
                 field,
                 delim,
-                cat_file) {
-
-    ## read inputTree
-    # mytree = read.tree(treefile)
+                cat_file
+                ) {
 
     ## read inputTable
     # format of inputTable is 3 columns. 
@@ -102,46 +96,45 @@ rainbowtree <- function (
     #              read.table(tablefile, header=F, colClasses=c('character','numeric','character', 'numeric','character'))
     #          else 
     #              read.table(tablefile, header=F, colClasses=c('character','numeric','character'))
-    
 
+  ### mytable    
+  if (cat == "cat_fc") {
+    mytable = data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label), V3 = substr(mytree$tip.label, 1, first.chars))
+  } else if (cat == "cat_field") {
+    mytable = data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label)) %>%
+      group_by(V2) %>%
+      mutate(V3 = strsplit(as.character(V1), delim)[[1]][field]) %>%
+      ungroup()
+  } else if (cat == "cat_table") {
+    req(cat_file)
+    cat_table = read.csv(cat_file, header = FALSE, col.names = c("V1", "V3")) %>%
+      mutate(V1 = as.character(V1)) %>%
+      mutate(V3 = as.character(V3))
+    mytable = data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label)) %>%
+      mutate(V1 = as.character(V1)) %>%
+      left_join(., cat_table, by = "V1")
+  }
+  mytable = mytable %>%
+    mutate(V3 = as.character(V3)) %>%
+    mutate(V4 = match(V3, unique(V3))) ### make V4 with group numbers
+  print(mytable)
     
-    # outgroup
+  # outgroup
     if(!missing(outgroup)) mytree = root(mytree, outgroup, resolve.root=TRUE) 
    
     mytree = ladderize(mytree) 
     # tip colors: 
     tipcolors = rep('#000000', length(mytree$edge))
-
     
-   if (cat == "cat_fc") {
-     mytable <- data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label), V3 = substr(mytree$tip.label, 1, first.chars))
-   } else if (cat == "cat_field") {
-     mytable <- data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label), V3 = strsplit(mytree$tip.label, delim)[[1]][field])
-   } else if (cat == "cat_table") {
-     req(cat_file)
-     cat_table = read.csv(cat_file, header = FALSE, col.names = c("V1", "V3")) %>%
-       mutate(V1 = as.character(V1)) %>%
-       mutate(V3 = as.character(V3))
-     
-     str(cat_table) #######
-     print(cat_table) #######
-     
-     mytable <- data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label)) %>%
-       mutate(V1 = as.character(V1)) %>%
-       left_join(., cat_table, by = "V1")
-     
-     str(mytable) #######
-     print(mytable) #######
-   }
-
     # iterate over leaves in the tree
     # populate values in edgecolors vector with colors 
     # replace tip.label with category if label == category
     edgecolors = rep('black', length(mytree$edge[,1])) 
-
+    
     for (myi in c(1:length(mytree$tip.label))) {
       seqid = mytree$tip.label[myi]
-      myinx = mytable$V2[which(mytable$V1 == seqid)]   # palette index
+      #myinx = mytable$V2[which(mytable$V1 == seqid)]   # palette index
+      myinx = mytable$V4[which(mytable$V1 == seqid)] ### NEW PALETTE INDEX
       
       # ensure that myinx is not null! as error check
       if (length(myinx) == 0)  stop('No color code for ', seqid, 'in *.txt')
@@ -152,85 +145,89 @@ rainbowtree <- function (
       edgecolors[which(mytree$edge[,2] == myi)] = mypalette[myinx]
       
       if (label == 'category')
-        mytree$tip.label[myi]= paste(mytable$V3[c(which(mytable$V1 == seqid))])   # replace seqid with a category name
+        mytree$tip.label[myi] = paste(mytable$V3[c(which(mytable$V1 == seqid))])   # replace seqid with a category name
     }
     
     # legend
     legenditems=vector()
     legendcolors=vector()
     if (legend != 'none') {
-        pIndex = array(mytable$V2);
-        pIndex[pIndex > length(mypalette)] = length(mypalette)
-        pIndexf = factor(pIndex)
-        legendvalues = tapply(array(mytable$V3), pIndexf, unique)
-        inx_uniq = attr(legendvalues, "names")   # 'names' hold palette indices
-        
-        for (t in 1:length(inx_uniq)) {
-            pindex = inx_uniq[t]
-            legendcolors[t] = mypalette[as.numeric(pindex)]
-            legenditems[t] = paste(sort(legendvalues[[pindex]]), collapse = ' ') # could be many itmes per color
-       }
+      #pIndex = array(mytable$V2);
+      pIndex = array(mytable$V4);
+      pIndex[pIndex > length(mypalette)] = length(mypalette)
+      pIndexf = factor(pIndex)
+      legendvalues = tapply(array(mytable$V3), pIndexf, unique)
+      inx_uniq=attr(legendvalues, "names")   # 'names' hold palette indices
+      
+      for (t in 1:length(inx_uniq)) {
+        pindex = inx_uniq[t]
+        legendcolors[t]= mypalette[as.numeric(pindex)]
+        legenditems[t] = paste(sort(legendvalues[[pindex]]), collapse= ' ') # could be many itmes per color
+      }
     }
-
-    mypch=vector()
-    mylty=vector()
-    symbolcolors=vector()
-    symbols=vector()
-
-    if (label == 'symbol') {
-        for (t in 1:length(legenditems)) {
-            mypch[t]= NA;
-            mylty[t]= 1;
-       }
     
-        uqSymbols = unique(mytable$V4);
-        symLegenditems=vector()
-        for (t in 1:length(uqSymbols)) {
-            symLegenditems = c(symLegenditems, paste(mytable$V5[which(mytable$V4 == uqSymbols[t])[1]], uqSymbols[t], sep=':::'))
-        }
 
-        symLegenditems = sort(symLegenditems)
-
-        for (t in 1:length(symLegenditems)) {
-            tmp = unlist(strsplit(symLegenditems[t], ":::"))
-            legenditems = c(legenditems, tmp[1])
-            legendcolors = c(legendcolors,'black')
-            mypch = c(mypch, as.numeric(tmp[2]))
-            mylty = c(mylty, NA)
-
-        }
-        for (tip in c(1:length(mytree$tip.label))) {
-            symbols[tip]= mytable$V4[which( mytable$V1 ==  mytree$tip.label[tip])]
-            symbolcolors[tip]= edgecolors[which(mytree$edge[,2] == tip )]
-        }
+    mypch = vector()
+    mylty = vector()
+    symbolcolors = vector()
+    symbols = vector()
+    
+    if (label == 'symbol') {
+      for (t in 1:length(legenditems)) {
+        mypch[t] = NA;
+        mylty[t] = 1;
+      }
+      
+      
+      uqSymbols = unique(mytable$V4);
+      symLegenditems = vector()
+      for (t in 1:length(uqSymbols)) {
+        #symLegenditems = c(symLegenditems, paste(mytable$V5[which(mytable$V4 == uqSymbols[t])[1]], uqSymbols[t], sep = ':::'))
+        symLegenditems = c(symLegenditems, paste(mytable$V5[which(mytable$V4 == uqSymbols[t])[1]], uqSymbols[t], sep = ':::'))
+      }
+      
+      symLegenditems = sort(symLegenditems)
+      
+      for (t in 1:length(symLegenditems)) {
+        tmp=unlist(strsplit(symLegenditems[t], ":::"))
+        legenditems = c(legenditems, tmp[1])
+        legendcolors = c(legendcolors,'black')
+        mypch = c(mypch, as.numeric(tmp[2]))
+        mylty = c(mylty, NA)
+        
+      }
+      for (tip in c(1:length(mytree$tip.label))) {
+        symbols[tip] = mytable$V4[which(mytable$V1 ==  mytree$tip.label[tip])]
+        symbolcolors[tip] = edgecolors[which(mytree$edge[,2] == tip )]
+      }
     }
 
     ### color interior edges - pth 03 Dec 2012
     if (color.int.edges) 
-        edgecolors = color_interior_edges(edgecolors, mytree)
+      edgecolors = color_interior_edges(edgecolors, mytree)
   
     ## prepare to write output
     showtiplabel = if (label == 'none' ) F else T
     
     # set margins
-    #par(oma=c(0,0,1.5,0))
-    #par(mai=c(0,0,0,0), adj=0)
+    par(oma = c(0,0,1.5,0))
+    par(mai = c(0,0,0,0), adj = 0)
     
     # these influence how line ends are drawn and joined
-    par(ljoin=1, lend=1)
+    par(ljoin = 3, lend = 2)
     
     # this call to plot() is the main drawing method!
     cexvalue = if (label == 'category' ) 1 else ( if (treetype == 'fan') 0.5 else 0.75)
     
     if (label != 'symbol') {
-      plot(mytree, show.node.label = show.node.lab, edge.width=branchwidth,
+      plot(mytree, show.node.label = show.node.lab, edge.width = branchwidth,
            edge.col = edgecolors, show.tip.label = showtiplabel, no.margin = T,
            type = treetype, font = 1.5, lab4ut = label4ut, label.offset = 0.001,
            cex = cexvalue * textsize, tip.color = tipcolors) 
     } else {
-      plot(mytree, show.node.label = show.node.lab, edge.width=branchwidth,
+      plot(mytree, show.node.label = show.node.lab, edge.width = branchwidth,
            edge.col = edgecolors, show.tip.label = F, no.margin = T, type = treetype) 
-      tiplabels(pch = symbols, col = symbolcolors, lwd = branchwidth) 
+      tiplabels(pch = symbols, col = symbolcolors, lwd = branchwidth * textsize) 
     }
     
     # title                    
@@ -252,7 +249,7 @@ rainbowtree <- function (
     }
     
     # scale bar
-    add.scale.bar(cex = 0.5 * textsize)
+    add.scale.bar(lwd = branchwidth, cex = 0.5 * textsize)
 
 }
 
