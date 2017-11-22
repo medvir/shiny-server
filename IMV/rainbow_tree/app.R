@@ -103,7 +103,7 @@ ui <- fluidPage(
       h5("Options"),
       checkboxInput("show.node.lab", "Show node labels"),
       checkboxInput("color.int.edges", "Color internal edges"),
-      #checkboxInput("outgroup", "Outgroup"),  ### not working yet at the moment
+      checkboxInput("outgroup", "Outgroup"),
       uiOutput("select_outgroup"),
       width = 3
     ),
