@@ -18,7 +18,7 @@ unrootedNJtree <- function(alignment, type) {
       mydist <- dist.dna(alignmentbin)
     }
     mytree <- nj(mydist)
-    mytree <- makeLabel(mytree, space="") # get rid of spaces in tip names.
+    # mytree <- makeLabel(mytree, space = "") # get rid of spaces in tip names.
     return(mytree)
   }
   # infer a tree
@@ -47,7 +47,7 @@ rootedNJtree <- function(alignment, theoutgroup, type) {
       mydist <- dist.dna(alignmentbin)
     }
     mytree <- nj(mydist)
-    mytree <- makeLabel(mytree, space="") # get rid of spaces in tip names.
+    # mytree <- makeLabel(mytree, space ="") # get rid of spaces in tip names.
     myrootedtree <- root(mytree, outgroup, r=TRUE)
     return(myrootedtree)
   }
@@ -88,20 +88,23 @@ ui <- fluidPage(
       sliderInput("textsize", "Text size", 1, 5, 1.5, .25, ticks = FALSE),
       hr(),
       radioButtons("cat", "Category",
-                   choiceNames = c("by first character(s)", "by column/field"),
-                   choiceValues = c("cat_fc", "cat_field")),
+                   choiceNames = c("by first character(s)", "by column/field", "by table"),
+                   choiceValues = c("cat_fc", "cat_field", "cat_table")),
       uiOutput("cat_fc"),
       uiOutput("cat_field"),
       uiOutput("cat_delim"),
+      uiOutput("cat_table"),
       hr(),
       radioButtons("legend", "Legend",
                    choices = c("none", "vertical", "horizontal"),
                    selected = "none"),
       uiOutput("legendpos"),
       hr(),
-      h5("Extras"),
+      h5("Options"),
       checkboxInput("show.node.lab", "Show node labels"),
       checkboxInput("color.int.edges", "Color internal edges"),
+      #checkboxInput("outgroup", "Outgroup"),  ### not working yet at the moment
+      uiOutput("select_outgroup"),
       width = 3
     ),
     
@@ -129,23 +132,53 @@ server <- function(input, output) {
       unrootedNJtree(type = "DNA")
   })
   
-
-  rainbowtreeplot <- reactive({rainbowtree(unrooted_tree(),
-                      treetype = input$treetype,
-                      treetitle = input$treetitle,
-                      label = input$label,
-                      label4ut = input$label4ut,
-                      legend = input$legend,
-                      legendpos = input$legendpos,
-                      branchwidth = input$branchwidth,
-                      color.int.edges = input$color.int.edges,
-                      show.node.lab = input$show.node.lab,
-                      textsize = input$textsize,
-                      cat = input$cat,
-                      first.chars = input$first.chars,
-                      field = input$field,
-                      delim = input$delim)
-    })
+  rooted_tree <- reactive({
+    # no req here because input$upload already required in msa_in
+    msa_in() %>%
+      rootedNJtree(type = "DNA")
+  })
+  
+  
+    rainbowtreeplot <- reactive({
+      if (input$outgroup) {
+        rainbowtree(rooted_tree(),
+                    treetype = input$treetype,
+                    treetitle = input$treetitle,
+                    label = input$label,
+                    label4ut = input$label4ut,
+                    legend = input$legend,
+                     legendpos = input$legendpos,
+                     branchwidth = input$branchwidth,
+                     outgroup = input$select_outgroup,
+                     color.int.edges = input$color.int.edges,
+                     show.node.lab = input$show.node.lab,
+                     textsize = input$textsize,
+                     cat = input$cat,
+                     first.chars = input$first.chars,
+                     field = input$field,
+                     delim = input$delim,
+                     cat_file = input$cat_file$datapath)
+    } else {
+      rainbowtree(unrooted_tree(),
+                     treetype = input$treetype,
+                     treetitle = input$treetitle,
+                     label = input$label,
+                     label4ut = input$label4ut,
+                     legend = input$legend,
+                     legendpos = input$legendpos,
+                     branchwidth = input$branchwidth,
+                     #outgroup = input$select_outgroup,
+                     color.int.edges = input$color.int.edges,
+                     show.node.lab = input$show.node.lab,
+                     textsize = input$textsize,
+                     cat = input$cat,
+                     first.chars = input$first.chars,
+                     field = input$field,
+                     delim = input$delim,
+                     cat_file = input$cat_file$datapath)
+    }
+  })
+  
   
   ### dynamic UI outputs
   output$legendpos <- renderUI({
@@ -159,7 +192,7 @@ server <- function(input, output) {
   
   output$cat_fc <- renderUI({
     if (input$cat == "cat_fc") {
-    numericInput("first.chars", "Number characters", 1 , min = 1, step = 1)
+      numericInput("first.chars", "Number characters", 1 , min = 1, step = 1)
     }
   })
   
@@ -175,10 +208,23 @@ server <- function(input, output) {
     }
   })
   
+  output$cat_table <- renderUI({
+    if (input$cat == "cat_table") {
+      fileInput("cat_file", "Category Table (csv)", accept = ".csv")
+    }
+  })
+  
   output$label4ut <- renderUI({
     if (input$treetype != "p" & input$label != "none") {
       radioButtons("label4ut", "Label direction",
                    choices = c("axial", "horizontal"))
+    }
+  })
+  
+  output$select_outgroup <- renderUI({
+    if (input$outgroup) {
+      selectInput("select_outgroup", "Select outgroup",
+                  choices = c("haplotype_4-freq_6.1_Local_nt_haplo"))
     }
   })
   
@@ -199,13 +245,15 @@ server <- function(input, output) {
                   legend = input$legend,
                   legendpos = input$legendpos,
                   branchwidth = input$branchwidth,
+                  #outgroup = input$select_outgroup,
                   color.int.edges = input$color.int.edges,
                   show.node.lab = input$show.node.lab,
                   textsize = input$textsize,
                   cat = input$cat,
                   first.chars = input$first.chars,
                   field = input$field,
-                  delim = input$delim)
+                  delim = input$delim,
+                  cat_file = input$cat_file$datapath)
       dev.off()
     })
   

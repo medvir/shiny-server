@@ -1,4 +1,5 @@
 library(ape)
+library(tidyverse)
 
 outputformat <- 'png'
 
@@ -79,14 +80,15 @@ rainbowtree <- function (
                 legendpos,                  # legend location: 'bottomright', 'bottom', ???bottomleft???, 
                                             #   ???left???, ???topleft???, ???top???, ???topright???, ???right??? or ???center'
                 branchwidth,                # a positive number specifying the width of the branches
-                outgroup,                   # a vector of numeric or character specifying the new outgroup
+                outgroup = 1,               # a vector of numeric or character specifying the new outgroup
                 color.int.edges,            # to propagate leaf colors upward into a tree until a mismatch is encountered 
                 show.node.lab,              # to displays the node labels
                 textsize,
                 cat,
                 first.chars,
                 field,
-                delim) {
+                delim,
+                cat_file) {
 
     ## read inputTree
     # mytree = read.tree(treefile)
@@ -103,8 +105,9 @@ rainbowtree <- function (
     
 
     
-    # outgroup 
-    if(!missing(outgroup)) mytree= root(mytree, outgroup, resolve.root=TRUE) 
+    # outgroup
+  print(outgroup)
+    if(!missing(outgroup)) mytree = root(mytree, outgroup, resolve.root=TRUE) 
    
     mytree = ladderize(mytree) 
     # tip colors: 
@@ -113,8 +116,23 @@ rainbowtree <- function (
     
    if (cat == "cat_fc") {
      mytable <- data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label), V3 = substr(mytree$tip.label, 1, first.chars))
-   } else {
+   } else if (cat == "cat_field") {
      mytable <- data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label), V3 = strsplit(mytree$tip.label, delim)[[1]][field])
+   } else if (cat == "cat_table") {
+     req(cat_file)
+     cat_table = read.csv(cat_file, header = FALSE, col.names = c("V1", "V3")) %>%
+       mutate(V1 = as.character(V1)) %>%
+       mutate(V3 = as.character(V3))
+     
+     str(cat_table) #######
+     print(cat_table) #######
+     
+     mytable <- data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label)) %>%
+       mutate(V1 = as.character(V1)) %>%
+       left_join(., cat_table, by = "V1")
+     
+     str(mytable) #######
+     print(mytable) #######
    }
 
     # iterate over leaves in the tree
@@ -238,3 +256,4 @@ rainbowtree <- function (
     add.scale.bar(cex = 0.5 * textsize)
 
 }
+
