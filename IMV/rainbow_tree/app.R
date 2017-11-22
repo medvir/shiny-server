@@ -4,10 +4,10 @@ library(ape)
 library(seqinr)
 source('rainbowtree.r')
 
-unrootedNJtree <- function(alignment, type)
-{
-  # this function requires the ape and seqinR packages:
-  # define a function for making a tree:
+
+unrootedNJtree <- function(alignment, type) {
+  # this function requires the ape and seqinR packages
+  # define a function for making a tree
   makemytree <- function(alignmentmat){
     alignment <- ape::as.alignment(alignmentmat)
     if (type == "protein"){
@@ -34,11 +34,9 @@ unrootedNJtree <- function(alignment, type)
 }
 
 
-
-rootedNJtree <- function(alignment, theoutgroup, type){
-  # load the ape and seqinR packages:
-  library(seqinr)
-  # define a function for making a tree:
+rootedNJtree <- function(alignment, theoutgroup, type) {
+  # this function requires the ape and seqinR packages
+  # define a function for making a tree
   makemytree <- function(alignmentmat, outgroup=`theoutgroup`){
     alignment <- ape::as.alignment(alignmentmat)
     if (type == "protein"){
@@ -66,11 +64,10 @@ rootedNJtree <- function(alignment, theoutgroup, type){
 }
 
 
-
-### UI
+#-#-#-#-#-#-# UI #-#-#-#-#-#-#
 ui <- fluidPage(
   
-  ### Application title
+  ### Title panel
   titlePanel("Rainbow Tree"),
   
   ### Sidebar panel
@@ -78,51 +75,47 @@ ui <- fluidPage(
     sidebarPanel(
       fileInput("msaFile", "Upload multiple sequence alignment",
                 accept = c("fasta", "fna", "fas")),
-      textInput("treetitle", "Tree title"),
+      #textInput("treetitle", "Tree title"), ### not using tree title at the moment
       radioButtons("treetype", "Tree Type",
                    choiceNames = c("phylogram", "unrooted", "fan"),
                    choiceValues = c("p", "u", "fan")),
       radioButtons("label", "Label",
-                   choices = c("seqname", "category", "symbol", "none"),
+                   choices = c("seqname", "category", "none"), #"symbol", ### not using symbol at the moment
                    selected = "seqname"),
+      uiOutput("label4ut"),
       hr(),
-      radioButtons("color", "Color",
-                   choiceNames = c("first character(s)", "column"),
+      sliderInput("branchwidth", "Branch width", 1, 10, 2, 1, ticks = FALSE),
+      sliderInput("textsize", "Text size", 1, 5, 1.5, .25, ticks = FALSE),
+      hr(),
+      radioButtons("color", "Coloring",
+                   choiceNames = c("by first character(s)", "by column/field"),
                    choiceValues = c("color_fc", "color_field")),
       uiOutput("color_fc"),
       uiOutput("color_field"),
       uiOutput("color_delim"),
       hr(),
-      # radioButtons("label4ut", "label4ut",
-      #              choices = c("axial", "horizontal"),
-      #              selected = "axial"),
-      # hr(),
       radioButtons("legend", "Legend",
-                   choices = c("vertical", "horizontal", "none"),
-                   selected = "vertical"),
+                   choices = c("none", "vertical", "horizontal"),
+                   selected = "none"),
       uiOutput("legendpos"),
       hr(),
-      sliderInput("branchwidth", "Branch width", 1, 10, 1, 1, ticks = FALSE),
-      sliderInput("textsize", "Text size", 1, 5, 1, .25, ticks = FALSE),
-      checkboxInput("color.int.edges", "Color internal edges"),
+      h5("Extras"),
       checkboxInput("show.node.lab", "Show node labels"),
+      checkboxInput("color.int.edges", "Color internal edges"),
       width = 3
     ),
     
-    ### Output
+    ### Main Panel
     mainPanel(
-      plotOutput("rainbowTreePlot", height = 800),
-      downloadButton("download", label = "Download image")
-    )
+      plotOutput("rainbowTreePlot", height = 1000),
+      downloadButton("plotDownload", label = "Download rainbow plot (png)"),
+      downloadButton("unrootedDownload", label = "Download unrooted tree (nwy)")
+      )
   )
 )
 
 
-
-
-
-
-### Server
+#-#-#-#-#-#-# Server #-#-#-#-#-#-#
 server <- function(input, output) {
   
   msa_in <- reactive({
@@ -136,20 +129,12 @@ server <- function(input, output) {
       unrootedNJtree(type = "DNA")
   })
   
-  output$unrootedDownload <- downloadHandler(
-    filename = function(){
-      paste0("newick_unrooted-", Sys.Date(), ".nwy")
-    },
-    content <- function(file){
-      write.tree(unrooted_tree(), file)
-    }
-  )
-  
-  plot <- reactive({rainbowtree(unrooted_tree(),
+
+  rainbowtreeplot <- reactive({rainbowtree(unrooted_tree(),
                       treetype = input$treetype,
                       treetitle = input$treetitle,
                       label = input$label,
-                      label4ut = input$lable4ut,
+                      label4ut = input$label4ut,
                       legend = input$legend,
                       legendpos = input$legendpos,
                       branchwidth = input$branchwidth,
@@ -174,35 +159,64 @@ server <- function(input, output) {
   
   output$color_fc <- renderUI({
     if (input$color == "color_fc") {
-    numericInput("first.chars", "First n characters", 1 , min = 1, step = 1)
+    numericInput("first.chars", "Number characters", 1 , min = 1, step = 1)
     }
   })
   
   output$color_field <- renderUI({
     if (input$color == "color_field") {
-        numericInput("field", "Column in field n", 1 , min = 1, step = 1)
+        numericInput("field", "Field number", 1 , min = 1, step = 1)
     }
   })
   
   output$color_delim <- renderUI({
     if (input$color == "color_field") {
-      textInput("delim", "Delimiter",value = "_")
+      textInput("delim", "Delimiter", value = "\\.")
     }
   })
   
+  output$label4ut <- renderUI({
+    if (input$treetype != "p" & input$label != "none") {
+      radioButtons("label4ut", "Label direction",
+                   choices = c("axial", "horizontal"))
+    }
+  })
+  
+  
   ### Plot
-  output$rainbowTreePlot <- renderPlot(plot())
+  output$rainbowTreePlot <- renderPlot(rainbowtreeplot())
   
   ### Download
-  output$download <- downloadHandler(
-    filename = "tree.png",
+  output$plotDownload <- downloadHandler(
+    filename = "rainbowtree.png",
     content <- function(file) {
       png(file)
-      plot()
+      rainbowtree(unrooted_tree(),
+                  treetype = input$treetype,
+                  treetitle = input$treetitle,
+                  label = input$label,
+                  label4ut = input$label4ut,
+                  legend = input$legend,
+                  legendpos = input$legendpos,
+                  branchwidth = input$branchwidth,
+                  color.int.edges = input$color.int.edges,
+                  show.node.lab = input$show.node.lab,
+                  textsize = input$textsize,
+                  color = input$color,
+                  first.chars = input$first.chars,
+                  field = input$field,
+                  delim = input$delim)
       dev.off()
     })
   
-
+  
+  output$unrootedDownload <- downloadHandler(
+    filename = "newick_unrooted.nwy",
+    content <- function(file) {
+      write.tree(unrooted_tree(), file)
+    }
+  )
+  
 }
 
 ### Run the application

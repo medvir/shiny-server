@@ -111,34 +111,33 @@ rainbowtree <- function (
     tipcolors = rep('#000000', length(mytree$edge))
 
     
-   #if (color == "color_fc") {
-      mytable <- data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label), V3 = substr(mytree$tip.label, 1, first.chars))
-   #} else {
-     #mytable <- data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label), V3 = strsplit(mytree$tip.label, delim)[[1]][field])
-   #}
-   
-    
+   if (color == "color_fc") {
+     mytable <- data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label), V3 = substr(mytree$tip.label, 1, first.chars))
+   } else {
+     mytable <- data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label), V3 = strsplit(mytree$tip.label, delim)[[1]][field])
+   }
+
     # iterate over leaves in the tree
     # populate values in edgecolors vector with colors 
     # replace tip.label with category if label == category
     edgecolors = rep('black', length(mytree$edge[,1])) 
 
     for (myi in c(1:length(mytree$tip.label))) {
-        seqid = mytree$tip.label[myi]
-        myinx = mytable$V2[which(mytable$V1 == seqid)]   # palette index
-
-        # ensure that myinx is not null! as error check
-        if (length(myinx) == 0) stop ('No color code for ', seqid, 'in *.txt')
-        
-        if (myinx > length(mypalette)) myinx = length(mypalette)
-    
-        # assign edge colors to color elements of mypalette vector
-        edgecolors[which(mytree$edge[,2] == myi)] = mypalette[myinx]
-    
-        if (label == 'category')
-            mytree$tip.label[myi]= paste(mytable$V3[c(which(mytable$V1 == seqid))])   # replace seqid with a category name
+      seqid = mytree$tip.label[myi]
+      myinx = mytable$V2[which(mytable$V1 == seqid)]   # palette index
+      
+      # ensure that myinx is not null! as error check
+      if (length(myinx) == 0)  stop('No color code for ', seqid, 'in *.txt')
+      
+      if (myinx > length(mypalette)) myinx = length(mypalette)
+      
+      # assign edge colors to color elements of mypalette vector
+      edgecolors[which(mytree$edge[,2] == myi)] = mypalette[myinx]
+      
+      if (label == 'category')
+        mytree$tip.label[myi]= paste(mytable$V3[c(which(mytable$V1 == seqid))])   # replace seqid with a category name
     }
-
+    
     # legend
     legenditems=vector()
     legendcolors=vector()
@@ -147,12 +146,12 @@ rainbowtree <- function (
         pIndex[pIndex > length(mypalette)] = length(mypalette)
         pIndexf = factor(pIndex)
         legendvalues = tapply(array(mytable$V3), pIndexf, unique)
-        inx_uniq=attr(legendvalues, "names")   # 'names' hold palette indices
+        inx_uniq = attr(legendvalues, "names")   # 'names' hold palette indices
         
         for (t in 1:length(inx_uniq)) {
             pindex = inx_uniq[t]
-            legendcolors[t]= mypalette[as.numeric(pindex)]
-            legenditems[t] = paste(sort(legendvalues[[pindex]]), collapse= ' ') # could be many itmes per color
+            legendcolors[t] = mypalette[as.numeric(pindex)]
+            legenditems[t] = paste(sort(legendvalues[[pindex]]), collapse = ' ') # could be many itmes per color
        }
     }
 
@@ -166,12 +165,11 @@ rainbowtree <- function (
             mypch[t]= NA;
             mylty[t]= 1;
        }
-
     
         uqSymbols = unique(mytable$V4);
         symLegenditems=vector()
         for (t in 1:length(uqSymbols)) {
-            symLegenditems = c(symLegenditems, paste(mytable$V5[which(mytable$V4==uqSymbols[t])[1]], uqSymbols[t], sep=':::'))
+            symLegenditems = c(symLegenditems, paste(mytable$V5[which(mytable$V4 == uqSymbols[t])[1]], uqSymbols[t], sep=':::'))
         }
 
         symLegenditems = sort(symLegenditems)
@@ -195,55 +193,48 @@ rainbowtree <- function (
         edgecolors = color_interior_edges(edgecolors, mytree)
   
     ## prepare to write output
-    # outputformats = c('pdf', 'png')
-    # treetypes = c('u', 'p', 'fan')  # unrooted, phylogram, fan
     showtiplabel = if (label == 'none' ) F else T
     
     # set margins
-    par(oma=c(0,0,1.5,0))
-    par(mai=c(0,0,0,0), adj=0)
+    #par(oma=c(0,0,1.5,0))
+    #par(mai=c(0,0,0,0), adj=0)
     
     # these influence how line ends are drawn and joined
     par(ljoin=1, lend=1)
     
     # this call to plot() is the main drawing method!
-    # many available options can influence the layout and tree appearance
-    # see ape documentation at http://cran.r-project.org/web/packages/ape/ape.pdf
-    cexvalue = 1 #if (label == 'category' ) 1 else ( if (treetype == 'fan') 0.35 else 0.5)
-
-    #outFile = paste( sub('\\.[^\\.]*$', '', treefile, perl=T) , treetype, outputformat, sep='.')
-    #outFile = "tree.png"
-    #png(file=outFile, height=11*100, width=8.5*100, bg='white')
+    cexvalue = if (label == 'category' ) 1 else ( if (treetype == 'fan') 0.5 else 0.75)
     
     if (label != 'symbol') {
-      plot(mytree, show.node.label = show.node.lab, edge.width=branchwidth, edge.col=edgecolors, show.tip.label=showtiplabel, no.margin=T, type=treetype, font=1.5, lab4ut=label4ut, label.offset=0.001, cex=cexvalue*textsize, tip.color=tipcolors) 
+      plot(mytree, show.node.label = show.node.lab, edge.width=branchwidth,
+           edge.col = edgecolors, show.tip.label = showtiplabel, no.margin = T,
+           type = treetype, font = 1.5, lab4ut = label4ut, label.offset = 0.001,
+           cex = cexvalue * textsize, tip.color = tipcolors) 
     } else {
-      plot(mytree, show.node.label = show.node.lab, edge.width=branchwidth, edge.col=edgecolors, show.tip.label=F, no.margin=T, type=treetype ) 
-      tiplabels(pch=symbols, col=symbolcolors, lwd=branchwidth) 
+      plot(mytree, show.node.label = show.node.lab, edge.width=branchwidth,
+           edge.col = edgecolors, show.tip.label = F, no.margin = T, type = treetype) 
+      tiplabels(pch = symbols, col = symbolcolors, lwd = branchwidth) 
     }
     
     # title                    
     if(!missing(treetitle))  {
-      par(font.main=2, cex=1.5)
-      title(main=treetitle, outer=FALSE);
+      par(font.main = 2, cex = 1.5)
+      title(main = treetitle, outer = FALSE);
     }
     
     # legend    
     if (legend != 'none' ) {
       if (label != 'symbol') {
-        legend(legendpos, horiz=(legend == 'horizontal'), legenditems, cex=0.7, bty='o', lwd=2, col=legendcolors ) 
+        legend(legendpos, horiz = (legend == 'horizontal'), legenditems,
+               cex = 0.5 * textsize, bty='o', lwd = 2, col = legendcolors ) 
       } else {
-        legend(legendpos, horiz=(legend == 'horizontal'), legenditems, cex=0.5, bty='o', lwd=1, col=legendcolors,  pch = mypch, lty=mylty ) 
+        legend(legendpos, horiz = (legend == 'horizontal'), legenditems,
+               cex = 0.5 * textsize, bty='o', lwd = 1, col = legendcolors,
+               pch = mypch, lty = mylty ) 
       }
     }
     
     # scale bar
-    #usr=par('usr') # vector of x and y coordinates for the plot space
-    #add.scale.bar(usr[2]-usr[2]*0.1 , usr[4]-usr[4]*0.02, cex=0.5)
-    #add.scale.bar(usr[2]-usr[2]*0.1 , usr[4]-usr[4]*0.02, 0.01, cex=0.5)
-    #add.scale.bar(usr[2]-usr[2]*0.1 , usr[4]-usr[4]*0.02)
-    add.scale.bar(cex=0.75)
-    
-    #dev.off()
+    add.scale.bar(cex = 0.5 * textsize)
 
 }
