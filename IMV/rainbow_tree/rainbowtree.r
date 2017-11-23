@@ -119,9 +119,9 @@ rainbowtree <- function (
   mytable = mytable %>%
     mutate(V3 = as.character(V3)) %>%
     arrange(V3) %>%
-    #mutate(V2 = 1:length(mytree$tip.label)) %>%
-    mutate(V4 = match(V3, unique(V3)))### make V4 with group numbers
-  print(mytable)
+    #mutate(V2 = 1:length(mytree$tip.label)) %>% ### V2 actually not needed
+    mutate(V4 = match(V3, unique(V3))) ### make V4 with group numbers
+  #print(mytable)
     
   # outgroup
     if(!missing(outgroup)) mytree = root(mytree, outgroup, resolve.root=TRUE) 
