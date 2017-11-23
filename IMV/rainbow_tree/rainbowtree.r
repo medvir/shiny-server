@@ -99,24 +99,28 @@ rainbowtree <- function (
 
   ### mytable    
   if (cat == "cat_fc") {
-    mytable = data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label), V3 = substr(mytree$tip.label, 1, first.chars))
+      mytable = data.frame(V1 = mytree$tip.label, V3 = substr(mytree$tip.label, 1, first.chars))
   } else if (cat == "cat_field") {
-    mytable = data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label)) %>%
-      group_by(V2) %>%
+    mytable = data.frame(V1 = mytree$tip.label) %>%
+      group_by(V1) %>%
       mutate(V3 = strsplit(as.character(V1), delim)[[1]][field]) %>%
       ungroup()
   } else if (cat == "cat_table") {
     req(cat_file)
     cat_table = read.csv(cat_file, header = FALSE, col.names = c("V1", "V3")) %>%
-      mutate(V1 = as.character(V1)) %>%
+      #mutate(V1 = strsplit(as.character(V1), " ")[[1]][1]) %>%
+      mutate(V1 = as.character(V1), " ") %>%
       mutate(V3 = as.character(V3))
-    mytable = data.frame(V1 = mytree$tip.label, V2 = 1:length(mytree$tip.label)) %>%
-      mutate(V1 = as.character(V1)) %>%
+     mytable = data.frame(V1 = mytree$tip.label) %>%
+      #mutate(V1 = strsplit(as.character(V1), " ")[[1]][1]) %>%
+      mutate(V1 = as.character(V1), " ") %>%
       left_join(., cat_table, by = "V1")
   }
   mytable = mytable %>%
     mutate(V3 = as.character(V3)) %>%
-    mutate(V4 = match(V3, unique(V3))) ### make V4 with group numbers
+    arrange(V3) %>%
+    #mutate(V2 = 1:length(mytree$tip.label)) %>%
+    mutate(V4 = match(V3, unique(V3)))### make V4 with group numbers
   print(mytable)
     
   # outgroup
@@ -182,7 +186,6 @@ rainbowtree <- function (
       uqSymbols = unique(mytable$V4);
       symLegenditems = vector()
       for (t in 1:length(uqSymbols)) {
-        #symLegenditems = c(symLegenditems, paste(mytable$V5[which(mytable$V4 == uqSymbols[t])[1]], uqSymbols[t], sep = ':::'))
         symLegenditems = c(symLegenditems, paste(mytable$V5[which(mytable$V4 == uqSymbols[t])[1]], uqSymbols[t], sep = ':::'))
       }
       

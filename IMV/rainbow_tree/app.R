@@ -100,8 +100,8 @@ ui <- fluidPage(
       sliderInput("textsize", "Text size", 1, 5, 1.5, .25, ticks = FALSE),
       hr(),
       radioButtons("legend", "Legend",
-                   choices = c("none", "vertical", "horizontal"),
-                   selected = "none",
+                   choices = c("vertical", "horizontal", "none"),
+                   selected = "vertical",
                    inline = TRUE),
       uiOutput("legendpos"),
       hr(),
@@ -115,8 +115,8 @@ ui <- fluidPage(
     
     ### Main Panel
     mainPanel(
-      plotOutput("rainbowTreePlot", height = 500),
-      downloadButton("plotDownload", label = "Download unrooted plot (png)"),
+      plotOutput("rainbowTreePlot", height = "auto"),
+      downloadButton("plotDownload", label = "Download unrooted plot (pdf)"),
       downloadButton("unrootedDownload", label = "Download unrooted file (nwy)")
       )
   )
@@ -124,7 +124,7 @@ ui <- fluidPage(
 
 
 #-#-#-#-#-#-# SERVER #-#-#-#-#-#-#
-server <- function(input, output) {
+server <- function(input, output, session) {
   
   msa_in <- reactive({
     req(input$msaFile)
@@ -191,7 +191,7 @@ server <- function(input, output) {
       selectInput("legendpos", "Legend position",
                 choices = c("bottomright", "bottom", "bottomleft", "left",
                           "topleft", "top", "topright", "right", "center"),
-                selected = "bottomleft")
+                selected = "right")
     }
   })
   
@@ -236,13 +236,17 @@ server <- function(input, output) {
   
   
   ### Output plot
-  output$rainbowTreePlot <- renderPlot(rainbowtreeplot())
-  
+  output$rainbowTreePlot <- renderPlot({
+    rainbowtreeplot()
+    }, height = function() {
+    session$clientData$output_rainbowTreePlot_width * 0.75
+  })
+
   ### Download
   output$plotDownload <- downloadHandler(
-    filename = "rainbowtree.png",
+    filename = "rainbowtree.pdf",
     content <- function(file) {
-      png(file)
+      pdf(file)
       rainbowtree(unrooted_tree(),
                   treetype = input$treetype,
                   treetitle = input$treetitle,
