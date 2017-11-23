@@ -9,7 +9,7 @@ shinyUI(fluidPage(
                 column(width = 3,
                        wellPanel(
                                uiOutput("manual_ct"),
-                               fileInput("ct_file", "csv Datei hochladen", accept = ".csv"),
+                               fileInput("ct_file", "Datei hochladen", accept = c(".xls", ".xlsx", ".csv", ".txt")),
                                uiOutput("header"),
                                uiOutput("sample_col"),
                                uiOutput("ct_col"),

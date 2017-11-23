@@ -23,6 +23,7 @@ cp_bl = 10
 library(shiny)
 library(tidyverse)
 library(cowplot)
+library(readxl)
 
 ms = list(Adeno = adeno_m, CMV = cmv_m, EBV = ebv_m )
 bs = list(Adeno = adeno_b, CMV = cmv_b, EBV = ebv_b)
@@ -38,7 +39,7 @@ shinyServer(function(input, output) {
         
         output$selection <- renderUI({
                 req(input$ct_file)
-                selectInput("selection", "Eine oder mehrere Proben auswaehlen", ct_file() %>% pull(input$sample_col) %>% unique(), multiple = TRUE, selectize = FALSE, size = 10)
+                selectInput("selection", "Eine oder mehrere Proben auswaehlen", ct_file() %>% pull(input$sample_col) %>% unique(), selected = ct_file() %>% pull(input$sample_col) %>% unique(), multiple = TRUE, selectize = FALSE, size = 10)
                 })
         
         output$header <- renderUI({
@@ -69,7 +70,13 @@ shinyServer(function(input, output) {
         
         ct_file <- reactive({
                 req(input$ct_file)
-                read_csv(input$ct_file$datapath, col_names = as.logical(input$header))
+                print(input$ct_file)
+                if (grepl(".csv", input$ct_file)) {
+                        read_csv(input$ct_file$datapath, col_names = as.logical(input$header))
+                }
+                else if (grepl(".xls", input$ct_file)) {
+                        read_excel(input$ct_file$datapath, col_names = as.logical(input$header))
+                }
                 })
         
         m <- reactive({
