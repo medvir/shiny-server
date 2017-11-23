@@ -89,11 +89,11 @@ ui <- fluidPage(
       uiOutput("label4ut"),
       hr(),
       radioButtons("cat", "Define categories according to",
-                   choiceNames = c("first character(s) in sequence name", "column in delimited sequence names", "an uploaded table"),
+                   choiceNames = c("first character(s) in sequence name", "field in delimited sequence names", "an uploaded table"),
                    choiceValues = c("cat_fc", "cat_field", "cat_table")),
       uiOutput("cat_fc"),
-      uiOutput("cat_field"),
       uiOutput("cat_delim"),
+      uiOutput("cat_field"),
       uiOutput("cat_table"),
       hr(),
       sliderInput("branchwidth", "Branch width", 1, 10, 2, 1, ticks = FALSE),
@@ -115,7 +115,7 @@ ui <- fluidPage(
     
     ### Main Panel
     mainPanel(
-      plotOutput("rainbowTreePlot", height = 1000),
+      plotOutput("rainbowTreePlot", height = 500),
       downloadButton("plotDownload", label = "Download unrooted plot (png)"),
       downloadButton("unrootedDownload", label = "Download unrooted file (nwy)")
       )
