@@ -76,7 +76,7 @@ rainbowtree <- function (
                 legendpos,                  # legend location: 'bottomright', 'bottom', ???bottomleft???, 
                                             #   ???left???, ???topleft???, ???top???, ???topright???, ???right??? or ???center'
                 branchwidth,                # a positive number specifying the width of the branches
-                outgroup,                  # a vector of numeric or character specifying the new outgroup
+                outgroup,                   # a vector of numeric or character specifying the new outgroup
                 color.int.edges,            # to propagate leaf colors upward into a tree until a mismatch is encountered 
                 show.node.lab,              # to displays the node labels
                 textsize,
@@ -124,7 +124,7 @@ rainbowtree <- function (
   #print(mytable)
     
   # outgroup
-    if(!missing(outgroup)) mytree = root(mytree, outgroup, resolve.root=TRUE) 
+    if (outgroup != "none") mytree = root(mytree, outgroup, resolve.root=TRUE) 
    
     mytree = ladderize(mytree) 
     # tip colors: 

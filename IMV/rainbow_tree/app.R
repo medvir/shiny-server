@@ -81,6 +81,8 @@ ui <- fluidPage(
                    choiceValues = c("p", "u", "fan"),
                    inline = TRUE),
       hr(),
+      uiOutput("select_outgroup"),
+      hr(),
       radioButtons("label", "Labels",
                    choices = c("seqname", "category", "symbol", "none"),
                    selected = "seqname",
@@ -107,8 +109,6 @@ ui <- fluidPage(
       h5("Options"),
       checkboxInput("show.node.lab", "Show node labels"),
       checkboxInput("color.int.edges", "Color internal edges"),
-      checkboxInput("outgroup", "Outgroup"),
-      uiOutput("select_outgroup"),
       width = 3
     ),
     
@@ -116,7 +116,7 @@ ui <- fluidPage(
     mainPanel(
       plotOutput("rainbowTreePlot", height = "auto"),
       downloadButton("plotDownload", label = "Download rainbow tree plot (pdf)"),
-      downloadButton("unrootedDownload", label = "Download tree file (nwy)")
+      downloadButton("fileDownload", label = "Download tree file (nwy)")
       )
   )
 )
@@ -144,8 +144,13 @@ server <- function(input, output, session) {
   
   ### plot for rooted and unrooted tree
   rainbowtreeplot <- reactive({
-     if (input$outgroup) {
-             rainbowtree(rooted_tree(),
+          req(input$msaFile)
+          if (input$select_outgroup == "none") {
+                  tmptree = unrooted_tree()
+          } else {
+                  tmptree = rooted_tree()
+          }
+          rainbowtree(tmptree,
                     treetype = input$treetype,
                     treetitle = input$treetitle,
                     label = input$label,
@@ -162,27 +167,7 @@ server <- function(input, output, session) {
                     field = input$field,
                     delim = input$delim,
                     cat_file = input$cat_file$datapath)
-    } else {
-            rainbowtree(unrooted_tree(),
-                    treetype = input$treetype,
-                    treetitle = input$treetitle,
-                    label = input$label,
-                    label4ut = input$label4ut,
-                    legend = input$legend,
-                    legendpos = input$legendpos,
-                    branchwidth = input$branchwidth,
-                    #outgroup = input$select_outgroup,
-                    color.int.edges = input$color.int.edges,
-                    show.node.lab = input$show.node.lab,
-                    textsize = input$textsize,
-                    cat = input$cat,
-                    first.chars = input$first.chars,
-                    field = input$field,
-                    delim = input$delim,
-                    cat_file = input$cat_file$datapath)
-    }
   })
-  
   
   ### dynamic UI outputs
   output$legendpos <- renderUI({
@@ -227,12 +212,10 @@ server <- function(input, output, session) {
   })
   
   output$select_outgroup <- renderUI({
-    if (input$outgroup) {
-      selectInput("select_outgroup", "Select outgroup",
-                  choices = unrooted_tree()$tip.label)
-    }
-  })
-  
+  selectInput("select_outgroup", "Select outgroup",
+              choices = c("none", unrooted_tree()$tip.label),
+              selected = "none")
+        })
   
   ### Output plot
   output$rainbowTreePlot <- renderPlot({
@@ -246,32 +229,45 @@ server <- function(input, output, session) {
 	filename = "rainbowtree.pdf",
     	content <- function(file) {
       	pdf(file)
-      	rainbowtree(unrooted_tree(),
-                  treetype = input$treetype,
-                  treetitle = input$treetitle,
-                  label = input$label,
-                  label4ut = input$label4ut,
-                  legend = input$legend,
-                  legendpos = input$legendpos,
-                  branchwidth = input$branchwidth,
-                  #outgroup = input$select_outgroup,
-                  color.int.edges = input$color.int.edges,
-                  show.node.lab = input$show.node.lab,
-                  textsize = input$textsize,
-                  cat = input$cat,
-                  first.chars = input$first.chars,
-                  field = input$field,
-                  delim = input$delim,
-                  cat_file = input$cat_file$datapath)
+            if (input$select_outgroup == "none") {
+                    tmptree = unrooted_tree()
+            } else {
+                    tmptree = rooted_tree()
+            }
+            rainbowtree(tmptree,
+                        treetype = input$treetype,
+                        treetitle = input$treetitle,
+                        label = input$label,
+                        label4ut = input$label4ut,
+                        legend = input$legend,
+                        legendpos = input$legendpos,
+                        branchwidth = input$branchwidth,
+                        outgroup = input$select_outgroup,
+                        color.int.edges = input$color.int.edges,
+                        show.node.lab = input$show.node.lab,
+                        textsize = input$textsize,
+                        cat = input$cat,
+                        first.chars = input$first.chars,
+                        field = input$field,
+                        delim = input$delim,
+                        cat_file = input$cat_file$datapath)
       	dev.off()
-   }
- )
+    	}
+  )
+   
+	
+	output$fileDownload <- downloadHandler(
+	        filename = "newick_tree.nwy",
+	        content <- function(file) {
+	                if (input$select_outgroup == "none") {
+	                        write.tree(unrooted_tree(), file)
+	                } else {
+	                        write.tree(rooted_tree(), file)
+	                }
+	        }
+	)
+	
   
-  
-  output$unrootedDownload <- downloadHandler(
-    filename = "newick_unrooted.nwy",
-    content <- function(file) {write.tree(unrooted_tree(), file)}
- )
 }
 
 ### Run the application
