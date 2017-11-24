@@ -4,7 +4,6 @@ library(ape)
 library(seqinr)
 source('rainbowtree.r')
 
-
 unrootedNJtree <- function(alignment, type) {
   # this function requires the ape and seqinR packages
   # define a function for making a tree
@@ -78,7 +77,7 @@ ui <- fluidPage(
       #textInput("treetitle", "Tree title"), ### not using tree title at the moment
       hr(),
       radioButtons("treetype", "Tree Type",
-                   choiceNames = c("phylogram", "unrooted", "fan"),
+                   choiceNames = c("phylogram", "star", "fan"),
                    choiceValues = c("p", "u", "fan"),
                    inline = TRUE),
       hr(),
@@ -116,8 +115,8 @@ ui <- fluidPage(
     ### Main Panel
     mainPanel(
       plotOutput("rainbowTreePlot", height = "auto"),
-      downloadButton("plotDownload", label = "Download unrooted plot (pdf)"),
-      downloadButton("unrootedDownload", label = "Download unrooted file (nwy)")
+      downloadButton("plotDownload", label = "Download rainbow tree plot (pdf)"),
+      downloadButton("unrootedDownload", label = "Download tree file (nwy)")
       )
   )
 )
@@ -244,10 +243,10 @@ server <- function(input, output, session) {
 
   ### Download
   output$plotDownload <- downloadHandler(
-    filename = "rainbowtree.pdf",
-    content <- function(file) {
-      pdf(file)
-      rainbowtree(unrooted_tree(),
+	filename = "rainbowtree.pdf",
+    	content <- function(file) {
+      	pdf(file)
+      	rainbowtree(unrooted_tree(),
                   treetype = input$treetype,
                   treetitle = input$treetitle,
                   label = input$label,
@@ -264,15 +263,15 @@ server <- function(input, output, session) {
                   field = input$field,
                   delim = input$delim,
                   cat_file = input$cat_file$datapath)
-      dev.off()
-    })
+      	dev.off()
+   }
+ )
   
   
   output$unrootedDownload <- downloadHandler(
     filename = "newick_unrooted.nwy",
-    content <- function(file) {
-      write.tree(unrooted_tree(), file)
-    })
+    content <- function(file) {write.tree(unrooted_tree(), file)}
+ )
 }
 
 ### Run the application
