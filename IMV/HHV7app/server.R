@@ -13,7 +13,9 @@ shinyServer(function(input, output, session) {
                         group_by(sample_name, sample_type) %>%
                         mutate(replicate = 1:n())
         
-        demo_data = read_csv("demo_data.csv")
+        demo_data = read_csv("demo_data.csv") %>%
+                rename(sample_name = lab_code) %>%
+                mutate(age = 2017 - year_of_birth)
         
         ### ui inputs
         samples_found = reactive({HHV7_results %>% arrange(sample_name) %>% pull(sample_name) %>% unique()})
@@ -91,7 +93,7 @@ shinyServer(function(input, output, session) {
                 })
         
         output$plot_symptoms = renderPlot({
-                p = ggplot(plot_data(), aes(x = symptoms, y = HHV7, color = symptoms, fill = symptoms)) +
+                p = ggplot(plot_data(), aes(x = respiratory_infection, y = HHV7, color = respiratory_infection, fill = respiratory_infection)) +
                         geom_boxplot(outlier.color = "white", alpha = 0.1) +
                         geom_jitter(height = 0, width = 0.2, size = 4) +
                         facet_grid(. ~ sample_type) +

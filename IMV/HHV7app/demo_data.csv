@@ -1,15 +1,1 @@
-sample_name,age,sex,vaccination_status,previous_influenza,symptoms
-17001,25,male,yes,no,fever
-17002,24,female,no,no,NA
-17003,22,male,yes,no,NA
-17004,20,female,no,no,NA
-17005,25,male,yes,no,NA
-17006,19,male,no,yes,coughing
-17007,23,female,no,no,coughing
-17008,22,female,yes,no,NA
-17009,21,female,no,no,NA
-17010,24,male,no,no,coughing
-17011,22,female,yes,no,NA
-17012,20,female,no,no,NA
-17013,22,male,yes,no,NA
-17014,22,male,yes,no,NA
+lab_code,year_of_birth,sex,ethnicity,influenza_status,last_influenza,influenza_confirmed,last_vaccination,ebv_infection,ebv_confirmed,comorbidities,list_comorbidities,medication,list_medication,respiratory_infection,list_respiratory_infection,urogential_infection,list_urogenital_infection,results17bht,1982,female,white,4,2016,no,2017,no,no,no,,no,,no,,no,,yes17cco,1995,male,white,1,unknown,unknown,unknown,no,unknown,no,,no,,no,,no,,yes17itg,1996,female,white,2,unkown,unkown,2017,no,unkown,no,,no,,no,,no,,yes17jns,1994,male,white,2,unkown,unkown,2017,no,unkown,no,,no,,no,,no,,yes17kzg,1989,female,white,2,unkown,unkown,2017,unkown,unkown,no,,yes,Nuvaring,yes,common cold signs,no,,yes17ler,1996,male,white,1,unkown,unkown,unkown,no,unkown,no,,no,,no,,no,,yes17mae,1960,female,white,2,unkown,unkown,unkown,no,no,no,,no,,no,,no,,yes17ogm,1995,female,white,1,unkown,unkown,unkown,no,no,yes,Rheuma with Immune suppression,yes,"Remicade, Methotrexat",no,,no,,yes17pgw,1989,female,white,4,2014,unkown,2017,no,no,no,,yes,Birth Control pill ,no,,no,,yes17psm,1996,female,white,1,unknown,unknown,unknown,unknown,unknown,no,,yes,Birth Control Pille,yes,sore throat,no,,yes17pxq,1994,female,white,2,unkown,no,2017,no,no,no,,yes,Terbinafin Mepha,no,,no,,yes17qyz,1996,female,white,4,2014,no,1996,no,unknown,no,,no,,yes,common cold signs,no,,yes17rju,1992,female,white,3,2013,no,unkown,no,no,no,,no,,no,,no,,yes17rmp,1996,male,white,3,2016,no,unkown,unkown,unkown,no,,no,,yes,cough,no,,yes17ryk,1994,female,white,4,unkown,unkown,2017,no,unkown,no,,yes,Focalin,no,,no,,yes17tmb,1989,female,white,2,unkown,unkown,unkown,no,,no,,no,,no,,no,,yes17tsp,1960,female,white,4,unkown,no,2016,yes,yes,no,,no,,no,,no,,yes17uqs,1995,female,white,2,unkown,unkown,2017,no,unkown,no,,no,,no,,no,,yes17uuv,1994,male,white,2,unkown,unkown,2017,no,no,no,,no,,no,,no,,yes17voi,1994,male,white,2,unkown,unkown,2017,no,unkown,no,,no,,no,,no,,yes17vom,1996,male,white,2,unkown,unkown,2017,unkown,unkown,no,,no,,no,,no,,yes17vqh,1996,female,white,4,2013,no,2017,unkown,no,no,,no,,no,,no,,yes17vxr,1965,female,white,4,2016,no,2017,no,unkown,no,,no,,no,,no,,yes17wic,1993,female,white,2,unknown,unknown,2017,no,no,no,,yes,"Elvanse 2x30mg, Trittico Retaral 150mg",no,,no,,yes17wxz,1995,female,white,2,unkown,no,2017,no,no,no,,no,,no,,no,,yes17xkg,1961,male,white,4,1996,yes,2017,yes,yes,no,,no,,no,,no,,yes17xux,1978,male,white,2,unkown,unkown,2017,no,no,no,,no,,no,,no,,yes17yvv,1977,male,white,2,unkown,unkown,2017,yes,yes,no,,yes,Lisinopril,no,,no,,yes17zgd,1994,female,white,1,unknown,unknown,unknown,no,unknown,no,,yes,Nuvaring,no,,no,,yes17zjq,1995,male,white,3,unknown,no,unknown,no,unknown,no,,no,,no,,no,,yes
