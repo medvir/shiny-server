@@ -8,14 +8,18 @@ shinyServer(function(input, output, session) {
         
         ### data import and mutation
         HHV7_results = read_csv("HHV7_results.csv") %>%
-                        mutate(course = substr(student, 1, 1)) %>%
-                        mutate(result = ifelse(HHV7 > 1, "positive", "negative")) %>%
-                        group_by(sample_name, sample_type) %>%
-                        mutate(replicate = 1:n())
+                mutate(course = substr(student, 1, 1)) %>%
+                group_by(sample_name, sample_type) %>%
+                mutate(replicate = 1:n()) %>%
+                mutate(mean_HHV7 = mean(HHV7)) %>%
+                mutate(result = ifelse(mean_HHV7 > 1, "positive", "negative"))
+
         
         demo_data = read_csv("demo_data.csv") %>%
                 rename(sample_name = lab_code) %>%
-                mutate(age = 2017 - year_of_birth)
+                mutate(age = 2017 - year_of_birth) %>%
+                mutate(symptoms = list_respiratory_infection) %>%
+                select(sample_name, age, sex, symptoms)
         
         ### ui inputs
         samples_found = reactive({HHV7_results %>% arrange(sample_name) %>% pull(sample_name) %>% unique()})
@@ -38,17 +42,20 @@ shinyServer(function(input, output, session) {
                 full_join(HHV7_results, demo_data, by = "sample_name") %>%
                         filter(sample_type %in% input$sample_type) %>%
                         filter(sample_name %in% input$sample_name) %>%
-                        filter(course %in% input$course) %>%
+                        # filter(course %in% input$course) %>%
                         filter(student %in% input$student)
                 })
         
         ### plot style
         plot_labels = list(ylab("HHV-7 copies/ml"))
-        plot_theme = theme(legend.position="none", axis.text=element_text(size = 15), axis.title=element_text(size = 20, face = "bold"))
+        plot_theme = theme(legend.position="none", axis.text=element_text(size = 15), axis.title=element_text(size = 20, face = "bold"), strip.text = element_text(size = 20))
         
         ### output plots
         output$plot_quant = renderPlot({
-                p = ggplot(plot_data(), aes(x = sample_type, y = HHV7, color = sample_type, fill = sample_type)) +
+                p = plot_data() %>%
+                        group_by(sample_name, sample_type) %>%
+                        sample_n(1) %>%
+                        ggplot(aes(x = sample_type, y = mean_HHV7, color = sample_type, fill = sample_type)) +
                         geom_boxplot(outlier.color = "white", alpha = 0.1) +
                         geom_jitter(height = 0, width = 0.2, size = 4) +
                         facet_grid(. ~ sample_type, scales = "free") +
@@ -59,7 +66,10 @@ shinyServer(function(input, output, session) {
                 })
         
         output$plot_qual = renderPlot({
-                p = ggplot(plot_data(), aes(x = result, color = sample_type, fill = sample_type)) +
+                p = plot_data() %>%
+                        group_by(sample_name, sample_type) %>%
+                        sample_n(1) %>%
+                        ggplot(aes(x = result, color = sample_type, fill = sample_type)) +
                         geom_bar(alpha = 0.5) +
                         facet_grid(. ~ sample_type, scales = "free") +
                         panel_border() + background_grid(major = "y", minor = "") +
@@ -70,7 +80,10 @@ shinyServer(function(input, output, session) {
                 })
         
         output$plot_sex = renderPlot({
-                p = ggplot(plot_data(), aes(x = sex, y = HHV7, color = sex, fill = sex)) +
+                p = plot_data() %>%
+                        group_by(sample_name, sample_type) %>%
+                        sample_n(1) %>%
+                        ggplot(aes(x = sex, y = mean_HHV7, color = sex, fill = sex)) +
                         geom_boxplot(outlier.color = "white", alpha = 0.1) +
                         geom_jitter(height = 0, width = 0.2, size = 4) +
                         facet_grid(. ~ sample_type) +
@@ -93,7 +106,10 @@ shinyServer(function(input, output, session) {
                 })
         
         output$plot_symptoms = renderPlot({
-                p = ggplot(plot_data(), aes(x = respiratory_infection, y = HHV7, color = respiratory_infection, fill = respiratory_infection)) +
+                p = plot_data() %>%
+                        group_by(sample_name, sample_type) %>%
+                        sample_n(1) %>%
+                        ggplot(aes(x = symptoms, y = mean_HHV7, color = symptoms, fill = symptoms)) +
                         geom_boxplot(outlier.color = "white", alpha = 0.1) +
                         geom_jitter(height = 0, width = 0.2, size = 4) +
                         facet_grid(. ~ sample_type) +
@@ -104,7 +120,10 @@ shinyServer(function(input, output, session) {
                 })
         
         output$plot_age = renderPlot({
-                p = ggplot(plot_data(), aes(x = age, y = HHV7)) +
+                p = plot_data() %>%
+                        group_by(sample_name, sample_type) %>%
+                        sample_n(1) %>%
+                        ggplot(aes(x = age, y = mean_HHV7)) +
                         geom_point(size = 4) +
                         geom_smooth(method = lm, se = FALSE, fullrange = TRUE) +
                         facet_grid(. ~ sample_type) +
@@ -118,7 +137,7 @@ shinyServer(function(input, output, session) {
         output$data_table = renderTable({
                 plot_data() %>%
                         arrange(sample_name, sample_type, student) %>%
-                        select(sample_name, sample_type, age, sex, symptoms, replicate, HHV7, result, student)
+                        select(sample_name, sample_type, age, sex, symptoms, replicate, HHV7, mean_HHV7, result, student)
                 })
         
 })
