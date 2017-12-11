@@ -7,12 +7,20 @@ library(cowplot)
 shinyServer(function(input, output, session) {
         
         ### data import and mutation
-        HHV7_results = read_csv("HHV7_results.csv") %>%
+        HHV7_results = read_csv("PCR_results.csv") %>%
+                rename(sample_name = sample) %>%
+                rename(HHV7 = mean_conc_dupl) %>%
+                mutate(HHV7 = HHV7 *1000) %>%
                 mutate(course = substr(student, 1, 1)) %>%
+                mutate(sample_type = substr(sample_name, 1, 2)) %>%
+                mutate(sample_name = substr(sample_name, 3, 7)) %>%
+                filter(valid) %>%
+                group_by(sample_name, sample_type, student) %>%
+                sample_n(1) %>%
                 group_by(sample_name, sample_type) %>%
                 mutate(replicate = 1:n()) %>%
                 mutate(mean_HHV7 = mean(HHV7)) %>%
-                mutate(result = ifelse(mean_HHV7 > 1, "positive", "negative"))
+                mutate(result = ifelse(mean_HHV7 > 0, "positive", "negative"))
 
         
         demo_data = read_csv("demo_data.csv") %>%
@@ -135,6 +143,7 @@ shinyServer(function(input, output, session) {
         
         ### output data table
         output$data_table = renderTable({
+                print(plot_data())
                 plot_data() %>%
                         arrange(sample_name, sample_type, student) %>%
                         select(sample_name, sample_type, age, sex, symptoms, replicate, HHV7, mean_HHV7, result, student)

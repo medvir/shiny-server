@@ -9,7 +9,7 @@ shinyUI(fluidPage(
         sidebarLayout(
                 
                 sidebarPanel(
-                        checkboxGroupInput("sample_type", "Sample Types", c("Blood", "Throat swab", "Urine"), selected = c("Blood", "Throat swab", "Urine")),
+                        checkboxGroupInput("sample_type", "Sample Types", choiceValues = c("BE", "AR", "UR"), choiceNames = c("Blood", "Throat swab", "Urine"), selected = c("BE", "AR", "UR")),
                         actionButton("select_all_sample_types", "Select all"),
                         hr(),
                         uiOutput("sample_selection"),
