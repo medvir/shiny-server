@@ -27,7 +27,8 @@ shinyServer(function(input, output, session) {
                 rename(sample_name = lab_code) %>%
                 mutate(age = 2017 - year_of_birth) %>%
                 mutate(symptoms = list_respiratory_infection) %>%
-                select(sample_name, age, sex, symptoms)
+                select(sample_name, age, sex, symptoms) %>%
+                mutate(symptoms = ifelse(symptoms == "common cold signs", "common cold", symptoms))
         
         ### ui inputs
         samples_found = reactive({HHV7_results %>% arrange(sample_name) %>% pull(sample_name) %>% unique()})
@@ -47,7 +48,7 @@ shinyServer(function(input, output, session) {
         
         ### data used for plots
         plot_data = reactive({
-                full_join(HHV7_results, demo_data, by = "sample_name") %>%
+                right_join(HHV7_results, demo_data, by = "sample_name") %>%
                         filter(sample_type %in% input$sample_type) %>%
                         filter(sample_name %in% input$sample_name) %>%
                         # filter(course %in% input$course) %>%

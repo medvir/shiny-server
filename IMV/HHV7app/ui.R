@@ -20,7 +20,7 @@ shinyUI(fluidPage(
                         # hr(),
                         uiOutput("student_selection"),
                         actionButton("select_all_students", "Select all"),
-                        width = 2),
+                        width = 1),
                 
                 mainPanel(
                         tabsetPanel(
