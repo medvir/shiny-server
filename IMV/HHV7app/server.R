@@ -65,7 +65,7 @@ shinyServer(function(input, output, session) {
                         group_by(sample_name, sample_type) %>%
                         sample_n(1) %>%
                         ggplot(aes(x = sample_type, y = mean_HHV7, color = sample_type, fill = sample_type)) +
-                        geom_boxplot(outlier.color = "white", alpha = 0.1) +
+                        geom_boxplot(outlier.color = "white", alpha = 0.5) +
                         geom_jitter(height = 0, width = 0.2, size = 4) +
                         facet_grid(. ~ sample_type, scales = "free") +
                         panel_border() + background_grid(major = "y", minor = "") +
@@ -93,7 +93,7 @@ shinyServer(function(input, output, session) {
                         group_by(sample_name, sample_type) %>%
                         sample_n(1) %>%
                         ggplot(aes(x = sex, y = mean_HHV7, color = sex, fill = sex)) +
-                        geom_boxplot(outlier.color = "white", alpha = 0.1) +
+                        geom_boxplot(outlier.color = "white", alpha = 0.5) +
                         geom_jitter(height = 0, width = 0.2, size = 4) +
                         facet_grid(. ~ sample_type) +
                         panel_border() + background_grid(major = "y", minor = "") +
@@ -106,7 +106,7 @@ shinyServer(function(input, output, session) {
                 p = ggplot(plot_data(), aes(x = as.character(replicate), y = HHV7, color = sample_name, group = sample_name)) +
                         geom_line(size = 1) +
                         geom_jitter(height = 0, width = 0, size = 4) +
-                        geom_text(aes(label = student),hjust = -0.25, vjust = -0.75) +
+                        geom_text(aes(label = paste0(student, "_", sample_name), hjust = -0.25, vjust = -0.75)) +
                         facet_grid(. ~ sample_type) +
                         panel_border() + background_grid(major = "y", minor = "") +
                         xlab("Replicates")
@@ -119,7 +119,7 @@ shinyServer(function(input, output, session) {
                         group_by(sample_name, sample_type) %>%
                         sample_n(1) %>%
                         ggplot(aes(x = symptoms, y = mean_HHV7, color = symptoms, fill = symptoms)) +
-                        geom_boxplot(outlier.color = "white", alpha = 0.1) +
+                        geom_boxplot(outlier.color = "white", alpha = 0.5) +
                         geom_jitter(height = 0, width = 0.2, size = 4) +
                         facet_grid(. ~ sample_type) +
                         panel_border() + background_grid(major = "y", minor = "") +
