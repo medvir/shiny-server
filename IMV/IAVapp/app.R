@@ -84,13 +84,13 @@ shinyApp(
                 
                 output$plot_quant = renderPlot({
                         req(input$results$datapath)
-                        p = ggplot(results(), aes(x = virus, y = IAV_titer, colour = influenza_status , fill = influenza_status)) +
-                                geom_boxplot(outlier.color = "white", alpha = 0.1) +
+                        p = ggplot(results(), aes(x = virus, y = log2(IAV_titer), colour = influenza_status , fill = influenza_status)) +
+                                geom_boxplot(outlier.color = "white", alpha = 0.3) +
                                 geom_jitter(height = 0, width = 0.2, size = 4) +
                                 facet_grid(. ~ influenza_status, scales = "free") +
                                 panel_border() + background_grid(major = "y", minor = "") +
                                 xlab("") +
-                                ylab("IAV titer")
+                                ylab("IAV titer (log2)")
                         p = p + plot_theme
                         return(p)
                 })
@@ -109,26 +109,26 @@ shinyApp(
                 
                 output$plot_sex = renderPlot({
                         req(input$results$datapath)
-                        p = ggplot(results(), aes(x = sex, y = IAV_titer, color = sex, fill = sex)) +
-                                geom_boxplot(outlier.color = "white", alpha = 0.1) +
+                        p = ggplot(results(), aes(x = sex, y = log2(IAV_titer), color = sex, fill = sex)) +
+                                geom_boxplot(outlier.color = "white", alpha = 0.3) +
                                 geom_jitter(height = 0, width = 0.2, size = 4) +
-                                facet_grid(virus ~ influenza_status) +
+                                #facet_grid(virus ~ influenza_status) +
                                 panel_border() + background_grid(major = "y", minor = "") +
                                 xlab("Sex") +
-                                ylab("IAV titer")
+                                ylab("IAV titer (log2)")
                         p = p + plot_theme
                         return(p)
                 })
                 
                 output$plot_age = renderPlot({
                         req(input$results$datapath)
-                        p = ggplot(results(), aes(x = age, y = IAV_titer)) +
+                        p = ggplot(results(), aes(x = age, y = log2(IAV_titer))) +
                                 geom_point(size = 4) +
                                 geom_smooth(method = lm, se = FALSE, fullrange = TRUE) +
-                                facet_grid(virus ~ influenza_status) +
+                                #facet_grid(virus ~ influenza_status) +
                                 panel_border() + background_grid(major = "y", minor = "") +
                                 xlab("Age") +
-                                ylab("IAV titer")
+                                ylab("IAV titer (log2)")
                         p = p + plot_theme
                         return(p)
                 })
