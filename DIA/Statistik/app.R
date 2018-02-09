@@ -3,7 +3,7 @@ library(tidyverse)
 library(readxl)
 library(cowplot)
 
-master = read_excel("Mastertabelle_Analysestatistik.xlsx")
+master = read.csv("master_table.csv")
 options(shiny.maxRequestSize = 100*1024^2)
 
 ### UI ###
@@ -13,7 +13,7 @@ ui <- fluidPage(
         sidebarLayout(
                 sidebarPanel(
                         fileInput("molis_file", "MOLIS Export", accept = c(".xls", ".xlsx", ".csv")),
-                        h3(),
+                        h1(),
                         downloadButton("downloadBereich", "Download Statistik Arbeitsbereich"),
                         h5(),
                         downloadButton("downloadVerfahren", "Download Statistik Verfahren"),
@@ -88,13 +88,14 @@ server <- function(input, output) {
         output$Summary = renderPlot({
                 req(input$molis_file)
                 Bereich() %>%
-                        ggplot(aes(x = Unterbereich, y = Subtotal ))+ #, fill = Weitere_Unterteilung)) +
+                        ggplot(aes(x = Unterbereich, y = Subtotal, fill = Arbeitsbereich)) +
                         geom_bar(stat="identity") +
-                        facet_grid(. ~ Arbeitsbereich, scales = "free") +
-                        theme(axis.text.x  = element_text(angle = 90, hjust = 1)) +
+                        facet_grid(Arbeitsbereich ~ ., scales = "free") +
                         panel_border() +
                         background_grid(major = "xy") +
-                        xlab("")
+                        xlab("") +
+                        theme(legend.position="none") +
+                        coord_flip()
         })
         
         output$downloadBereich <- downloadHandler(
