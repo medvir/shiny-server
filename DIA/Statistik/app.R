@@ -40,6 +40,8 @@ server <- function(input, output) {
                 else {
                         raw_data = read_excel(input$molis_file$datapath)
                 }
+                
+                #try(raw_data %>% select(Einsender, MC))
                 raw_data %>%
                         select(Einsender, MC) %>%
                         rename(Code = MC) %>%
@@ -112,7 +114,7 @@ server <- function(input, output) {
                 },
                 content = function(file) {
                         write.csv(Verfahren(), file, row.names = FALSE)
-                })
+        })
         
         output$downloadMaster <- downloadHandler(
                 filename = function() {
@@ -120,7 +122,7 @@ server <- function(input, output) {
                 },
                 content = function(file) {
                         write.csv(master, file, row.names = FALSE)
-                })
+        })
 }
 
 ### RUN APP ###
