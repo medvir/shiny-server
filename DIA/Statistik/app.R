@@ -2,18 +2,21 @@ library(shiny)
 library(tidyverse)
 library(readxl)
 library(cowplot)
+library(shinythemes)
 
 master = read.csv("master_table.csv")
 options(shiny.maxRequestSize = 100*1024^2)
 
 ### UI ###
 ui <- fluidPage(
-        
+        theme = shinytheme("yeti"),
         titlePanel("Diagnostik Statistik"),
         sidebarLayout(
                 sidebarPanel(
                         fileInput("molis_file", "MOLIS Export", accept = c(".xls", ".xlsx", ".csv")),
                         h1(),
+                        plotOutput(outputId = "Summary"),
+                        h5(),
                         downloadButton("downloadBereich", "Download Statistik Arbeitsbereich"),
                         h5(),
                         downloadButton("downloadVerfahren", "Download Statistik Verfahren"),
@@ -21,7 +24,6 @@ ui <- fluidPage(
                         downloadButton("downloadMaster", "Download Mastertabelle")
                 ),
                 mainPanel(
-                        plotOutput(outputId = "Summary"),
                         h3("Arbeitsbereiche"),
                         tableOutput(outputId = "Bereich"),
                         h3("Analysen"),
@@ -90,14 +92,20 @@ server <- function(input, output) {
         output$Summary = renderPlot({
                 req(input$molis_file)
                 Bereich() %>%
+                        mutate(Arbeitsbereich = case_when(
+                                Arbeitsbereich == "PCR-basierte Analytik" ~ "PCR",
+                                Arbeitsbereich == "Sequenzbasierte Analytik" ~ "Sequenz",
+                                TRUE ~ as.character(Arbeitsbereich)
+                                )) %>%
                         ggplot(aes(x = Unterbereich, y = Subtotal, fill = Arbeitsbereich)) +
                         geom_bar(stat="identity") +
                         facet_grid(Arbeitsbereich ~ ., scales = "free") +
                         panel_border() +
                         background_grid(major = "xy") +
-                        xlab("") +
+                        xlab("") + ylab("") +
                         theme(legend.position="none") +
-                        coord_flip()
+                        coord_flip() +
+                        theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
         })
         
         output$downloadBereich <- downloadHandler(
@@ -106,7 +114,7 @@ server <- function(input, output) {
                 },
                 content = function(file) {
                         write.csv(Bereich(), file, row.names = FALSE)
-        })
+                })
         
         output$downloadVerfahren <- downloadHandler(
                 filename = function() {
@@ -114,7 +122,7 @@ server <- function(input, output) {
                 },
                 content = function(file) {
                         write.csv(Verfahren(), file, row.names = FALSE)
-        })
+                })
         
         output$downloadMaster <- downloadHandler(
                 filename = function() {
@@ -122,7 +130,7 @@ server <- function(input, output) {
                 },
                 content = function(file) {
                         write.csv(master, file, row.names = FALSE)
-        })
+                })
 }
 
 ### RUN APP ###
