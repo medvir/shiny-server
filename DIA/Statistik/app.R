@@ -34,16 +34,16 @@ ui <- fluidPage(
 server <- function(input, output) {
         data = reactive({
                 req(input$molis_file)
-                if (grepl(".csv", input$molis_file)) {
+                if (endsWith(input$molis_file$datapath, ".csv")) {
                         raw_data = read_csv(input$molis_file$datapath)
                 }
-                else if (grepl(".xls", input$molis_file)) {
+                else {
                         raw_data = read_excel(input$molis_file$datapath)
                 }
                 raw_data %>%
                         select(Einsender, MC) %>%
                         rename(Code = MC) %>%
-                        full_join(. , master) %>%
+                        left_join(. , master) %>%
                         filter(!(is.na(Analyse))) %>%
                         
                         ### assign new code to anonymous HIV tests
