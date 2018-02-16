@@ -14,9 +14,9 @@ ui <- fluidPage(
                         fileInput("results_files", "Resultate", multiple = TRUE, accept = c(".xls", ".xlsx", ".csv")),
                         fileInput("massnahmen_file", "Massnahmen", accept = c(".xls", ".xlsx", ".csv")),
                         uiOutput(outputId = "Anbieter"),
-                        uiOutput(outputId = "Technologie"),
-                        uiOutput(outputId = "Erreger"),
                         uiOutput(outputId = "Panel"),
+                        uiOutput(outputId = "Erreger"),
+                        uiOutput(outputId = "Technologie"),
                         h3(),
                         downloadButton("downloadTabelle", "Download Tabelle")
                 ),
@@ -81,10 +81,10 @@ server <- function(input, output) {
                 req(input$results_files)
                 dat = lapply(input$results_files$datapath, read_excel)
                 do.call("rbind", dat) %>%
-                        #mutate(Datum = as.Date(Datum, format = "%Y-%m-%d")) %>% #"%d.%m.%y"
-                        group_by(Panel) %>%
                         arrange(Datum) %>%
-                        mutate(Challenge = challenge(Datum))
+                        group_by(Panel) %>%
+                        mutate(Challenge = challenge(Datum)) %>%
+                        mutate(Datum = as.character(Datum))
         })
         
         ### data join and filter
@@ -112,32 +112,45 @@ server <- function(input, output) {
         ### ui outputs
         output$Anbieter = renderUI({
                 req(input$master_file)
-                choices = master() %>% pull(QK_Anbieter) %>% unique()
-                checkboxGroupInput("anbieter", "Anbieter", choices, selected = choices)
+                choices = master() %>%
+                        pull(QK_Anbieter) %>%
+                        unique()
+                checkboxGroupInput("anbieter", "Anbieter", choices, selected = choices[1])
         })
         
         output$Technologie = renderUI({
                 req(input$master_file)
-                choices = master() %>% pull(Technologiebereich) %>% unique()
+                choices = master() %>%
+                        pull(Technologiebereich) %>%
+                        unique()
                 checkboxGroupInput("technologie", "Technologie ", choices, selected = choices)
         })
         
         output$Erreger = renderUI({
                 req(input$master_file)
-                choices = master() %>% arrange(Erreger) %>% pull(Erreger) %>% unique()
+                choices = master() %>%
+                        arrange(Erreger) %>%
+                        filter(QK_Anbieter %in% input$anbieter) %>%
+                        filter(Panel %in% input$panel) %>%
+                        pull(Erreger) %>%
+                        unique()
                 selectInput("erreger", "Erreger ", choices, selected = choices, multiple = TRUE, selectize = FALSE)
         })
         
         output$Panel = renderUI({
                 req(input$master_file)
-                choices = master() %>% arrange(Panel) %>% pull(Panel) %>% unique()
+                choices = master() %>%
+                        arrange(Panel) %>%
+                        filter(QK_Anbieter %in% input$anbieter) %>%
+                        pull(Panel) %>%
+                        unique()
                 selectInput("panel", "Panel ", choices, selected = choices, multiple = TRUE, selectize = FALSE)
         })
         
         ### data outputs
         output$Tabelle = renderTable({
                 req(input$master_file)
-                data()
+                data() 
         })
         
         output$Overview = renderTable({
