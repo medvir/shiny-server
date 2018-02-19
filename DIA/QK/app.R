@@ -16,6 +16,7 @@ ui <- fluidPage(
                         uiOutput(outputId = "Anbieter"),
                         uiOutput(outputId = "Panel"),
                         uiOutput(outputId = "Erreger"),
+                        dateRangeInput("daterange", "Datum", start = "2018-01-01", separator = " bis "),
                         uiOutput(outputId = "Technologie"),
                         h3(),
                         downloadButton("downloadTabelle", "Download Tabelle")
@@ -106,7 +107,8 @@ server <- function(input, output) {
                         filter(QK_Anbieter %in% input$anbieter) %>%
                         filter(Technologiebereich %in% input$technologie) %>%
                         filter(Erreger %in% input$erreger) %>%
-                        filter(Panel %in% input$panel)
+                        filter(Panel %in% input$panel) #%>%
+                        #filter(Datum %in% input$daterange)
         })
         
         ### ui outputs
@@ -115,7 +117,7 @@ server <- function(input, output) {
                 choices = master() %>%
                         pull(QK_Anbieter) %>%
                         unique()
-                checkboxGroupInput("anbieter", "Anbieter", choices, selected = choices[1])
+                checkboxGroupInput("anbieter", "Anbieter", choices, selected = choices)
         })
         
         output$Technologie = renderUI({
