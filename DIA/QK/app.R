@@ -9,15 +9,15 @@ ui <- fluidPage(
         theme = shinytheme("yeti"),
         titlePanel("Diagnostik Statistik"),
         sidebarLayout(
-                sidebarPanel(
+                sidebarPanel(width = 3,
                         fileInput("master_file", "Mastertabelle", accept = c(".xls", ".xlsx", ".csv")),
                         fileInput("results_files", "Resultate", multiple = TRUE, accept = c(".xls", ".xlsx", ".csv")),
                         fileInput("massnahmen_file", "Massnahmen", accept = c(".xls", ".xlsx", ".csv")),
                         uiOutput(outputId = "Anbieter"),
                         uiOutput(outputId = "Panel"),
                         uiOutput(outputId = "Erreger"),
-                        dateRangeInput("daterange", "Datum", start = "2018-01-01", separator = " bis "),
                         uiOutput(outputId = "Technologie"),
+                        uiOutput(outputId = "Datum"),
                         h3(),
                         downloadButton("downloadTabelle", "Download Tabelle")
                 ),
@@ -30,7 +30,11 @@ ui <- fluidPage(
                                 column(width = 4,
                                         h3("Resultate"),
                                         tableOutput(outputId = "Resultate")
-                                       )
+                                       ),
+                                column(width = 4,
+                                       h3("Massnahmen"),
+                                       tableOutput(outputId = "Massnahmen")
+                                )
                                 ),
                         fluidRow(
                                 column(width = 12,
@@ -45,7 +49,7 @@ ui <- fluidPage(
 )
 
 ### Functions
-challenge = function(v) { ### input has to be sorted!
+define_series = function(v) { ### input has to be sorted!
         v = duplicated(v)
         c = c()
         ci = 0
@@ -63,12 +67,10 @@ server <- function(input, output) {
         master = reactive({
                 req(input$master_file)
                 dat = read_excel(input$master_file$datapath)
-                
-                ### replicate panels with Frequenz > 1
-                data.frame(dat[rep(seq_len(dim(dat)[1]), dat$Frequenz), , drop = FALSE], row.names=NULL) %>%
+                data.frame(dat[rep(seq_len(dim(dat)[1]), dat$Frequenz), , drop = FALSE], row.names=NULL) %>% ### replicate panels with Frequenz > 1
                         arrange(Erreger) %>%
                         group_by(Erreger, Technologiebereich, QK_Anbieter, Panel) %>%
-                        mutate(Challenge = row_number()) %>%
+                        mutate(Serie = row_number()) %>%
                         ungroup() %>%
                         select(-Frequenz)
         })
@@ -82,9 +84,10 @@ server <- function(input, output) {
                 req(input$results_files)
                 dat = lapply(input$results_files$datapath, read_excel)
                 do.call("rbind", dat) %>%
-                        arrange(Datum) %>%
+                        filter((Datum >= input$daterange[1] & Datum <= input$daterange[2]) | is.na(Datum)) %>% ### select for in daterange or NA
                         group_by(Panel) %>%
-                        mutate(Challenge = challenge(Datum)) %>%
+                        arrange(Datum) %>%
+                        mutate(Serie = define_series(Datum)) %>% ### define series number
                         mutate(Datum = as.character(Datum))
         })
         
@@ -94,21 +97,20 @@ server <- function(input, output) {
                         master()
                 }
                 else if (is.null(input$massnahmen_file)) {
-                        full_join(master(), results(), by = c("Panel", "Challenge"))
+                        full_join(master(), results(), by = c("Panel", "Serie"))
                 } else {
-                        full_join(master(), results(), by = c("Panel", "Challenge")) %>%
+                        full_join(master(), results(), by = c("Panel", "Serie")) %>%
                                 full_join(. , massnahmen(), by = c("Distribution Nr.", "Specimen ID"))
                 }
         })
         
         data = reactive({
                 raw_data() %>%
-                        mutate(Challenge = as.integer(Challenge)) %>%
+                        mutate(Serie = as.integer(Serie)) %>%
                         filter(QK_Anbieter %in% input$anbieter) %>%
                         filter(Technologiebereich %in% input$technologie) %>%
                         filter(Erreger %in% input$erreger) %>%
-                        filter(Panel %in% input$panel) #%>%
-                        #filter(Datum %in% input$daterange)
+                        filter(Panel %in% input$panel)
         })
         
         ### ui outputs
@@ -119,7 +121,7 @@ server <- function(input, output) {
                         unique()
                 checkboxGroupInput("anbieter", "Anbieter", choices, selected = choices)
         })
-        
+
         output$Technologie = renderUI({
                 req(input$master_file)
                 choices = master() %>%
@@ -149,6 +151,12 @@ server <- function(input, output) {
                 selectInput("panel", "Panel ", choices, selected = choices, multiple = TRUE, selectize = FALSE)
         })
         
+        output$Datum = renderUI({
+                req(input$master_file)
+                req(input$results_files)
+                dateRangeInput("daterange", "Datum", start = "2018-01-01", separator = " bis ") ### start = "2018-01-01" format(Sys.Date(),"01-01-%Y")
+        })
+        
         ### data outputs
         output$Tabelle = renderTable({
                 req(input$master_file)
@@ -160,7 +168,7 @@ server <- function(input, output) {
                 req(input$results_files)
                 data() %>%
                         mutate(Panels = !(is.na(Resultat))) %>%
-                        group_by(Panel, Challenge) %>%
+                        group_by(Panel, Serie) %>%
                         sample_n(1) %>%
                         group_by(Panels) %>%
                         mutate(Anzahl = n()) %>%
@@ -183,13 +191,23 @@ server <- function(input, output) {
                         select(Resultate, Anzahl)
         })
         
+        output$Massnahmen = renderTable({
+                req(input$massnahmen_file)
+                data() %>%
+                        filter(!(is.na(Bewertung))) %>%
+                        group_by(Bewertung) %>%
+                        mutate(Anzahl = n()) %>%
+                        sample_n(1) %>%
+                        select(Bewertung, Anzahl)
+        })
+        
         output$Missing = renderTable({
                 req(input$master_file)
                 req(input$results_files)
                 data() %>%
                         mutate(result = !(is.na(Resultat))) %>%
                         filter(result == FALSE) %>%
-                        select(QK_Anbieter, Panel, Challenge)
+                        select(QK_Anbieter, Panel, Serie)
         })
         
         # output$Summary = renderPlot({
