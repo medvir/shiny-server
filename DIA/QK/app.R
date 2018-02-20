@@ -154,7 +154,7 @@ server <- function(input, output) {
         output$Datum = renderUI({
                 req(input$master_file)
                 req(input$results_files)
-                dateRangeInput("daterange", "Datum", start = "2018-01-01", separator = " bis ") ### start = "2018-01-01" format(Sys.Date(),"01-01-%Y")
+                dateRangeInput("daterange", "Datum", start = "2017-01-01", separator = " bis ") ### start = "2018-01-01" format(Sys.Date(),"01-01-%Y")
         })
         
         ### data outputs
