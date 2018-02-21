@@ -4,18 +4,31 @@ library(readxl)
 library(cowplot)
 library(shinythemes)
 
+define_series = function(v) {  ### input has to be sorted!
+        v = duplicated(v)
+        c = c()
+        ci = 0
+        for (i in 1:length(v)) {
+                if (!(v[i])) {ci = ci + 1}
+                c = append(c, ci)
+        }
+        return(c)
+}
+
+
 ### UI ###
 ui <- fluidPage(
         theme = shinytheme("yeti"),
         titlePanel("Diagnostik Statistik"),
         sidebarLayout(
                 sidebarPanel(width = 3,
-                        fileInput("master_file", "Mastertabelle", accept = c(".xls", ".xlsx", ".csv")),
-                        fileInput("results_files", "Resultate", multiple = TRUE, accept = c(".xls", ".xlsx", ".csv")),
-                        fileInput("massnahmen_file", "Massnahmen", accept = c(".xls", ".xlsx", ".csv")),
+                        fileInput("master_file", "Mastertabelle", accept = c(".xls", ".xlsx")),
+                        fileInput("results_files", "Resultate", multiple = TRUE, accept = c(".xls", ".xlsx")),
+                        fileInput("massnahmen_file", "Massnahmen", accept = c(".xls", ".xlsx")),
                         uiOutput(outputId = "Anbieter"),
                         uiOutput(outputId = "Panel"),
                         uiOutput(outputId = "Erreger"),
+                        uiOutput(outputId = "Parameter"),
                         uiOutput(outputId = "Technologie"),
                         uiOutput(outputId = "Datum"),
                         h3(),
@@ -48,26 +61,18 @@ ui <- fluidPage(
         )
 )
 
-### Functions
-define_series = function(v) { ### input has to be sorted!
-        v = duplicated(v)
-        c = c()
-        ci = 0
-        for (i in 1:length(v)) {
-                if (!(v[i])) {ci = ci + 1}
-                c = append(c, ci)
-        }
-        return(c)
-}
 
 ### SERVER ###
 server <- function(input, output) {
         
-        ### read files
+        ##############
+        # read files #
+        ##############
+        
         master = reactive({
                 req(input$master_file)
                 dat = read_excel(input$master_file$datapath)
-                data.frame(dat[rep(seq_len(dim(dat)[1]), dat$Frequenz), , drop = FALSE], row.names=NULL) %>% ### replicate panels with Frequenz > 1
+                data.frame(dat[rep(seq_len(dim(dat)[1]), dat$Frequenz), , drop = FALSE], row.names=NULL) %>%  ### replicate panels with Frequenz > 1
                         arrange(Erreger) %>%
                         group_by(Erreger, Technologiebereich, QK_Anbieter, Panel) %>%
                         mutate(Serie = row_number()) %>%
@@ -82,16 +87,19 @@ server <- function(input, output) {
         
         results = reactive({
                 req(input$results_files)
-                dat = lapply(input$results_files$datapath, read_excel)
-                do.call("rbind", dat) %>%
-                        filter((Datum >= input$daterange[1] & Datum <= input$daterange[2]) | is.na(Datum)) %>% ### select for in daterange or NA
+                do.call("rbind", lapply(input$results_files$datapath, read_excel)) %>%
+                        filter((Datum >= input$daterange[1] & Datum <= input$daterange[2]) | is.na(Datum)) %>%  ### select for daterange or NA
                         group_by(Panel) %>%
-                        arrange(Datum) %>%
-                        mutate(Serie = define_series(Datum)) %>% ### define series number
-                        mutate(Datum = as.character(Datum))
+                        arrange(Datum) %>%  ### sort by Datum
+                        mutate(Serie = define_series(Datum)) %>%  ### define series number
+                        mutate(Datum = as.character(Datum)) 
         })
         
-        ### data join and filter
+        
+        ########################
+        # data join and filter #
+        ########################
+        
         raw_data = reactive({
                 if (is.null(input$results_files)) {
                         master()
@@ -105,15 +113,27 @@ server <- function(input, output) {
         })
         
         data = reactive({
-                raw_data() %>%
+                data_temp = raw_data() %>%
                         mutate(Serie = as.integer(Serie)) %>%
                         filter(QK_Anbieter %in% input$anbieter) %>%
                         filter(Technologiebereich %in% input$technologie) %>%
                         filter(Erreger %in% input$erreger) %>%
                         filter(Panel %in% input$panel)
+                
+                if (!(is.null(input$results_files))) {
+                        data_temp = data_temp %>%
+                                mutate(char_param = ifelse(is.na(Parameter), "NA", Parameter)) %>%
+                                filter(char_param %in% input$parameter) %>%
+                                select(-char_param)
+                }
+                return(data_temp)
         })
         
-        ### ui outputs
+        
+        ##############
+        # ui outputs #
+        ##############
+
         output$Anbieter = renderUI({
                 req(input$master_file)
                 choices = master() %>%
@@ -127,7 +147,7 @@ server <- function(input, output) {
                 choices = master() %>%
                         pull(Technologiebereich) %>%
                         unique()
-                checkboxGroupInput("technologie", "Technologie ", choices, selected = choices)
+                checkboxGroupInput("technologie", "Technologie", choices, selected = choices)
         })
         
         output$Erreger = renderUI({
@@ -138,7 +158,7 @@ server <- function(input, output) {
                         filter(Panel %in% input$panel) %>%
                         pull(Erreger) %>%
                         unique()
-                selectInput("erreger", "Erreger ", choices, selected = choices, multiple = TRUE, selectize = FALSE)
+                selectInput("erreger", "Erreger", choices, selected = choices, multiple = TRUE, selectize = FALSE)
         })
         
         output$Panel = renderUI({
@@ -148,16 +168,28 @@ server <- function(input, output) {
                         filter(QK_Anbieter %in% input$anbieter) %>%
                         pull(Panel) %>%
                         unique()
-                selectInput("panel", "Panel ", choices, selected = choices, multiple = TRUE, selectize = FALSE)
+                selectInput("panel", "Panel", choices, selected = choices, multiple = TRUE, selectize = FALSE)
+        })
+        
+        output$Parameter = renderUI({
+                req(input$results_files)
+                choices = raw_data() %>%
+                        arrange(Parameter) %>%
+                        pull(Parameter) %>%
+                        unique()
+                selectInput("parameter", "Parameter", choices, selected = choices, multiple = TRUE, selectize = FALSE)
         })
         
         output$Datum = renderUI({
-                req(input$master_file)
                 req(input$results_files)
-                dateRangeInput("daterange", "Datum", start = "2017-01-01", separator = " bis ") ### start = "2018-01-01" format(Sys.Date(),"01-01-%Y")
+                dateRangeInput("daterange", "Datum", start = "2017-01-01", separator = " bis ")  ### start = format(Sys.Date(),"01-01-%Y")
         })
         
-        ### data outputs
+        
+        ################
+        # data outputs #
+        ################
+        
         output$Tabelle = renderTable({
                 req(input$master_file)
                 data() 
@@ -210,22 +242,11 @@ server <- function(input, output) {
                         select(QK_Anbieter, Panel, Serie)
         })
         
-        # output$Summary = renderPlot({
-        #         req(input$master_file)
-        #         req(input$results_files)
-        #         data() %>%
-        #                 ggplot(aes(x = Technologiebereich, y = n_specimen, fill = Technologiebereich)) +
-        #                 geom_bar(stat="identity") +
-        #                 facet_grid(QK_Anbieter ~ ., scales = "free") +
-        #                 panel_border() +
-        #                 background_grid(major = "xy") +
-        #                 xlab("") + ylab("") +
-        #                 theme(legend.position="none") +
-        #                 coord_flip() +
-        #                 theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
-        # })
         
-        ### downlowds 
+        #############
+        # downlowds #
+        #############
+        
         output$downloadTabelle <- downloadHandler(
                 filename = function() {
                         "Tabelle_Statistik.csv"
