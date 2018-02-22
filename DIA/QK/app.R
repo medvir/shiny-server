@@ -29,10 +29,9 @@ ui <- fluidPage(
                         uiOutput(outputId = "Panel"),
                         uiOutput(outputId = "Erreger"),
                         uiOutput(outputId = "Parameter"),
+                        uiOutput(outputId = "Type"),
                         uiOutput(outputId = "Technologie"),
-                        uiOutput(outputId = "Datum"),
-                        h3(),
-                        downloadButton("downloadTabelle", "Download Tabelle")
+                        uiOutput(outputId = "Datum")
                 ),
                 mainPanel(
                         fluidRow(
@@ -51,10 +50,12 @@ ui <- fluidPage(
                                 ),
                         fluidRow(
                                 column(width = 12,
-                                        h3("Tabelle"),
-                                        tableOutput(outputId = "Tabelle"),
-                                        h3("Ausstehende Panels"),
-                                        tableOutput(outputId = "Missing")
+                                       h3("Tabelle"),
+                                       tableOutput(outputId = "Tabelle"),
+                                       textOutput(outputId = "filters"),
+                                       downloadButton("downloadTabelle", "Download Tabelle"),
+                                       h3("Ausstehende Panels"),
+                                       tableOutput(outputId = "Missing")
                                        )
                                 )
                 )
@@ -88,11 +89,12 @@ server <- function(input, output) {
         results = reactive({
                 req(input$results_files)
                 do.call("rbind", lapply(input$results_files$datapath, read_excel)) %>%
+                        filter(!(is.na(Parameter))) %>%
                         filter((Datum >= input$daterange[1] & Datum <= input$daterange[2]) | is.na(Datum)) %>%  ### select for daterange or NA
                         group_by(Panel) %>%
                         arrange(Datum) %>%  ### sort by Datum
                         mutate(Serie = define_series(Datum)) %>%  ### define series number
-                        mutate(Datum = as.character(Datum)) 
+                        mutate(Datum = as.character(Datum))
         })
         
         
@@ -124,7 +126,10 @@ server <- function(input, output) {
                         data_temp = data_temp %>%
                                 mutate(char_param = ifelse(is.na(Parameter), "NA", Parameter)) %>%
                                 filter(char_param %in% input$parameter) %>%
-                                select(-char_param)
+                                select(-char_param) %>%
+                                mutate(char_type = ifelse(is.na(Type), "NA", Type)) #%>%
+                                #filter(char_type %in% input$type) #%>%
+                                #select(-char_type)
                 }
                 return(data_temp)
         })
@@ -139,7 +144,7 @@ server <- function(input, output) {
                 choices = master() %>%
                         pull(QK_Anbieter) %>%
                         unique()
-                checkboxGroupInput("anbieter", "Anbieter", choices, selected = choices)
+                selectInput("anbieter", "Anbieter", choices, selected = choices, multiple = TRUE, selectize = FALSE)
         })
 
         output$Technologie = renderUI({
@@ -171,13 +176,27 @@ server <- function(input, output) {
                 selectInput("panel", "Panel", choices, selected = choices, multiple = TRUE, selectize = FALSE)
         })
         
-        output$Parameter = renderUI({
-                req(input$results_files)
-                choices = raw_data() %>%
+        parameter_choices = reactive({
+                raw_data() %>%
+                        filter(Erreger %in% input$erreger) %>%
+                        filter(Panel %in% input$panel) %>%
                         arrange(Parameter) %>%
                         pull(Parameter) %>%
                         unique()
-                selectInput("parameter", "Parameter", choices, selected = choices, multiple = TRUE, selectize = FALSE)
+        })
+        
+        output$Parameter = renderUI({
+                req(input$results_files)
+                selectInput("parameter", "Parameter", parameter_choices(), selected = parameter_choices(), multiple = TRUE, selectize = FALSE)
+        })
+        
+        output$Type = renderUI({
+                req(input$results_files)
+                choices = raw_data() %>%
+                        arrange(Type) %>%
+                        pull(Type) %>%
+                        unique()
+                checkboxGroupInput("type", "Type", choices, selected = choices)
         })
         
         output$Datum = renderUI({
@@ -211,16 +230,19 @@ server <- function(input, output) {
         output$Resultate = renderTable({
                 req(input$master_file)
                 req(input$results_files)
+                # data() %>%
+                #         mutate(Resultate = case_when(
+                #                 Score == 2 ~ "richtig",
+                #                 is.na(Score) ~ "NA",
+                #                 TRUE ~ "falsch"
+                #                 )) %>%
+                #         group_by(Resultate) %>%
+                #         mutate(Anzahl = n()) %>%
+                #         sample_n(1) %>%
+                #         select(Resultate, Anzahl)
                 data() %>%
-                        mutate(Resultate = case_when(
-                                Score == 2 ~ "richtig",
-                                is.na(Score) ~ "NA",
-                                TRUE ~ "falsch"
-                                )) %>%
-                        group_by(Resultate) %>%
-                        mutate(Anzahl = n()) %>%
-                        sample_n(1) %>%
-                        select(Resultate, Anzahl)
+                        group_by(Type, Score) %>%
+                        summarise(Anzahl = n())
         })
         
         output$Massnahmen = renderTable({
@@ -237,11 +259,13 @@ server <- function(input, output) {
                 req(input$master_file)
                 req(input$results_files)
                 data() %>%
-                        mutate(result = !(is.na(Resultat))) %>%
-                        filter(result == FALSE) %>%
+                        filter(is.na(Resultat)) %>%
                         select(QK_Anbieter, Panel, Serie)
         })
         
+        output$filters = renderText({
+                #print(paste(input$anbieter, input$erreger, input$panel, input$type, input$technologie, input$daterange))
+        })
         
         #############
         # downlowds #
