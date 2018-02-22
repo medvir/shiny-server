@@ -50,10 +50,11 @@ ui <- fluidPage(
                                 ),
                         fluidRow(
                                 column(width = 12,
+                                       hr(),
                                        h3("Tabelle"),
                                        tableOutput(outputId = "Tabelle"),
-                                       textOutput(outputId = "filters"),
                                        downloadButton("downloadTabelle", "Download Tabelle"),
+                                       hr(),
                                        h3("Ausstehende Panels"),
                                        tableOutput(outputId = "Missing")
                                        )
@@ -110,11 +111,15 @@ server <- function(input, output) {
                         full_join(master(), results(), by = c("Panel", "Serie"))
                 } else {
                         full_join(master(), results(), by = c("Panel", "Serie")) %>%
-                                full_join(. , massnahmen(), by = c("Distribution Nr.", "Specimen ID"))
+                                full_join(. , massnahmen(), by = c("Distribution", "Specimen"))
                 }
         })
         
         data = reactive({
+                
+                print(input$type)
+                print(input$parameter)
+                
                 data_temp = raw_data() %>%
                         mutate(Serie = as.integer(Serie)) %>%
                         filter(QK_Anbieter %in% input$anbieter) %>%
@@ -127,9 +132,10 @@ server <- function(input, output) {
                                 mutate(char_param = ifelse(is.na(Parameter), "NA", Parameter)) %>%
                                 filter(char_param %in% input$parameter) %>%
                                 select(-char_param) %>%
-                                mutate(char_type = ifelse(is.na(Type), "NA", Type)) #%>%
-                                #filter(char_type %in% input$type) #%>%
-                                #select(-char_type)
+                                
+                                mutate(char_type = ifelse(is.na(Type), "", Type)) %>%
+                                filter(char_type %in% input$type) %>%
+                                select(-char_type)
                 }
                 return(data_temp)
         })
@@ -263,9 +269,6 @@ server <- function(input, output) {
                         select(QK_Anbieter, Panel, Serie)
         })
         
-        output$filters = renderText({
-                #print(paste(input$anbieter, input$erreger, input$panel, input$type, input$technologie, input$daterange))
-        })
         
         #############
         # downlowds #
