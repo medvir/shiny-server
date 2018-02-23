@@ -1,0 +1,240 @@
+species	reads	stitle	ssciname	covered_region	seq_len	sample	run
+Dengue virus	4	Dengue virus 1 isolate DENV1 BR/SJRP/484/2012, complete genome	Dengue virus 1	55	10917	NTC-RNA_S10	180209_M01274_0205_000000000-BHDFY
+Human mastadenovirus C	2	Human adenovirus 6 isolate Tonsil 99, complete genome	Human adenovirus 6	218	35759	NTC-RNA_S10	180209_M01274_0205_000000000-BHDFY
+Human mastadenovirus C	1	Human adenovirus type 5 strain NHRC Ad5FS 7151, complete genome	Human adenovirus 5	151	35931	NTC-RNA_S10	180209_M01274_0205_000000000-BHDFY
+Pseudomonas phage phiIBB-PF7A	1	Pseudomonas phage phiIBB-PF7A, complete genome	Pseudomonas phage phiIBB-PF7A	150	40973	NTC-RNA_S10	180209_M01274_0205_000000000-BHDFY
+Human betaherpesvirus 7	43	Human herpesvirus 7 strain RK, complete genome	Human herpesvirus 7	5950	153080	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+BeAn 58058 virus	26	BeAn 58058 virus, complete genome	BeAn 58058 virus	263	163005	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Human polyomavirus 3	16	KI polyomavirus Stockholm 60, complete genome	KI polyomavirus Stockholm 60	1618	5040	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Orf virus	16	Orf virus strain D1701, complete genome	Orf virus	367	134038	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage phiadh	8	Lactobacillus bacteriophage phi adh complete genome	Lactobacillus phage phiadh	900	43785	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Zika virus	8	Zika virus isolate Pf13/251013-18, complete genome	Zika virus	218	11155	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage J-1	6	Lactobacillus phage J-1, complete genome	Lactobacillus phage J-1	723	40931	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Jaagsiekte sheep retrovirus	6	Jaagsiekte sheep retrovirus, complete genome	Jaagsiekte sheep retrovirus	123	7430	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Streptococcus phage 128	5	Streptococcus phage 128, complete genome	Streptococcus phage 128	155	34593	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Lactococcus phage ul36	3	Lactococcus phage ul36, complete genome	Lactococcus phage ul36	419	36798	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage KC5a	3	Lactobacillus phage KC5a, complete genome	Lactobacillus phage KC5a	327	38239	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Human betaherpesvirus 6B	2	Human herpesvirus 6B DNA, complete genome, strain: HST	Human herpesvirus 6B	302	161573	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Lactobacillus prophage Lj771	2	Lactobacillus johnsonii prophage Lj771, complete genome	Lactobacillus johnsonii prophage Lj771	272	40881	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Betapapillomavirus 1	2	Human papillomavirus type 20, complete genome	Human papillomavirus type 20	244	7757	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Streptococcus phage IPP61	2	Streptococcus phage IPP61, complete genome	Streptococcus phage IPP61	188	59870	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Human endogenous retrovirus K	2	Human endogenous retrovirus K115 complete genome	Human endogenous retrovirus K115	156	9463	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Human endogenous retrovirus K	2	Human endogenous retrovirus K113 complete genome	Human endogenous retrovirus K113	142	9472	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Human endogenous retrovirus	2	Human endogenous retrovirus HCML-ARV, complete genome	Human endogenous retrovirus HCML-ARV	137	8412	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage iA2	2	Lactobacillus phage iA2, complete genome	Lactobacillus phage iA2	123	34155	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Betapapillomavirus 2	1	Human papillomavirus type 111, complete genome	Human papillomavirus type 111	151	7384	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Stenotrophomonas phage S1	1	Stenotrophomonas phage S1, complete genome	Stenotrophomonas phage S1	151	40287	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage CL2	1	Lactobacillus phage CL2, complete genome	Lactobacillus phage CL2	151	38751	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Betapapillomavirus 1	1	Human papillomavirus type 8, complete genome	Human papillomavirus type 8	151	7654	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Propionibacterium virus P101A	1	Propionibacterium phage P101A, complete genome	Propionibacterium phage P101A	148	29574	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage Lc-Nu	1	Bacteriophage Lc-Nu, complete genome	Lactobacillus phage Lc-Nu	147	36466	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage A2	1	Lactobacillus casei bacteriophage A2 complete genome	Lactobacillus phage A2	138	43411	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage phi jlb1	1	Lactobacillus phage phi jlb1, complete genome	Lactobacillus phage phi jlb1	128	38269	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Streptococcus phage IPP35	1	Streptococcus phage IPP35, complete genome	Streptococcus phage IPP35	91	40164	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage Lrm1	1	Lactobacillus phage Lrm1, complete genome	Lactobacillus phage Lrm1	77	39989	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Human immunodeficiency virus 2	1	Human immunodeficiency virus 2 proviral DNA, complete genome	Human immunodeficiency virus 2	74	11443	1000247089-AR-DNA_S2	180209_M01274_0205_000000000-BHDFY
+Proteus phage vB_PmiS-TH	274	Proteus phage vB_PmiS-TH, complete genome	Proteus phage vB_PmiS-TH	633	54836	1000206434-BR-RNA_S9	180209_M01274_0205_000000000-BHDFY
+Shamonda orthobunyavirus	115	Shamonda virus N and NSs genes, segment S, genomic RNA, isolate Ib An 5550	Shamonda virus	95	927	1000206434-BR-RNA_S9	180209_M01274_0205_000000000-BHDFY
+Choristoneura occidentalis granulovirus	57	Choristoneura occidentalis granulovirus, complete genome	Choristoneura occidentalis granulovirus	175	104710	1000206434-BR-RNA_S9	180209_M01274_0205_000000000-BHDFY
+Human mastadenovirus C	2	Adenovirus type 2, complete genome	Human adenovirus 2	215	35937	1000206434-BR-RNA_S9	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	1	Bovine viral diarrhea virus 3 strain Italy-1/10-1, complete genome	Bovine viral diarrhea virus 3	151	12104	1000206434-BR-RNA_S9	180209_M01274_0205_000000000-BHDFY
+Klebsiella phage vB_Kpn_IME260	1	Klebsiella phage vB_Kpn_IME260, complete genome	Klebsiella phage vB_Kpn_IME260	151	123490	1000206434-BR-RNA_S9	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	1	Bovine viral diarrhea virus 3 strain PB22487, complete genome	Bovine viral diarrhea virus 3	150	12050	1000206434-BR-RNA_S9	180209_M01274_0205_000000000-BHDFY
+Equid gammaherpesvirus 2	1	Equid herpesvirus 2 strain 86/67, complete genome	Equid herpesvirus 2	145	184439	1000206434-BR-RNA_S9	180209_M01274_0205_000000000-BHDFY
+Zika virus	1	Zika virus isolate Pf13/251013-18, complete genome	Zika virus	81	11155	1000206434-BR-RNA_S9	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 1	1	Pestivirus type 1 cytopathic genomic RNA, complete genome	Bovine viral diarrhea virus 1	68	15521	1000206434-BR-RNA_S9	180209_M01274_0205_000000000-BHDFY
+BeAn 58058 virus	1	BeAn 58058 virus, complete genome	BeAn 58058 virus	61	163005	1000206434-BR-RNA_S9	180209_M01274_0205_000000000-BHDFY
+Simbu orthobunyavirus	1	Simbu virus RdRp gene for RNA-dependent RNA polymerase, segment L, genomic RNA, isolate SA Ar 53	Simbu virus	39	6895	1000206434-BR-RNA_S9	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	26	Bovine viral diarrhea virus 3 RNA, complete genome, strain: D32/00_'HoBi'	Bovine viral diarrhea virus 3	2598	12265	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	19	Bovine viral diarrhea virus 3 isolate CH-KaHo/cont, complete genome	Bovine viral diarrhea virus 3	2026	12279	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	13	Bovine viral diarrhea virus 3 strain JS12/01, complete genome	Bovine viral diarrhea virus 3	1667	12145	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	13	Bovine viral diarrhea virus 3 strain SV757/15, complete genome	Bovine viral diarrhea virus 3	1461	12280	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Shamonda orthobunyavirus	7	Shamonda virus N and NSs genes, segment S, genomic RNA, isolate Ib An 5550	Shamonda virus	94	927	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	6	Bovine viral diarrhea virus 3 strain Italy-1/10-1, complete genome	Bovine viral diarrhea virus 3	755	12104	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	6	Bovine viral diarrhea virus 3 strain LVRI/cont-1, complete genome	Bovine viral diarrhea virus 3	748	12282	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Moraxella phage Mcat16	6	Moraxella phage Mcat16, complete genome	Moraxella phage Mcat16	242	46782	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	5	Bovine viral diarrhea virus 3 strain Italy-83/10-ncp, complete genome	Bovine viral diarrhea virus 3	508	12243	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Dengue virus	4	Dengue virus 1 isolate DENV1 BR/SJRP/484/2012, complete genome	Dengue virus 1	57	10917	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Pepino mosaic virus	3	Pepino mosaic virus strain US2, complete genome	Pepino mosaic virus	264	6410	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	2	Bovine viral diarrhea virus 3 strain PB22487, complete genome	Bovine viral diarrhea virus 3	302	12050	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	2	Bovine viral diarrhea virus 3 strain SV478/07, complete genome	Bovine viral diarrhea virus 3	302	12266	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	2	Bovine viral diarrhea virus 3 strain Italy-129/07, complete genome	Bovine viral diarrhea virus 3	150	12118	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Choristoneura occidentalis granulovirus	2	Choristoneura occidentalis granulovirus, complete genome	Choristoneura occidentalis granulovirus	44	104710	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Pepino mosaic virus	1	Pepino mosaic virus isolate PepMV-Pa, complete genome	Pepino mosaic virus	151	6412	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Pseudomonas phage PPpW-4	1	Pseudomonas phage PPpW-4 DNA, complete sequence	Pseudomonas phage PPpW-4	151	41386	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Pepino mosaic virus	1	Pepino mosaic virus, complete genome	Pepino mosaic virus	150	6440	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Human mastadenovirus C	1	Adenovirus type 2, complete genome	Human adenovirus 2	150	35937	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Pseudomonas phage phiIBB-PF7A	1	Pseudomonas phage phiIBB-PF7A, complete genome	Pseudomonas phage phiIBB-PF7A	135	40973	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Pepino mosaic virus	1	Pepino mosaic virus isolate SIC1-09, complete genome	Pepino mosaic virus	135	6412	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Ralstonia virus RSM3	1	Ralstonia phage RSM3, complete genome	Ralstonia phage RSM3	128	8929	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Bacillus virus IEBH	1	Bacillus phage IEBH, complete genome	Bacillus phage IEBH	119	53104	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Pepino mosaic virus	1	Pepino mosaic virus isolate PepMV-PK, complete genome	Pepino mosaic virus	112	6412	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Pepino mosaic virus	1	Pepino mosaic virus strain US1, complete genome	Pepino mosaic virus	88	6413	1000243675-AR-RNA_S6	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage phiadh	18	Lactobacillus bacteriophage phi adh complete genome	Lactobacillus phage phiadh	2320	43785	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Proteus phage vB_PmiS-TH	17	Proteus phage vB_PmiS-TH, complete genome	Proteus phage vB_PmiS-TH	498	54836	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+BeAn 58058 virus	12	BeAn 58058 virus, complete genome	BeAn 58058 virus	289	163005	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Streptococcus virus Sfi21	9	Streptococcus thermophilus bacteriophage Sfi21, complete genome	Streptococcus phage Sfi21	1277	40739	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Dengue virus	9	Dengue virus 1 isolate DENV1 BR/SJRP/484/2012, complete genome	Dengue virus 1	55	10917	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Human betaherpesvirus 7	8	Human herpesvirus 7 strain RK, complete genome	Human herpesvirus 7	1140	153080	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Zika virus	6	Zika virus isolate Pf13/251013-18, complete genome	Zika virus	205	11155	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Shamonda orthobunyavirus	6	Shamonda virus N and NSs genes, segment S, genomic RNA, isolate Ib An 5550	Shamonda virus	74	927	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage KC5a	5	Lactobacillus phage KC5a, complete genome	Lactobacillus phage KC5a	618	38239	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Lactobacillus prophage Lj771	4	Lactobacillus johnsonii prophage Lj771, complete genome	Lactobacillus johnsonii prophage Lj771	580	40881	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage phi jlb1	4	Lactobacillus phage phi jlb1, complete genome	Lactobacillus phage phi jlb1	563	38269	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage J-1	3	Lactobacillus phage J-1, complete genome	Lactobacillus phage J-1	428	40931	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Human endogenous retrovirus K	3	Human endogenous retrovirus K113 complete genome	Human endogenous retrovirus K113	143	9472	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage A2	2	Lactobacillus casei bacteriophage A2 complete genome	Lactobacillus phage A2	207	43411	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage PLE2	2	Lactobacillus phage PLE2, complete genome	Lactobacillus phage PLE2	160	35068	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Choristoneura occidentalis granulovirus	2	Choristoneura occidentalis granulovirus, complete genome	Choristoneura occidentalis granulovirus	86	104710	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Torque teno virus	1	Torque teno virus, isolate tth25, complete genome	Torque teno virus	151	3758	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	1	Bovine viral diarrhea virus 3 strain SV757/15, complete genome	Bovine viral diarrhea virus 3	151	12280	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	1	Bovine viral diarrhea virus 3 strain Italy-83/10-cp, complete genome	Bovine viral diarrhea virus 3	150	12549	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage iA2	1	Lactobacillus phage iA2, complete genome	Lactobacillus phage iA2	150	34155	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Streptococcus virus Sfi19	1	Streptococcus thermophilus bacteriophage Sfi19, complete genome	Streptococcus phage Sfi19	149	37370	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Enterococcus phage SANTOR1	1	Enterococcus phage SANTOR1, complete genome	Enterococcus phage SANTOR1	149	37933	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Human polyomavirus 3	1	KI polyomavirus Stockholm 60, complete genome	KI polyomavirus Stockholm 60	124	5040	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Tobacco virus 2	1	Tobacco virus 2, complete genome	Tobacco virus 2	118	5979	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Human immunodeficiency virus 2	1	Human immunodeficiency virus 2 proviral DNA, complete genome	Human immunodeficiency virus 2	111	11443	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Streptococcus phage 128	1	Streptococcus phage 128, complete genome	Streptococcus phage 128	104	34593	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Human endogenous retrovirus K	1	Human endogenous retrovirus K115 complete genome	Human endogenous retrovirus K115	76	9463	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage Lc-Nu	1	Lactobacillus phage phiAT3, complete genome	Lactobacillus phage phiAT3	76	39166	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage Lc-Nu	1	Bacteriophage Lc-Nu, complete genome	Lactobacillus phage Lc-Nu	75	36466	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Jaagsiekte sheep retrovirus	1	Jaagsiekte sheep retrovirus, complete genome	Jaagsiekte sheep retrovirus	71	7430	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Orf virus	1	Orf virus strain D1701, complete genome	Orf virus	70	134038	Undetermined_S0	180209_M01274_0205_000000000-BHDFY
+Shamonda orthobunyavirus	90	Shamonda virus N and NSs genes, segment S, genomic RNA, isolate Ib An 5550	Shamonda virus	95	927	1000205948-AR-RNA_S8	180209_M01274_0205_000000000-BHDFY
+Choristoneura occidentalis granulovirus	54	Choristoneura occidentalis granulovirus, complete genome	Choristoneura occidentalis granulovirus	170	104710	1000205948-AR-RNA_S8	180209_M01274_0205_000000000-BHDFY
+Moraxella phage Mcat16	20	Moraxella phage Mcat16, complete genome	Moraxella phage Mcat16	799	46782	1000205948-AR-RNA_S8	180209_M01274_0205_000000000-BHDFY
+Proteus phage vB_PmiS-TH	19	Proteus phage vB_PmiS-TH, complete genome	Proteus phage vB_PmiS-TH	456	54836	1000205948-AR-RNA_S8	180209_M01274_0205_000000000-BHDFY
+Dengue virus	5	Dengue virus 1 isolate DENV1 BR/SJRP/484/2012, complete genome	Dengue virus 1	57	10917	1000205948-AR-RNA_S8	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	2	Bovine viral diarrhea virus 3 strain SV478/07, complete genome	Bovine viral diarrhea virus 3	302	12266	1000205948-AR-RNA_S8	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	2	Bovine viral diarrhea virus 3 RNA, complete genome, strain: D32/00_'HoBi'	Bovine viral diarrhea virus 3	300	12265	1000205948-AR-RNA_S8	180209_M01274_0205_000000000-BHDFY
+Pseudomonas phage phi15	2	Pseudomonas phage phi15 complete genome	Pseudomonas phage phi15	269	39562	1000205948-AR-RNA_S8	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	2	Bovine viral diarrhea virus 3 strain Italy-1/10-1, complete genome	Bovine viral diarrhea virus 3	151	12104	1000205948-AR-RNA_S8	180209_M01274_0205_000000000-BHDFY
+Pseudomonas phage PPpW-4	1	Pseudomonas phage PPpW-4 DNA, complete sequence	Pseudomonas phage PPpW-4	122	41386	1000205948-AR-RNA_S8	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	1	Bovine viral diarrhea virus 3 strain JS12/01, complete genome	Bovine viral diarrhea virus 3	109	12145	1000205948-AR-RNA_S8	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	1	Bovine viral diarrhea virus 3 isolate CH-KaHo/cont, complete genome	Bovine viral diarrhea virus 3	96	12279	1000205948-AR-RNA_S8	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	27	Bovine viral diarrhea virus 3 isolate CH-KaHo/cont, complete genome	Bovine viral diarrhea virus 3	2556	12279	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+Dengue virus	16	Dengue virus 1 isolate DENV1 BR/SJRP/484/2012, complete genome	Dengue virus 1	55	10917	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	13	Bovine viral diarrhea virus 3 strain JS12/01, complete genome	Bovine viral diarrhea virus 3	1422	12145	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+Shamonda orthobunyavirus	13	Shamonda virus N and NSs genes, segment S, genomic RNA, isolate Ib An 5550	Shamonda virus	89	927	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	8	Bovine viral diarrhea virus 3 RNA, complete genome, strain: D32/00_'HoBi'	Bovine viral diarrhea virus 3	811	12265	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+Proteus phage vB_PmiS-TH	8	Proteus phage vB_PmiS-TH, complete genome	Proteus phage vB_PmiS-TH	280	54836	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	7	Bovine viral diarrhea virus 3 strain Italy-1/10-1, complete genome	Bovine viral diarrhea virus 3	791	12104	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	7	Bovine viral diarrhea virus 3 strain SV478/07, complete genome	Bovine viral diarrhea virus 3	693	12266	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+Choristoneura occidentalis granulovirus	7	Choristoneura occidentalis granulovirus, complete genome	Choristoneura occidentalis granulovirus	90	104710	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	5	Bovine viral diarrhea virus 3 strain Italy-83/10-ncp, complete genome	Bovine viral diarrhea virus 3	527	12243	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	3	Bovine viral diarrhea virus 3 strain SV757/15, complete genome	Bovine viral diarrhea virus 3	377	12280	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	3	Bovine viral diarrhea virus 3 strain Italy-83/10-cp, complete genome	Bovine viral diarrhea virus 3	167	12549	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	2	Bovine viral diarrhea virus 3 strain LVRI/cont-1, complete genome	Bovine viral diarrhea virus 3	302	12282	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+Pseudomonas phage Phi-S1	1	Pseudomonas phage Phi-S1, complete genome	Pseudomonas phage Phi-S1	150	40192	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+Bovine viral diarrhea virus 3	1	Bovine viral diarrhea virus 3 strain PB22487, complete genome	Bovine viral diarrhea virus 3	150	12050	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+Pseudomonas phage PPpW-4	1	Pseudomonas phage PPpW-4 DNA, complete sequence	Pseudomonas phage PPpW-4	123	41386	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+Human mastadenovirus C	1	Human adenovirus type 5 strain NHRC Ad5FS 7151, complete genome	Human adenovirus 5	100	35931	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+Escherichia virus Lambda	1	Enterobacteria phage DE3, complete genome	Enterobacteria phage DE3	93	42925	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+Orf virus	1	Orf virus strain D1701, complete genome	Orf virus	38	134038	1000247089-AR-RNA_S7	180209_M01274_0205_000000000-BHDFY
+BeAn 58058 virus	252	BeAn 58058 virus, complete genome	BeAn 58058 virus	305	163005	1000206434-BR-DNA_S4	180209_M01274_0205_000000000-BHDFY
+Zika virus	92	Zika virus isolate Pf13/251013-18, complete genome	Zika virus	280	11155	1000206434-BR-DNA_S4	180209_M01274_0205_000000000-BHDFY
+Human endogenous retrovirus K	23	Human endogenous retrovirus K113 complete genome	Human endogenous retrovirus K113	1399	9472	1000206434-BR-DNA_S4	180209_M01274_0205_000000000-BHDFY
+Human endogenous retrovirus	4	Human endogenous retrovirus HCML-ARV, complete genome	Human endogenous retrovirus HCML-ARV	281	8412	1000206434-BR-DNA_S4	180209_M01274_0205_000000000-BHDFY
+Human endogenous retrovirus K	3	Human endogenous retrovirus K115 complete genome	Human endogenous retrovirus K115	197	9463	1000206434-BR-DNA_S4	180209_M01274_0205_000000000-BHDFY
+Human immunodeficiency virus 2	3	Human immunodeficiency virus 2 proviral DNA, complete genome	Human immunodeficiency virus 2	132	11443	1000206434-BR-DNA_S4	180209_M01274_0205_000000000-BHDFY
+Hepacivirus C	1	Recombinant Hepatitis C virus J6(5'UTR(Cell-U3)-NS2)/JFH1, complete genome	Recombinant Hepatitis C virus J6(5'UTR(Cell-U3)-NS2)/JFH1	60	9718	1000206434-BR-DNA_S4	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage phiadh	1208	Lactobacillus bacteriophage phi adh complete genome	Lactobacillus phage phiadh	14294	43785	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Streptococcus virus Sfi21	472	Streptococcus thermophilus bacteriophage Sfi21, complete genome	Streptococcus phage Sfi21	24448	40739	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage KC5a	335	Lactobacillus phage KC5a, complete genome	Lactobacillus phage KC5a	9246	38239	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Streptococcus virus Sfi19	235	Streptococcus thermophilus bacteriophage Sfi19, complete genome	Streptococcus phage Sfi19	11079	37370	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Human betaherpesvirus 7	136	Human herpesvirus 7 strain RK, complete genome	Human herpesvirus 7	17635	153080	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage J-1	103	Lactobacillus phage J-1, complete genome	Lactobacillus phage J-1	5132	40931	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus prophage Lj771	99	Lactobacillus johnsonii prophage Lj771, complete genome	Lactobacillus johnsonii prophage Lj771	3871	40881	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage A2	87	Lactobacillus casei bacteriophage A2 complete genome	Lactobacillus phage A2	4915	43411	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage Lrm1	66	Lactobacillus phage Lrm1, complete genome	Lactobacillus phage Lrm1	3981	39989	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage iA2	64	Lactobacillus phage iA2, complete genome	Lactobacillus phage iA2	4506	34155	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage phi jlb1	58	Lactobacillus phage phi jlb1, complete genome	Lactobacillus phage phi jlb1	2904	38269	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage Lc-Nu	51	Bacteriophage Lc-Nu, complete genome	Lactobacillus phage Lc-Nu	2926	36466	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Human polyomavirus 3	32	KI polyomavirus Stockholm 60, complete genome	KI polyomavirus Stockholm 60	3024	5040	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Streptococcus virus 2972	30	Streptococcus thermophilus bacteriophage 2972, complete genome	Streptococcus phage 2972	1918	34704	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage Lc-Nu	25	Lactobacillus phage phiAT3, complete genome	Lactobacillus phage phiAT3	2012	39166	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Streptococcus phage TP-J34	23	Streptococcus phage TP-J34 complete genome	Streptococcus phage TP-J34	1031	45606	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage CL2	19	Lactobacillus phage CL2, complete genome	Lactobacillus phage CL2	944	38751	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+BeAn 58058 virus	17	BeAn 58058 virus, complete genome	BeAn 58058 virus	294	163005	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Streptococcus phage 128	14	Streptococcus phage 128, complete genome	Streptococcus phage 128	172	34593	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage CL1	13	Lactobacillus phage CL1, complete genome	Lactobacillus phage CL1	1139	39474	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage PLE2	12	Lactobacillus phage PLE2, complete genome	Lactobacillus phage PLE2	952	35068	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Streptococcus phage IPP61	10	Streptococcus phage IPP61, complete genome	Streptococcus phage IPP61	834	59870	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Zika virus	9	Zika virus isolate Pf13/251013-18, complete genome	Zika virus	201	11155	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Streptococcus virus 858	7	Streptococcus phage 858, complete genome	Streptococcus phage 858	434	35543	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Human endogenous retrovirus K	7	Human endogenous retrovirus K113 complete genome	Human endogenous retrovirus K113	432	9472	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus virus Lb338-1	7	Lactobacillus phage Lb338-1, complete genome	Lactobacillus phage Lb338-1	252	142111	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Streptococcus virus ALQ132	7	Streptococcus phage ALQ13.2, complete genome	Streptococcus phage ALQ13.2	237	35525	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage LF1	6	Lactobacillus phage LF1, complete genome	Lactobacillus phage LF1	538	42606	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage iLp84	6	Lactobacillus phage iLp84, complete genome	Lactobacillus phage iLp84	535	39399	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Bosavirus MS-2016a	5	Bosavirus MS-2016a, complete genome	Bosavirus MS-2016a	624	4835	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage iLp1308	4	Lactobacillus phage iLp1308, complete genome	Lactobacillus phage iLp1308	396	34176	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus prophage Lj965	4	Lactobacillus johnsonii prophage Lj965, complete genome	Lactobacillus prophage Lj965	381	40190	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Orf virus	4	Orf virus strain D1701, complete genome	Orf virus	332	134038	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Human betaherpesvirus 6B	3	Human herpesvirus 6B DNA, complete genome, strain: HST	Human herpesvirus 6B	452	161573	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Gammapapillomavirus 15	3	Human papillomavirus type 135 isolate NJ3500, complete genome	Human papillomavirus type 135	422	7293	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Human endogenous retrovirus	3	Human endogenous retrovirus HCML-ARV, complete genome	Human endogenous retrovirus HCML-ARV	272	8412	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Thermus phage phi OH2	2	Phage phi OH2 DNA, complete genome	Thermus phage phi OH2	292	38099	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage PL-1	2	Lactobacillus phage PL-1, complete genome	Lactobacillus phage PL-1	229	38880	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Streptococcus phage phi1207.3	2	Streptococcus phage phi1207.3, complete genome	Streptococcus phage phi1207.3	121	52491	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Streptococcus phage EJ-1	1	Bacteriophage EJ-1 proviral DNA, complete genome	Streptococcus phage EJ-1	151	42935	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Human polyomavirus 3	1	KI polyomavirus Stockholm 350, complete genome	KI polyomavirus Stockholm 350	151	5040	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Gammapapillomavirus 23	1	Human papillomavirus type 175 isolate SE87, complete genome	Human papillomavirus type 175	151	7226	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Enterobacteria phage fiAA91-ss	1	Enterobacteria phage fiAA91-ss, complete genome	Enterobacteria phage fiAA91-ss	151	33628	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Human herpesvirus 6	1	Human herpesvirus 6, complete genome	Human herpesvirus 6	151	153190	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Betapapillomavirus 1	1	Human papillomavirus type 20, complete genome	Human papillomavirus type 20	151	7757	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Moraxella phage Mcat16	1	Moraxella phage Mcat16, complete genome	Moraxella phage Mcat16	148	46782	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage JCL1032	1	Lactobacillus phage JCL1032, complete genome	Lactobacillus phage JCL1032	141	49433	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Fig badnavirus 1	1	Fig badnavirus 1 isolate F15, complete genome	Fig badnavirus 1	128	7140	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+uncultured marine virus	1	Uncultured marine virus clone SOG02701, complete genome	uncultured marine virus	120	1326	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Geobacillus virus E2	1	Geobacillus virus E2, complete genome	Geobacillus virus E2	119	40863	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage PLE3	1	Lactobacillus phage PLE3, complete genome	Lactobacillus phage PLE3	119	41005	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Human endogenous retrovirus K	1	Human endogenous retrovirus K115 complete genome	Human endogenous retrovirus K115	110	9463	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Streptococcus phage IPP35	1	Streptococcus phage IPP35, complete genome	Streptococcus phage IPP35	59	40164	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Fig badnavirus 1	1	Fig badnavirus 1 isolate Arkansas 1, complete genome	Fig badnavirus 1	55	7140	1000243675-AR-DNA_S1	180209_M01274_0205_000000000-BHDFY
+Human mastadenovirus C	3	Adenovirus type 2, complete genome	Human adenovirus 2	412	35937	NTC-DNA_S5	180209_M01274_0205_000000000-BHDFY
+Klebsiella virus JD18	1	Klebsiella phage JD18, complete genome	Klebsiella phage JD18	151	166313	NTC-DNA_S5	180209_M01274_0205_000000000-BHDFY
+Human mastadenovirus C	1	Human adenovirus C strain human/ARG/A15932/2002/2[P2H2F2], complete genome	Human adenovirus C	150	35925	NTC-DNA_S5	180209_M01274_0205_000000000-BHDFY
+Human mastadenovirus C	1	Human adenovirus type 1 subgroup C, complete genome	Human adenovirus 1	134	36001	NTC-DNA_S5	180209_M01274_0205_000000000-BHDFY
+Human immunodeficiency virus 1	1	HIV-1 isolate pXJDC6291-2-6 from China, complete genome	Human immunodeficiency virus 1	119	9804	NTC-DNA_S5	180209_M01274_0205_000000000-BHDFY
+Human betaherpesvirus 7	291	Human herpesvirus 7 strain RK, complete genome	Human herpesvirus 7	32354	153080	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+BeAn 58058 virus	166	BeAn 58058 virus, complete genome	BeAn 58058 virus	318	163005	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Zika virus	63	Zika virus isolate Pf13/251013-18, complete genome	Zika virus	281	11155	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Streptococcus phage 5093	57	Streptococcus phage 5093, complete genome	Streptococcus phage 5093	3487	37184	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Streptococcus phage YMC-2011	40	Streptococcus phage YMC-2011, complete genome	Streptococcus phage YMC-2011	1390	40758	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Human endogenous retrovirus K	29	Human endogenous retrovirus K113 complete genome	Human endogenous retrovirus K113	1364	9472	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Streptococcus virus Sfi21	21	Streptococcus thermophilus bacteriophage Sfi21, complete genome	Streptococcus phage Sfi21	586	40739	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Escherichia phage ESCO13	17	Escherichia phage ESCO13, complete genome	Escherichia phage ESCO13	2460	149813	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Escherichia phage phAPEC8	15	Escherichia phage phAPEC8, complete genome	Escherichia phage phAPEC8	1932	147737	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Escherichia phage ESCO5	14	Escherichia phage ESCO5, complete genome	Escherichia phage ESCO5	1777	149312	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Streptococcus phage TP-J34	13	Streptococcus phage TP-J34 complete genome	Streptococcus phage TP-J34	402	45606	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Orf virus	10	Orf virus strain D1701, complete genome	Orf virus	449	134038	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Human endogenous retrovirus K	7	Human endogenous retrovirus K115 complete genome	Human endogenous retrovirus K115	501	9463	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Streptococcus virus O1205	7	Streptococcus thermophilus temperate bacteriophage O1205, complete genome	Streptococcus phage O1205	493	43075	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Human endogenous retrovirus	6	Human endogenous retrovirus HCML-ARV, complete genome	Human endogenous retrovirus HCML-ARV	429	8412	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Streptococcus phage CHPC1151	6	Streptococcus phage CHPC1151, complete genome	Streptococcus phage CHPC1151	187	33507	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Torque teno virus	5	TT virus sle1931 complete genome	TT virus sle1931	432	3760	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Porcine type-C oncovirus	5	Porcine endogenous retrovirus A clone 1347C1, complete genome	Porcine endogenous retrovirus A	357	15325	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Staphylococcus virus IPLA7	4	Staphylococcus phage vB_SepiS-phiIPLA7, complete genome	Staphylococcus phage vB_SepiS-phiIPLA7	447	42123	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Porcine type-C oncovirus	4	Porcine endogenous retrovirus B clone 742H1, complete genome	Porcine endogenous retrovirus B	227	9404	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Streptococcus virus 858	4	Streptococcus phage 858, complete genome	Streptococcus phage 858	160	35543	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Staphylococcus virus IPLA5	3	Staphylococcus phage vB_SepiS-phiIPLA5, complete genome	Staphylococcus phage vB_SepiS-phiIPLA5	302	43581	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Proteus phage vB_PmiS-TH	3	Proteus phage vB_PmiS-TH, complete genome	Proteus phage vB_PmiS-TH	221	54836	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Streptococcus virus 9871	3	Streptococcus virus 9871, complete genome	Streptococcus virus 9871	129	32729	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Jaagsiekte sheep retrovirus	3	Jaagsiekte sheep retrovirus, complete genome	Jaagsiekte sheep retrovirus	79	7430	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Bosavirus MS-2016a	2	Bosavirus MS-2016a, complete genome	Bosavirus MS-2016a	299	4835	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Torque teno virus	2	TT virus sle2057 complete genome	TT virus sle2057	266	3757	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Torque teno virus	2	TT virus sle1957 complete genome	TT virus sle1957	168	3773	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Streptococcus phage CHPC577	2	Streptococcus phage CHPC577, complete genome	Streptococcus phage CHPC577	135	35129	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Enterococcus phage EfaCPT1	1	Enterococcus phage EfaCPT1, complete genome	Enterococcus phage EfaCPT1	151	40923	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Torque teno virus	1	Torque teno virus complete genome, isolate TTV-HD17 (uro702)	Torque teno virus	149	3756	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Mycobacterium phage Myrna	1	Mycobacterium phage Myrna, complete genome	Mycobacterium phage Myrna	147	164602	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Streptococcus virus ALQ132	1	Streptococcus phage ALQ13.2, complete genome	Streptococcus phage ALQ13.2	146	35525	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Human immunodeficiency virus 2	1	Human immunodeficiency virus 2 proviral DNA, complete genome	Human immunodeficiency virus 2	144	11443	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Streptomyces virus Danzina	1	Streptomyces phage Danzina, complete genome	Streptomyces phage Danzina	137	50773	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Streptococcus phage TP-778L	1	Streptococcus phage TP-778L complete genome	Streptococcus phage TP-778L	132	41757	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Lactobacillus phage phiPYB5	1	Lactobacillus phage phiPYB5, complete genome	Lactobacillus phage phiPYB5	125	32847	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Enterococcus phage EFAP-1	1	Enterococcus phage EFAP-1, complete genome	Enterococcus phage EFAP-1	102	21115	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Staphylococcus virus CNPH82	1	Staphylococcus phage CNPH82, complete genome	Staphylococcus phage CNPH82	101	43420	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
+Vaccinia virus	1	Vaccinia virus GLV-1h68, complete genome	Vaccinia virus GLV-1h68	73	203057	1000205948-AR-DNA_S3	180209_M01274_0205_000000000-BHDFY
