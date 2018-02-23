@@ -26,7 +26,9 @@ shinyServer(function(input, output) {
                         mutate(quality = factor(category, levels = c("raw_reads", "passing_filter"))) %>%
                         ### plot 
                         ggplot(aes(x = quality, y = reads, fill = quality)) +
-                        geom_bar(stat="identity", position=position_dodge()) +
+                        geom_col() +
+                        scale_fill_manual(name = "",
+                                          values = c("#EF4760", "#06C98F")) +
                         panel_border() + background_grid(major = "xy", minor = "") +
                         xlab("") + ylab("") +
                         facet_wrap( ~ sample) +
@@ -37,6 +39,7 @@ shinyServer(function(input, output) {
         
         output$plot_domain <- renderPlot({
                 req(!(is.null(input$chosen_sample)))
+                nice_cols <- c("#EF4760", "#FFD161", "#06C98F", "#2F8BA0", "#845F80", "#EE8510")
                 reads_data() %>%
                         filter(sample %in% input$chosen_sample) %>%
                         filter(!(category == "raw_reads" | category == "passing_filter" | category == "reads_to_blast")) %>%
@@ -45,15 +48,19 @@ shinyServer(function(input, output) {
                                 category %in% c("viral_reads") ~ "viral",
                                 category %in% c("matching_humanGRCh38") ~ "human",
                                 category %in% c("undetermined_reads") ~ "unknown",
-                                category %in% c("matching_bt_ref", "matching_fungi1") ~ "other",
+                                category %in% c("matching_bt_ref") ~ "bovine",
+                                category %in% c("matching_fungi1") ~ "fungal",
                                 TRUE ~ "none"
                                 )) %>%
+                        mutate(domain = factor(as.character(domain), levels = c("human", "bacterial", "fungal", "bovine", "viral", "unknown"))) %>%
                         filter(!(domain == "none")) %>%
                         group_by(sample) %>%
                         mutate(percent = reads/sum(reads)) %>%
                         ### plot        
                         ggplot(aes(x = domain, y = percent, fill = domain)) +
-                        geom_bar(stat="identity", position=position_dodge()) +
+                        geom_col() +
+                        scale_fill_manual(name = "",
+                                          values = nice_cols) +
                         panel_border() + background_grid(major = "xy", minor = "") +
                         xlab("") + ylab("") +
                         facet_wrap( ~ sample) +
