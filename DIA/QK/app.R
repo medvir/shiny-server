@@ -129,11 +129,11 @@ server <- function(input, output) {
                 
                 if (!(is.null(input$results_files))) {
                         data_temp = data_temp %>%
-                                mutate(char_param = ifelse(is.na(Parameter), "NA", Parameter)) %>%
+                                mutate(char_param = ifelse(is.na(Parameter), "NA", Parameter)) %>%  ### because NA in input$parameter (from selectInput) is "NA"
                                 filter(char_param %in% input$parameter) %>%
                                 select(-char_param) %>%
                                 
-                                mutate(char_type = ifelse(is.na(Type), "", Type)) %>%
+                                mutate(char_type = ifelse(is.na(Type), "", Type)) %>%  ### because NA in input$type (from checkboxGroupInput) is ""
                                 filter(char_type %in% input$type) %>%
                                 select(-char_type)
                 }
