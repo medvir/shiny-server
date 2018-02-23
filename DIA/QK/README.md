@@ -6,13 +6,14 @@ http://172.23.175.116:3838/DIA/QK/
 Link von Resultat zu Master via “Panel” und Datum.
 Link von Massnahmen zu Resultat via “Distribution” und “Specimen”.
 
-Es können mehrer Resultat Tabellen gleichzeitig hochgeladen werden.
+Das Hochladen funktioniert mittels Anwählen der Dateien im Explorer/Finder oder mittels "drag and drop". Es können mehrer Resultat Tabellen gleichzeitig hochgeladen werden.
 
-Die Selektion ist hierarchisch aufgebaut: Es werden nur die Panels der ausgewählten Anbieter angezeigt, nur die Erreger der ausgewählten Panels und nur die Parameter der ausgewählten Erreger.
+Die Selektion ist hierarchisch aufgebaut: Es werden nur die Panels der ausgewählten Anbieter angezeigt, nur die Erreger der ausgewählten Panels und nur die Parameter der ausgewählten Erreger:
+![alt text](https://github.com/medvir/shiny-server/blob/master/DIA/QK/images/selection.png)
 
 ### Mastertabelle
 Spalten: Erreger, Technologiebereich, QK_Anbieter, Panel, Frequenz  
-Enthält die Übersicht, welche Qualitätskontrollen im laufenden Jahr geplant ist. Wird sich von Jahr zu Jahr nicht gross verändern. Die Frequenz (Anzahl Testserien pro Jahr) wird in der Shiny App in die Testserien 1, 2, etc. umgesetzt.
+Enthält die Übersicht, welche Qualitätskontrollen im laufenden Jahr geplant sind. Wird sich von Jahr zu Jahr nicht gross verändern. Die Frequenz (Anzahl Testserien pro Jahr) wird in der Shiny App in die Testserien 1, 2, etc. umgesetzt.
 
 ### Resultat Tabellen
 Spalten: Panel, Datum, Distribution, Specimen, Parameter, Resultat, Score, Type  
