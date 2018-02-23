@@ -97,7 +97,7 @@ shinyServer(function(input, output) {
         
         output$samples_found <- renderUI({
           found_samples <- reads_data() %>% arrange(sample) %>% .$sample %>% unique() 
-          selectInput("chosen_sample", "Choose one or more samples:", found_samples, multiple=TRUE, selectize=FALSE)
+          selectInput("chosen_sample", "Choose one or more samples:", found_samples, multiple=TRUE, selectize=FALSE, size = 10)
           })
         
         
