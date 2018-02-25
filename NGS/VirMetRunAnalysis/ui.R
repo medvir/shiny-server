@@ -1,4 +1,5 @@
 library(shiny)
+library(DT)
 
 shinyUI(fluidPage(
         #theme = shinytheme("lumen"),
@@ -38,7 +39,7 @@ shinyUI(fluidPage(
                 column(12,
                        h1(""),
                        h3("Detected virus species"),
-                       tableOutput(outputId = "table_species")
+                       DT::dataTableOutput(outputId = "table_species")
                 )
         )
 )

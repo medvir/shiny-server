@@ -4,6 +4,7 @@ library(tidyr)
 library(dplyr)
 library(ggplot2)
 library(readr)
+library(DT)
 #library(shinythemes)
 
 shinyServer(function(input, output) {
@@ -26,9 +27,9 @@ shinyServer(function(input, output) {
                         mutate(quality = factor(category, levels = c("raw_reads", "passing_filter"))) %>%
                         ### plot 
                         ggplot(aes(x = quality, y = reads, fill = quality)) +
-                        geom_col() +
+                        geom_col(colour = "black") +
                         scale_fill_manual(name = "",
-                                          values = c("#EF4760", "#06C98F")) +
+                                          values = c("#D55E00", "#009E73")) +
                         panel_border() + background_grid(major = "xy", minor = "") +
                         xlab("") + ylab("") +
                         facet_wrap( ~ sample) +
@@ -39,7 +40,6 @@ shinyServer(function(input, output) {
         
         output$plot_domain <- renderPlot({
                 req(!(is.null(input$chosen_sample)))
-                nice_cols <- c("#EF4760", "#FFD161", "#06C98F", "#2F8BA0", "#845F80", "#EE8510")
                 reads_data() %>%
                         filter(sample %in% input$chosen_sample) %>%
                         filter(!(category == "raw_reads" | category == "passing_filter" | category == "reads_to_blast")) %>%
@@ -60,7 +60,7 @@ shinyServer(function(input, output) {
                         ggplot(aes(x = domain, y = percent, fill = domain)) +
                         geom_col() +
                         scale_fill_manual(name = "",
-                                          values = nice_cols) +
+                                          values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00")) +
                         panel_border() + background_grid(major = "xy", minor = "") +
                         xlab("") + ylab("") +
                         facet_wrap( ~ sample) +
@@ -69,7 +69,7 @@ shinyServer(function(input, output) {
                         scale_x_discrete(breaks=NULL)
                 })
 
-        output$table_species <- renderTable({
+        output$table_species <- DT::renderDataTable({
                 req(!(is.null(input$chosen_sample)))
                 orgs_data() %>%
                         filter(sample %in% input$chosen_sample) %>%
