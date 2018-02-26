@@ -69,7 +69,10 @@ shinyServer(function(input, output) {
                         scale_x_discrete(breaks=NULL)
                 })
 
-        output$table_species <- DT::renderDataTable({
+        output$table_species <- DT::renderDataTable(
+                filter = "top",
+                rownames = FALSE,
+                {
                 req(!(is.null(input$chosen_sample)))
                 orgs_data() %>%
                         filter(sample %in% input$chosen_sample) %>%
