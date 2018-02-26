@@ -37,9 +37,12 @@ shinyUI(fluidPage(
         ),
         fluidRow(
                 column(12,
-                       h1(""),
-                       h3("Detected virus species"),
-                       DT::dataTableOutput(outputId = "table_species")
+                       mainPanel(
+                         tabsetPanel(
+                           tabPanel("Detected virus species", DT::dataTableOutput("table_species")),
+                           tabPanel("Detected virus sscinames", DT::dataTableOutput("table_ssciname"))
+                         )
+                       )
                 )
         )
 )
