@@ -11,12 +11,17 @@ shinyServer(function(input, output) {
         
         reads_data <- reactive({
                 req(input$reads_file)
-                read_delim(input$reads_file$datapath, "\t")  #, sep = '\t', header = TRUE)
+                read_delim(input$reads_file$datapath, "\t")
                 })
         
         orgs_data <- reactive({
                 req(input$orgs_file)
-                read_delim(input$orgs_file$datapath, "\t") #, sep = '\t', header = TRUE)
+                read.delim(input$orgs_file$datapath, sep = "\t") %>%
+                  mutate(covered_percent = covered_region / seq_len * 100) %>%
+                  mutate(covered_max = reads * 151 / seq_len * 100) %>%
+                  mutate(covered_max = if_else(covered_max > 100, 100, covered_max)) %>%
+                  mutate(covered_score = round(covered_percent / covered_max * 100, 1)) %>%
+                  mutate(covered_percent = round(covered_percent, 1))
                 })
        
         output$plot_run <- renderPlot({
@@ -68,26 +73,30 @@ shinyServer(function(input, output) {
                         theme(axis.text.x  = element_text(angle=90, vjust=0.4, hjust = 1)) + 
                         scale_x_discrete(breaks=NULL)
                 })
+        
+        output$table_ssciname <- DT::renderDataTable(
+          filter = "top",
+          rownames = FALSE,
+          {
+          req(!(is.null(input$chosen_sample)))
+          orgs_data() %>%
+            filter(sample %in% input$chosen_sample) %>%
+            select(ssciname, species, reads, covered_percent, covered_score, sample)
+          })
 
         output$table_species <- DT::renderDataTable(
-                filter = "top",
-                rownames = FALSE,
-                {
-                req(!(is.null(input$chosen_sample)))
-                orgs_data() %>%
-                        filter(sample %in% input$chosen_sample) %>%
-                        select(-run) %>%
-                        spread(key = sample, value = reads) %>%
-                        mutate(total = as.integer(rowSums(.[,-1], na.rm = TRUE))) %>%
-                        mutate(percent = round(total/sum(total)*100, 3)) %>%
-                        mutate(abundance = strrep("+", 1+round(percent/max(percent)*9))) %>%
-                        mutate(abundance = ifelse(total < 20, "-", abundance)) %>%
-                        mutate(occurence = rowSums(is.na(.))) %>%
-                        arrange(desc(total)) %>%
-                        arrange(occurence) %>%
-                        select(-occurence)
-                }) 
-        
+          filter = "top",
+          rownames = FALSE,
+          {
+          req(!(is.null(input$chosen_sample)))
+          orgs_data() %>%
+            filter(sample %in% input$chosen_sample) %>%
+            select(species, reads, sample) %>%
+            group_by(species, sample) %>%
+            summarise(reads_sum = sum(reads)) %>%
+            spread(key = sample, value = reads_sum)
+          })
+
         output$report <- downloadHandler(
                 filename = function() {
                         paste0(substr(input$chosen_sample[1], 1, 13), ".pdf")
