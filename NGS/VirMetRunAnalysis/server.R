@@ -58,7 +58,7 @@ shinyServer(function(input, output) {
                         mutate(percent = reads/sum(reads)) %>%
                         ### plot        
                         ggplot(aes(x = domain, y = percent, fill = domain)) +
-                        geom_col() +
+                        geom_col(colour = "black") +
                         scale_fill_manual(name = "",
                                           values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00")) +
                         panel_border() + background_grid(major = "xy", minor = "") +
