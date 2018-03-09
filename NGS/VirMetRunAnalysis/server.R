@@ -119,7 +119,8 @@ shinyServer(function(input, output) {
                         
                         params <- list(orgs_file = input$orgs_file$datapath,
                                        reads_file = input$reads_file$datapath,
-                                       sample_name = input$chosen_sample)
+                                       sample_name = input$chosen_sample,
+                                       rows_selected = input$table_species_rows_selected)
                         
                         rmarkdown::render(tempReport, output_file = file,
                                           params = params,
@@ -141,4 +142,3 @@ shinyServer(function(input, output) {
           if (length(unique(substr(input$chosen_sample, 1, 10))) > 1) {"More than one sample selected!"}
           })
 })
-
