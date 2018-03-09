@@ -38,9 +38,9 @@ shinyServer(function(input, output) {
                         panel_border() + background_grid(major = "xy", minor = "") +
                         xlab("") + ylab("") +
                         facet_wrap( ~ sample) +
-                        theme(legend.position="bottom") + theme(legend.title=element_blank()) +
-                        theme(axis.text.x  = element_text(angle=90, vjust=0.4, hjust = 1)) +
-                        scale_x_discrete(breaks=NULL)
+                        theme(legend.position = "bottom") + theme(legend.title = element_blank()) +
+                        theme(axis.text.x  = element_text(angle = 90, vjust = 0.4, hjust = 1)) +
+                        scale_x_discrete(breaks = NULL)
                 })
         
         output$plot_domain <- renderPlot({
@@ -69,9 +69,9 @@ shinyServer(function(input, output) {
                         panel_border() + background_grid(major = "xy", minor = "") +
                         xlab("") + ylab("") +
                         facet_wrap( ~ sample) +
-                        theme(legend.position="bottom") + theme(legend.title=element_blank()) +
-                        theme(axis.text.x  = element_text(angle=90, vjust=0.4, hjust = 1)) + 
-                        scale_x_discrete(breaks=NULL)
+                        theme(legend.position = "bottom") + theme(legend.title = element_blank()) +
+                        theme(axis.text.x  = element_text(angle = 90, vjust = 0.4, hjust = 1)) + 
+                        scale_x_discrete(breaks = NULL)
                 })
         
         output$table_ssciname <- DT::renderDataTable(
@@ -82,7 +82,8 @@ shinyServer(function(input, output) {
           req(!(is.null(input$chosen_sample)))
           orgs_data() %>%
             filter(sample %in% input$chosen_sample) %>%
-            select(ssciname, species, reads, covered_percent, covered_score, sample)
+            select(ssciname, species, reads, covered_percent, covered_score, sample) %>%
+            arrange(desc(reads))
           })
 
         output$table_species <- DT::renderDataTable(
@@ -96,7 +97,16 @@ shinyServer(function(input, output) {
             select(species, reads, sample) %>%
             group_by(species, sample) %>%
             summarise(reads_sum = sum(reads)) %>%
-            spread(key = sample, value = reads_sum)
+            spread(key = sample, value = reads_sum) %>%
+            ungroup() %>%
+            mutate(reads_total = as.integer(rowSums(.[,-1], na.rm = TRUE))) %>%
+            mutate(percent = round(reads_total/sum(reads_total)*100, 3)) %>%
+            mutate(abundance = strrep("+", 1 + round(percent/max(percent)*9))) %>%
+            mutate(abundance = ifelse(reads_total < 20, "-", abundance)) %>%
+            mutate(occurence = rowSums(is.na(.))) %>%
+            arrange(desc(reads_total)) %>%
+            arrange(occurence) %>%
+            select(-percent, -abundance, -occurence)
           })
 
         output$report <- downloadHandler(
@@ -118,7 +128,7 @@ shinyServer(function(input, output) {
         
         output$samples_found <- renderUI({
           found_samples <- reads_data() %>% arrange(sample) %>% .$sample %>% unique() 
-          selectInput("chosen_sample", "Choose one or more samples:", found_samples, multiple=TRUE, selectize=FALSE, size = 10)
+          selectInput("chosen_sample", "Choose one or more samples:", found_samples, multiple = TRUE, selectize = FALSE, size = 10)
           })
         
         
