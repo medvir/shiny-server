@@ -5,6 +5,7 @@ params:
    orgs_file: ""
    reads_file: ""
    sample_name: ""
+   rows_selected: ""
 ---
 
 ```{r, include = FALSE}
@@ -15,17 +16,28 @@ library(ggplot2)
 library(readr)
 library(knitr)
 
-orgs_data = read.table(params$orgs_file, sep = '\t', header = TRUE)
-reads_data = read.table(params$reads_file, sep = '\t', header = TRUE)
-run_name = reads_data$run[1]
-filtered_reads = reads_data %>%
-        filter(category == "passing_filter") %>%
-        filter(sample %in% params$sample_name) %>%
-        select(reads) %>%
-        mutate(reads = sum(reads)) %>%
-        sample_n(1) %>%
-        as.integer()
-if (filtered_reads*0.00001 > 10) {min_reads = round(filtered_reads*0.00001, 0)} else {min_reads = 10}
+orgs_data <-
+  read_delim(params$orgs_file, "\t") %>%
+  mutate(covered_percent = 100 * covered_region / seq_len) %>%
+  mutate(covered_max = 100 * reads * 151 / seq_len) %>%
+  mutate(covered_max = if_else(covered_max > 100, 100, covered_max)) %>%
+  mutate(covered_score = round(100 * covered_percent / covered_max, 1)) %>%
+  mutate(covered_percent = round(covered_percent, 1))
+
+reads_data <-
+  read_delim(params$reads_file, "\t")
+
+run_name <-
+  reads_data$run[1]
+
+filtered_reads <-
+  reads_data %>%
+  filter(category == "passing_filter") %>%
+  filter(sample %in% params$sample_name) %>%
+  select(reads) %>%
+  mutate(reads = sum(reads)) %>%
+  sample_n(1) %>%
+  as.integer()
 ```
 
 ## Run Information
@@ -34,7 +46,6 @@ t_info = data.frame()
 t_info = rbind(t_info, data.frame(key = "Run name", value = run_name))
 t_info = rbind(t_info, data.frame(key = "Sample name", value = params$sample_name))
 t_info = rbind(t_info, data.frame(key = "Total filtered reads", value = paste(round(filtered_reads/1000000, 3), "M")))
-t_info = rbind(t_info, data.frame(key = "Minimal reads threshold", value = paste(min_reads, "(0.001% or 10)")))
 t_info = rbind(t_info, data.frame(key = "Report date", value = date()))
 t_info = rbind(t_info, data.frame(key = "User name", value = Sys.info()[7]))
 row.names(t_info) = NULL
@@ -53,7 +64,8 @@ t_domain = reads_data %>%
                 category %in% c("viral_reads") ~ "viral",
                 category %in% c("matching_humanGRCh38") ~ "human",
                 category %in% c("undetermined_reads") ~ "unknown",
-                category %in% c("matching_bt_ref", "matching_fungi1") ~ "other",
+                category %in% c("matching_bt_ref") ~ "bovine",
+                category %in% c("matching_fungi1") ~ "fungal",
                 TRUE ~ "none"
                 )) %>%
         filter(!(domain == "none")) %>%
@@ -63,25 +75,42 @@ t_domain = reads_data %>%
         sample_n(1) %>%
         ungroup() %>%
         mutate(percent = round(reads/sum(reads)*100, 3)) %>%
-        mutate(abundance = strrep("+", 1+round(percent/max(percent)*19)))
+        mutate(abundance = strrep("+", 1 + round(percent/max(percent)*19)))
 
 kable(t_domain)
 ```
 
-## Virus species
+## selected Virus species
 ```{r, echo = FALSE}
-t_species = orgs_data %>%
-        filter(sample %in% params$sample_name) %>%
-        group_by(organism) %>%
-        mutate(reads = sum(reads)) %>%
-        sample_n(1) %>%
-        ungroup() %>%
-        select(organism, reads) %>%
-        mutate(percent = round(reads/sum(reads)*100, 3)) %>%
-        mutate(abundance = strrep("+", 1+round(percent/max(percent)*19))) %>%
-        mutate(abundance = ifelse(reads < min_reads, "-", abundance)) %>%
-        arrange(desc(reads))
+t_species <-
+  orgs_data %>%
+  filter(sample %in% params$sample_name) %>%
+  select(species, reads, sample) %>%
+  group_by(species, sample) %>%
+  summarise(reads_sum = sum(reads)) %>%
+  spread(key = sample, value = reads_sum) %>%
+  ungroup() %>%
+  mutate(reads_total = as.integer(rowSums(.[,-1], na.rm = TRUE))) %>%
+  mutate(percent = round(reads_total/sum(reads_total)*100, 3)) %>%
+  mutate(abundance = strrep("+", 1 + round(percent/max(percent)*9))) %>%
+  mutate(abundance = ifelse(reads_total < 20, "-", abundance)) %>%
+  mutate(occurence = rowSums(is.na(.))) %>%
+  arrange(desc(reads_total)) %>%
+  arrange(occurence) %>%
+  select(-percent, -abundance, -occurence)
 
-kable(t_species)
+t_species_selected <-
+  t_species[params$rows_selected, ]
+
+kable(t_species_selected)
 ```
 
+\newpage
+
+## rejected Virus species
+```{r, echo = FALSE}
+t_species_unselected <-
+  setdiff(t_species, t_species_selected)
+
+kable(t_species_unselected)
+```
