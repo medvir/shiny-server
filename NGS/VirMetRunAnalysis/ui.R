@@ -25,6 +25,7 @@ shinyUI(fluidPage(
                        )
                 )
         ),
+        hr(),
         fluidRow(
                 column(6,
                        h3("Number of raw and quality filtered reads"),
@@ -35,13 +36,12 @@ shinyUI(fluidPage(
                        plotOutput(outputId = "plot_domain")
                 )
         ),
+        hr(),
         fluidRow(
-                column(12,
-                       mainPanel(
-                         tabsetPanel(
-                           tabPanel("Detected virus species", DT::dataTableOutput("table_species")),
-                           tabPanel("Detected virus sscinames", DT::dataTableOutput("table_ssciname"))
-                         )
+                column(6,
+                       tabPanel("Detected virus species", DT::dataTableOutput("table_species"))),
+                column(6,
+                       tabPanel("Detected virus sscinames", DT::dataTableOutput("table_ssciname")
                        )
                 )
         )
