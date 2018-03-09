@@ -17,10 +17,10 @@ shinyServer(function(input, output) {
         orgs_data <- reactive({
                 req(input$orgs_file)
                 read.delim(input$orgs_file$datapath, sep = "\t") %>%
-                  mutate(covered_percent = covered_region / seq_len * 100) %>%
-                  mutate(covered_max = reads * 151 / seq_len * 100) %>%
+                  mutate(covered_percent = 100 * covered_region / seq_len) %>%
+                  mutate(covered_max = 100 * reads * 151 / seq_len) %>%
                   mutate(covered_max = if_else(covered_max > 100, 100, covered_max)) %>%
-                  mutate(covered_score = round(covered_percent / covered_max * 100, 1)) %>%
+                  mutate(covered_score = round(100 * covered_percent / covered_max, 1)) %>%
                   mutate(covered_percent = round(covered_percent, 1))
                 })
        
