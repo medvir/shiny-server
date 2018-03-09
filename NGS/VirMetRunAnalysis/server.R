@@ -77,6 +77,7 @@ shinyServer(function(input, output) {
         output$table_ssciname <- DT::renderDataTable(
           filter = "top",
           rownames = FALSE,
+          options = list(pageLength = 100, autoWidth = FALSE),
           {
           req(!(is.null(input$chosen_sample)))
           orgs_data() %>%
@@ -87,6 +88,7 @@ shinyServer(function(input, output) {
         output$table_species <- DT::renderDataTable(
           filter = "top",
           rownames = FALSE,
+          options = list(pageLength = 100, autoWidth = FALSE),
           {
           req(!(is.null(input$chosen_sample)))
           orgs_data() %>%
