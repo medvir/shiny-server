@@ -80,7 +80,7 @@ t_domain = reads_data %>%
 kable(t_domain)
 ```
 
-## selected Virus species
+## Relevant Virus species
 ```{r, echo = FALSE}
 t_species <-
   orgs_data %>%
@@ -107,7 +107,7 @@ kable(t_species_selected)
 
 \newpage
 
-## rejected Virus species
+## Rejected Virus species
 ```{r, echo = FALSE}
 t_species_unselected <-
   setdiff(t_species, t_species_selected)
