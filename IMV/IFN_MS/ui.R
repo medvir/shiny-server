@@ -13,7 +13,7 @@ library(tidyverse)
 shinyUI(fluidPage(
   
   # Application title
-  titlePanel("Extract interpheron MS data"),
+  titlePanel("Extract interferon MS data"),
   
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
