@@ -7,20 +7,16 @@ library(readr)
 library(DT)
 #library(shinythemes)
 
-wd = "/Volumes/analyses/VirMetResults/"
-
 shinyServer(function(input, output) {
     
-    shinyDirChoose(input, "dir", roots = c(wd = wd), filetypes = 'none')
-
     reads_data <- reactive({
-        req(input$dir)
-        read_delim(paste0(wd, input$dir$path[[2]], "/run_reads_summary.tsv"), "\t")
+        req(input$reads_file)
+        read_delim(input$reads_file$datapath, "\t")
     })
     
     orgs_data <- reactive({
-        req(input$dir)
-        read_delim(paste0(wd, input$dir$path[[2]], "/orgs_species_found.tsv"), "\t") %>%
+        req(input$orgs_file)
+        read.delim(input$orgs_file$datapath, sep = "\t") %>%
             mutate(covered_percent = 100 * covered_region / seq_len) %>%
             mutate(covered_max = 100 * reads * 151 / seq_len) %>%
             mutate(covered_max = if_else(covered_max > 100, 100, covered_max)) %>%
@@ -82,7 +78,7 @@ shinyServer(function(input, output) {
     })
     
     output$table_ssciname <- DT::renderDataTable(
-        filter = "none",
+        filter = "top",
         rownames = FALSE,
         options = list(pageLength = 100, autoWidth = FALSE),
         {
@@ -155,8 +151,7 @@ shinyServer(function(input, output) {
     
     output$samples_found <- renderUI({
         found_samples <- reads_data() %>% arrange(sample) %>% .$sample %>% unique() 
-        selectInput("chosen_sample", "Choose one or more samples:", found_samples,
-                    multiple = TRUE, selected = found_samples[1], selectize = FALSE, size = 10)
+        selectInput("chosen_sample", "Choose one or more samples:", found_samples, multiple = TRUE, selectize = FALSE, size = 10)
     })
     
     output$check_tsv <- renderText({

@@ -1,5 +1,4 @@
 library(shiny)
-library(shinyFiles)
 library(DT)
 
 shinyUI(fluidPage(
@@ -9,10 +8,9 @@ shinyUI(fluidPage(
         fluidRow(
                 column(4,
                        wellPanel(
-                           shinyDirButton("dir", "Select virmet_output directory",
-                                          "Please select a directory", FALSE,
-                                          buttonType = "default"),
-                           span(h4(textOutput("check_tsv")), style = "color:red")
+                               fileInput("reads_file", "Select run_reads_summary.tsv file:", accept = ".tsv"),
+                               fileInput("orgs_file", "Select orgs_species_found.tsv file:", accept = ".tsv"),
+                               span(h4(textOutput("check_tsv")), style = "color:red")
                        )),
                 column(4,
                        wellPanel(uiOutput("samples_found"))),
