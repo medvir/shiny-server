@@ -17,11 +17,10 @@ shinyServer(function(input, output) {
     orgs_data <- reactive({
         req(input$orgs_file)
         read.delim(input$orgs_file$datapath, sep = "\t") %>%
-            mutate(covered_percent = 100 * covered_region / seq_len) %>%
-            mutate(covered_max = 100 * reads * 151 / seq_len) %>%
-            mutate(covered_max = if_else(covered_max > 100, 100, covered_max)) %>%
-            mutate(covered_score = round(100 * covered_percent / covered_max, 1)) %>%
-            mutate(covered_percent = round(covered_percent, 1)) #%>%
+          mutate(covered_percent = 100 * covered_region / seq_len) %>%
+          mutate(covered_exp = 100 * (1 - exp(-reads * 151 / seq_len))) %>%
+          mutate(covered_score = round(100 * covered_percent / covered_exp, 1)) %>%
+          mutate(covered_percent = round(covered_percent, 1))
             #mutate(rpkm = reads / (seq_len / 1000 * passing_filter / 1000000))
     })
     
@@ -86,7 +85,8 @@ shinyServer(function(input, output) {
             orgs_data() %>%
                 filter(sample %in% input$chosen_sample) %>%
                 filter(species %in% species_selected()) %>%
-                select(ssciname, reads, covered_percent, covered_score, sample) %>%
+              separate(stitle, c('short_name', 'appendix'), sep = ', complete', extra = 'merge') %>%
+                select(short_name, reads, covered_score, sample) %>%
                 arrange(desc(reads))
         })
     
