@@ -5,7 +5,6 @@ library(dplyr)
 library(ggplot2)
 library(readr)
 library(DT)
-#library(shinythemes)
 
 shinyServer(function(input, output) {
     
@@ -21,7 +20,6 @@ shinyServer(function(input, output) {
           mutate(covered_exp = 100 * (1 - exp(-reads * 151 / seq_len))) %>%
           mutate(covered_score = round(100 * covered_percent / covered_exp, 1)) %>%
           mutate(covered_percent = round(covered_percent, 1))
-            #mutate(rpkm = reads / (seq_len / 1000 * passing_filter / 1000000))
     })
     
     output$plot_run <- renderPlot({
@@ -85,10 +83,11 @@ shinyServer(function(input, output) {
             orgs_data() %>%
                 filter(sample %in% input$chosen_sample) %>%
                 filter(species %in% species_selected()) %>%
-              separate(stitle, c('short_name', 'appendix'), sep = ', complete', extra = 'merge') %>%
+                separate(stitle, c('short_name', 'appendix'), sep = ', complete', extra = 'merge') %>%
                 select(short_name, reads, covered_score, sample) %>%
                 arrange(desc(reads))
         })
+    
     
     table_species <- reactive({
         req(!(is.null(input$chosen_sample)))
@@ -100,13 +99,7 @@ shinyServer(function(input, output) {
             spread(key = sample, value = reads_sum) %>%
             ungroup() %>%
             mutate(reads_total = as.integer(rowSums(.[,-1], na.rm = TRUE))) %>%
-            mutate(percent = round(reads_total/sum(reads_total)*100, 3)) %>%
-            mutate(abundance = strrep("+", 1 + round(percent/max(percent)*9))) %>%
-            mutate(abundance = ifelse(reads_total < 20, "-", abundance)) %>%
-            mutate(occurence = rowSums(is.na(.))) %>%
-            arrange(desc(reads_total)) %>%
-            arrange(occurence) %>%
-            select(-percent, -abundance, -occurence)
+            arrange(desc(reads_total))
     })
     
     species_selected <- reactive({
@@ -151,7 +144,8 @@ shinyServer(function(input, output) {
     
     output$samples_found <- renderUI({
         found_samples <- reads_data() %>% arrange(sample) %>% .$sample %>% unique() 
-        selectInput("chosen_sample", "Choose one or more samples:", found_samples, multiple = TRUE, selectize = FALSE, size = 10)
+        selectInput("chosen_sample", "Choose one or more samples:", found_samples, multiple = TRUE,
+                    selected = found_samples[1], selectize = FALSE, size = 10)
     })
     
     output$check_tsv <- renderText({
