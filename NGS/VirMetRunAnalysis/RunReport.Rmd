@@ -81,7 +81,7 @@ kable(t_domain)
 ```
 
 ## Relevant Virus species
-```{r, echo = FALSE}
+```{r, results='asis', echo=FALSE}
 t_species <-
   orgs_data %>%
   filter(sample %in% params$sample_name) %>%
@@ -92,17 +92,20 @@ t_species <-
   ungroup() %>%
   mutate(reads_total = as.integer(rowSums(.[,-1], na.rm = TRUE))) %>%
   mutate(percent = round(reads_total/sum(reads_total)*100, 3)) %>%
-  mutate(abundance = strrep("+", 1 + round(percent/max(percent)*9))) %>%
-  mutate(abundance = ifelse(reads_total < 20, "-", abundance)) %>%
-  mutate(occurence = rowSums(is.na(.))) %>%
   arrange(desc(reads_total)) %>%
-  arrange(occurence) %>%
-  select(-percent, -abundance, -occurence)
+  select(-percent)
 
 t_species_selected <-
   t_species[params$rows_selected, ]
 
-kable(t_species_selected)
+#if (nrows(t_species_selected)) >= 1 {kable(t_species_selected)}
+
+if (nrow(t_species_selected) == 0) {
+    cat("No relevant virus species detected.")
+} else {
+    kable(t_species_selected)
+}
+
 ```
 
 \newpage
