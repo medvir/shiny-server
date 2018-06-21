@@ -1,0 +1,117 @@
+library(shiny)
+library(tidyverse)
+library(stringr)
+library(formattable)
+
+well_dict = 1:96
+names(well_dict) = c("A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12",
+              "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B10", "B11", "B12",
+              "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12",
+              "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12",
+              "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E11", "E12",
+              "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
+              "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12",
+              "H1", "H2", "H3", "H4", "H5",  "H6", "H7","H8", "H9","H10", "H11", "H12")
+
+rgb_color <- function(n) {
+    col = rainbow(n, s = 1, v = 1, start = 0, end = max(1, n - 1)/n, alpha = 1)
+    #col = heat.colors(n, alpha = 1)
+    #col = terrain.colors(n, alpha = 1)
+    #col = topo.colors(n, alpha = 1)
+    #col =  cm.colors(n, alpha = 1)
+    rgb = sapply(col, function(x) paste0("R(", col2rgb(x, alpha = FALSE)[1], ",", col2rgb(x, alpha = FALSE)[2], ",", col2rgb(x, alpha = FALSE)[3], ")"))
+    names(rgb) = 1:n
+    return(rgb)
+}
+
+shinyServer(function(input, output) {
+    
+    export_data <- reactive({
+        req(input$export_file)
+        read_csv(input$export_file$datapath)
+    })
+    
+    
+    
+    template_data <- reactive({
+        sample_colors = rgb_color(nrow(export_data()))
+        
+        dat = export_data() %>%
+            mutate(Lambda_pat = ifelse(`GAPDH-Lambda Patientenproben PCR` == 1, 1, 0)) %>%
+            mutate(Lambda_contr = ifelse(`GAPDH-Lambda Kontrollen PCR` == 1, 1, 0)) %>%
+            
+            select(-`Source plate-ID`, -`Target plate ID`, -Id, -Conc.) %>%
+            rename(`Sample Name` = Name) %>%
+            
+            gather(key = target, value = value, -Well, -`Sample Name`) %>%
+            filter(value == 1) %>%
+            select(-value)
+        
+        sample_colors = rgb_color(nrow(dat))
+            
+        dat = dat %>%
+            mutate(`Target Name` = case_when(
+                grepl("CMV", target) ~ "CMV",
+                grepl("EBV", target) ~ "EBV",
+                grepl("BK", target) ~ "BK",
+                grepl("GAPDH", target) ~ "GAPDH",
+                grepl("Lambda", target) ~ "Lambda",
+                TRUE ~ "unknown"
+            )) %>%
+            
+            separate(Well, into = c("pos", "Well Position"), sep = "\\.") %>%
+            select(-pos) %>%
+            mutate(Well = well_dict[`Well Position`]) %>%
+
+            mutate(Reporter	= case_when(
+                `Target Name` == "CMV" ~ "FAM",
+                `Target Name` == "EBV" ~ "FAM",
+                `Target Name` == "BK" ~ "FAM",
+                `Target Name` == "GAPDH" ~ "VIC",
+                `Target Name` == "Lambda" ~ "FAM",
+                TRUE ~ "unknown"
+            )) %>%
+            
+            mutate(`Target Color` = case_when(
+                `Target Name` == "CMV" ~ "RGB(0,0,255)",
+                `Target Name` == "EBV" ~ "RGB(176,23,31)",
+                `Target Name` == "BK" ~ "RGB(0,139,69)",
+                `Target Name` == "GAPDH" ~ "RGB(255,128,64)",
+                `Target Name` == "Lambda" ~ "RGB(176,23,31)",
+                TRUE ~ "RGB(0,0,0)"
+            )) %>%
+            
+            mutate(`Sample Color` = seq.int(nrow(.))) %>%
+            mutate(`Sample Color` = sample_colors[`Sample Color`]) %>%
+            
+            mutate(Quencher = "TAMRA") %>%
+            mutate(Task = "UNKNOWN") %>%
+            mutate('Biogroup Name' = "", 'Biogroup Color' = "", Quantity = "", Comments = "") %>%
+            arrange(Well) %>%
+            select(Well, `Well Position`, `Sample Name`, `Sample Color`, `Biogroup Name`, `Biogroup Color`, `Target Name`, `Target Color`, Task,	Reporter, Quencher, Quantity, Comments)
+            
+        return(dat)
+    })
+    
+    
+    output$export_table <- renderTable({
+        req(input$export_file)
+        export_data()
+    })
+    
+    output$template_table <- renderTable({
+        req(input$export_file)
+        template_data()
+    })
+    
+    
+    output$template <- downloadHandler(
+        filename = function() {
+            paste("template-", Sys.Date(), ".txt", sep = "")
+        },
+        content = function(file) {
+            write.table(template_data(), file, quote=FALSE, sep='\t', col.names = FALSE)
+            #write.csv(template_data(), file, row.names = FALSE, quote = FALSE)
+        })
+    
+})
