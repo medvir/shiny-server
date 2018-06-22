@@ -16,10 +16,6 @@ names(well_dict) = c("A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10"
 
 rgb_color <- function(n) {
     col = rainbow(n, s = 1, v = 1, start = 0, end = max(1, n - 1)/n, alpha = 1)
-    #col = heat.colors(n, alpha = 1)
-    #col = terrain.colors(n, alpha = 1)
-    #col = topo.colors(n, alpha = 1)
-    #col =  cm.colors(n, alpha = 1)
     rgb = sapply(col, function(x) paste0("RGB(", col2rgb(x, alpha = FALSE)[1], ",", col2rgb(x, alpha = FALSE)[2], ",", col2rgb(x, alpha = FALSE)[3], ")"))
     names(rgb) = 1:n
     return(rgb)
@@ -49,11 +45,8 @@ shinyServer(function(input, output) {
             
             gather(key = target, value = value, -Well, -`Sample Name`) %>%
             filter(value == 1) %>%
-            select(-value)
-        
-        sample_colors = rgb_color(nrow(dat))
+            select(-value) %>%
             
-        dat = dat %>%
             mutate(`Target Name` = case_when(
                 grepl("CMV", target) ~ "CMV",
                 grepl("EBV", target) ~ "EBV",
@@ -83,10 +76,12 @@ shinyServer(function(input, output) {
                 `Target Name` == "GAPDH" ~ "RGB(240,228,66)",
                 `Target Name` == "Lambda" ~ "RGB(204,121,167)",
                 TRUE ~ "RGB(0,0,0)"
-            )) %>%
+            ))
+        
+        sample_colors = rgb_color(max(dat$Well))
             
-            mutate(`Sample Color` = seq.int(nrow(.))) %>%
-            mutate(`Sample Color` = sample_colors[`Sample Color`]) %>%
+        dat = dat %>%
+            mutate(`Sample Color` = sample_colors[Well]) %>%
             
             mutate(Quencher = "TAMRA") %>%
             mutate(Task = "UNKNOWN") %>%
@@ -114,7 +109,7 @@ shinyServer(function(input, output) {
         s_col_names = template_data() %>% pull('Sample Color')
         s_col_hex = template_data() %>% pull('Sample Color') %>% sapply(., function(x) rgb2hex(x)) %>% unname()
         
-        datatable(template_data(), options = list(pageLength = 100)) %>%
+        datatable(template_data(), rownames = FALSE, options = list(pageLength = 100)) %>%
             formatStyle('Target Color', backgroundColor = styleEqual(t_col_names, t_col_hex)) %>%
             formatStyle('Sample Color', backgroundColor = styleEqual(s_col_names, s_col_hex))
     })
