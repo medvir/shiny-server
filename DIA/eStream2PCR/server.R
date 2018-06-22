@@ -14,16 +14,21 @@ names(well_dict) = c("A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10"
               "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12",
               "H1", "H2", "H3", "H4", "H5",  "H6", "H7","H8", "H9","H10", "H11", "H12")
 
+color_dict = c("RGB(230,159,0)", "RGB(86,180,233)", "RGB(0,158,115)", "RGB(240,228,66)", "RGB(0,114,178)", "RGB(213,94,0)", "RGB(204,121,167)", "RGB(153,153,153)")
+names(color_dict) = 0:7
+
+rgb2hex <- function(v) {
+    sapply(strsplit(as.character(v), "RGB\\(|,|)"), function(x) rgb(x[2], x[3], x[4], maxColorValue=255))
+    }
+
 rgb_color <- function(n) {
     col = rainbow(n, s = 1, v = 1, start = 0, end = max(1, n - 1)/n, alpha = 1)
     rgb = sapply(col, function(x) paste0("RGB(", col2rgb(x, alpha = FALSE)[1], ",", col2rgb(x, alpha = FALSE)[2], ",", col2rgb(x, alpha = FALSE)[3], ")"))
     names(rgb) = 1:n
     return(rgb)
-}
+    }
 
-rgb2hex <- function(v) {
-    sapply(strsplit(as.character(v), "RGB\\(|,|)"), function(x) rgb(x[2], x[3], x[4], maxColorValue=255))
-}
+
 
 shinyServer(function(input, output) {
     
@@ -73,7 +78,7 @@ shinyServer(function(input, output) {
                 `Target Name` == "CMV" ~ "RGB(230,159,0)",
                 `Target Name` == "EBV" ~ "RGB(86,180,233)",
                 `Target Name` == "BK" ~ "RGB(0,158,115)",
-                `Target Name` == "GAPDH" ~ "RGB(240,228,66)",
+                `Target Name` == "GAPDH" ~ "RGB(213,94,0)",
                 `Target Name` == "Lambda" ~ "RGB(204,121,167)",
                 TRUE ~ "RGB(0,0,0)"
             ))
@@ -82,6 +87,8 @@ shinyServer(function(input, output) {
             
         dat = dat %>%
             mutate(`Sample Color` = sample_colors[Well]) %>%
+            #mutate(x = Well %% 8) %>%
+            #mutate(`Sample Color` = color_dict[Well %% 8]) %>%
             
             mutate(Quencher = "TAMRA") %>%
             mutate(Task = "UNKNOWN") %>%
@@ -127,7 +134,7 @@ shinyServer(function(input, output) {
             write.table(template_data() %>%
                             mutate(`Sample Color` = paste0("\"", `Sample Color`, "\"")) %>%
                             mutate(`Target Color` = paste0("\"", `Target Color`, "\"")),
-                        file, quote = FALSE, sep ='\t', row.names = FALSE)
+                        file, quote = FALSE, sep ='\t', row.names = FALSE, eol = "\r\n")
         })
     
 })
