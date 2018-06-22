@@ -20,13 +20,13 @@ rgb_color <- function(n) {
     #col = terrain.colors(n, alpha = 1)
     #col = topo.colors(n, alpha = 1)
     #col =  cm.colors(n, alpha = 1)
-    rgb = sapply(col, function(x) paste0("R(", col2rgb(x, alpha = FALSE)[1], ",", col2rgb(x, alpha = FALSE)[2], ",", col2rgb(x, alpha = FALSE)[3], ")"))
+    rgb = sapply(col, function(x) paste0("RGB(", col2rgb(x, alpha = FALSE)[1], ",", col2rgb(x, alpha = FALSE)[2], ",", col2rgb(x, alpha = FALSE)[3], ")"))
     names(rgb) = 1:n
     return(rgb)
 }
 
 rgb2hex <- function(v) {
-    sapply(strsplit(v, "RGB\\(|,|)"), function(x) rgb(x[2], x[3], x[4], maxColorValue=255))
+    sapply(strsplit(as.character(v), "RGB\\(|,|)"), function(x) rgb(x[2], x[3], x[4], maxColorValue=255))
 }
 
 shinyServer(function(input, output) {
@@ -109,8 +109,14 @@ shinyServer(function(input, output) {
 
     output$template_table <- DT::renderDataTable({
         req(input$export_file)
-        datatable(template_data(), options = list(pageLength = 100)) #%>%
-            #formatStyle('Target Name', backgroundColor = styleEqual('Target Color', sapply('Target Color', function(x) rgb2hex(x))))
+        t_col_names = template_data() %>% pull('Target Color')
+        t_col_hex = template_data() %>% pull('Target Color') %>% sapply(., function(x) rgb2hex(x)) %>% unname()
+        s_col_names = template_data() %>% pull('Sample Color')
+        s_col_hex = template_data() %>% pull('Sample Color') %>% sapply(., function(x) rgb2hex(x)) %>% unname()
+        
+        datatable(template_data(), options = list(pageLength = 100)) %>%
+            formatStyle('Target Color', backgroundColor = styleEqual(t_col_names, t_col_hex)) %>%
+            formatStyle('Sample Color', backgroundColor = styleEqual(s_col_names, s_col_hex))
     })
     
     output$export_table <- renderTable({
