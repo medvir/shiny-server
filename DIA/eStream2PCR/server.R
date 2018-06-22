@@ -2,6 +2,7 @@ library(shiny)
 library(tidyverse)
 library(stringr)
 library(formattable)
+library(DT)
 
 well_dict = 1:96
 names(well_dict) = c("A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12",
@@ -24,13 +25,16 @@ rgb_color <- function(n) {
     return(rgb)
 }
 
+rgb2hex <- function(v) {
+    sapply(strsplit(v, "RGB\\(|,|)"), function(x) rgb(x[2], x[3], x[4], maxColorValue=255))
+}
+
 shinyServer(function(input, output) {
     
     export_data <- reactive({
         req(input$export_file)
         read_csv(input$export_file$datapath)
     })
-    
     
     
     template_data <- reactive({
@@ -73,11 +77,11 @@ shinyServer(function(input, output) {
             )) %>%
             
             mutate(`Target Color` = case_when(
-                `Target Name` == "CMV" ~ "RGB(0,0,255)",
-                `Target Name` == "EBV" ~ "RGB(176,23,31)",
-                `Target Name` == "BK" ~ "RGB(0,139,69)",
-                `Target Name` == "GAPDH" ~ "RGB(255,128,64)",
-                `Target Name` == "Lambda" ~ "RGB(176,23,31)",
+                `Target Name` == "CMV" ~ "RGB(230,159,0)",
+                `Target Name` == "EBV" ~ "RGB(86,180,233)",
+                `Target Name` == "BK" ~ "RGB(0,158,115)",
+                `Target Name` == "GAPDH" ~ "RGB(240,228,66)",
+                `Target Name` == "Lambda" ~ "RGB(204,121,167)",
                 TRUE ~ "RGB(0,0,0)"
             )) %>%
             
@@ -93,25 +97,33 @@ shinyServer(function(input, output) {
         return(dat)
     })
     
+    all_targets = reactive({
+        template_data() %>% pull(`Target Name`) %>% unique()
+    })
+    
+    output$targets <- renderUI({
+        selectInput("targets", "Targets", multiple = TRUE, selectize = FALSE,
+                    choices = all_targets(),
+                    selected = all_targets())
+    })
+
+    output$template_table <- DT::renderDataTable({
+        req(input$export_file)
+        datatable(template_data(), options = list(pageLength = 100)) #%>%
+            #formatStyle('Target Name', backgroundColor = styleEqual('Target Color', sapply('Target Color', function(x) rgb2hex(x))))
+    })
     
     output$export_table <- renderTable({
         req(input$export_file)
         export_data()
     })
     
-    output$template_table <- renderTable({
-        req(input$export_file)
-        template_data()
-    })
-    
-    
     output$template <- downloadHandler(
         filename = function() {
             paste("template-", Sys.Date(), ".txt", sep = "")
         },
         content = function(file) {
-            write.table(template_data(), file, quote=FALSE, sep='\t', col.names = FALSE)
-            #write.csv(template_data(), file, row.names = FALSE, quote = FALSE)
+            write.table(template_data(), file, quote=FALSE, sep='\t', row.names = FALSE)
         })
     
 })

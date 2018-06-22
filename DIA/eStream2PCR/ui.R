@@ -1,5 +1,7 @@
 library(shiny)
 library(shinythemes)
+library(formattable)
+library(DT)
 
 shinyUI(fluidPage(
     #theme = shinytheme("lumen"),
@@ -12,19 +14,21 @@ shinyUI(fluidPage(
                )),
         column(6,
                wellPanel(
+                   #uiOutput("targets"),
                    downloadButton("template", "Download")
                ))
     ),
-    hr(),
+    # hr(),
     fluidRow(
         column(12,
                h3("PCR Template"),
-               tableOutput(outputId = "template_table")
-        )),
-    hr(),
-    fluidRow(
-        column(12,
-               h3("Export File"),
-               tableOutput(outputId = "export_table")
+               DT::dataTableOutput(outputId = "template_table")
+               )
         ))
-))
+    # hr(),
+    # fluidRow(
+    #     column(12,
+    #            h3("Export File"),
+    #            tableOutput(outputId = "export_table")
+    #     ))
+)
