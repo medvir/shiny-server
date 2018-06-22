@@ -124,7 +124,10 @@ shinyServer(function(input, output) {
             paste("template-", Sys.Date(), ".txt", sep = "")
         },
         content = function(file) {
-            write.table(template_data(), file, quote=FALSE, sep='\t', row.names = FALSE)
+            write.table(template_data() %>%
+                            mutate(`Sample Color` = paste0("\"", `Sample Color`, "\"")) %>%
+                            mutate(`Target Color` = paste0("\"", `Target Color`, "\"")),
+                        file, quote = FALSE, sep ='\t', row.names = FALSE)
         })
     
 })
