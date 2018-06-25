@@ -1,35 +1,38 @@
 library(shiny)
 library(tidyverse)
 library(stringr)
-library(formattable)
 library(DT)
 
 well_dict = 1:96
 names(well_dict) = c("A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12",
-              "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B10", "B11", "B12",
-              "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12",
-              "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12",
-              "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E11", "E12",
-              "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
-              "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12",
-              "H1", "H2", "H3", "H4", "H5",  "H6", "H7","H8", "H9","H10", "H11", "H12")
-
-color_dict = c("RGB(230,159,0)", "RGB(86,180,233)", "RGB(0,158,115)", "RGB(240,228,66)", "RGB(0,114,178)", "RGB(213,94,0)", "RGB(204,121,167)", "RGB(153,153,153)")
-names(color_dict) = 0:7
+                     "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B10", "B11", "B12",
+                     "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12",
+                     "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12",
+                     "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E11", "E12",
+                     "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
+                     "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12",
+                     "H1", "H2", "H3", "H4", "H5",  "H6", "H7","H8", "H9","H10", "H11", "H12")
 
 rgb2hex <- function(v) {
     sapply(strsplit(as.character(v), "RGB\\(|,|)"), function(x) rgb(x[2], x[3], x[4], maxColorValue=255))
-    }
+}
 
-rgb_color <- function(n) {
+rgb_color_rain <- function(n) {
     col = rainbow(n, s = 1, v = 1, start = 0, end = max(1, n - 1)/n, alpha = 1)
     rgb = sapply(col, function(x) paste0("RGB(", col2rgb(x, alpha = FALSE)[1], ",", col2rgb(x, alpha = FALSE)[2], ",", col2rgb(x, alpha = FALSE)[3], ")"))
     names(rgb) = 1:n
     return(rgb)
-    }
+}
+
+rgb_color_rep <- function(n) {
+    col = c("RGB(230,159,0)", "RGB(86,180,233)", "RGB(0,158,115)", "RGB(240,228,66)", "RGB(0,114,178)", "RGB(213,94,0)", "RGB(204,121,167)", "RGB(153,153,153)")
+    rgb = rep(col, length.out = n)
+    names(rgb) = 1:n
+    return(rgb)
+}
 
 
-
+### Shiny Server
 shinyServer(function(input, output) {
     
     export_data <- reactive({
@@ -39,7 +42,7 @@ shinyServer(function(input, output) {
     
     
     template_data <- reactive({
-        sample_colors = rgb_color(nrow(export_data()))
+        #sample_colors = (nrow(export_data()))
         
         dat = export_data() %>%
             mutate(Lambda_pat = ifelse(`GAPDH-Lambda Patientenproben PCR` == 1, 1, 0)) %>%
@@ -64,7 +67,7 @@ shinyServer(function(input, output) {
             separate(Well, into = c("pos", "Well Position"), sep = "\\.") %>%
             select(-pos) %>%
             mutate(Well = well_dict[`Well Position`]) %>%
-
+            
             mutate(Reporter	= case_when(
                 `Target Name` == "CMV" ~ "FAM",
                 `Target Name` == "EBV" ~ "FAM",
@@ -83,34 +86,43 @@ shinyServer(function(input, output) {
                 TRUE ~ "RGB(0,0,0)"
             ))
         
-        sample_colors = rgb_color(max(dat$Well))
-            
+        if (input$colors == "repeat") {
+            sample_colors = rgb_color_rep(max(dat$Well))
+        } else {
+            sample_colors = rgb_color_rain(max(dat$Well))
+        }
+        
         dat = dat %>%
             mutate(`Sample Color` = sample_colors[Well]) %>%
-            #mutate(x = Well %% 8) %>%
-            #mutate(`Sample Color` = color_dict[Well %% 8]) %>%
-            
             mutate(Quencher = "TAMRA") %>%
             mutate(Task = "UNKNOWN") %>%
             mutate('Biogroup Name' = "", 'Biogroup Color' = "", Quantity = "", Comments = "") %>%
             arrange(Well) %>%
             select(Well, `Well Position`, `Sample Name`, `Sample Color`, `Biogroup Name`, `Biogroup Color`, `Target Name`, `Target Color`, Task,	Reporter, Quencher, Quantity, Comments)
-            
+        
         return(dat)
     })
     
+    output$colors <- renderUI({
+        radioButtons("colors", "Sample Colors", choices = c("repeat", "rainbow"), selected = "repeat")
+    })
+
+    output$cycler <- renderUI({
+        radioButtons("cycler", "Cycler", choices = c("QuantStudio 3", "QuantStudio 5"), selected = "QuantStudio 3")
+    })
+    
+        
     all_targets = reactive({
         template_data() %>% pull(`Target Name`) %>% unique()
     })
-    
+
     output$targets <- renderUI({
-        selectInput("targets", "Targets", multiple = TRUE, selectize = FALSE,
+        checkboxGroupInput("targets", "Targets", #multiple = TRUE, selectize = FALSE,
                     choices = all_targets(),
                     selected = all_targets())
     })
-
+    
     output$template_table <- DT::renderDataTable({
-        req(input$export_file)
         t_col_names = template_data() %>% pull('Target Color')
         t_col_hex = template_data() %>% pull('Target Color') %>% sapply(., function(x) rgb2hex(x)) %>% unname()
         s_col_names = template_data() %>% pull('Sample Color')
@@ -119,11 +131,6 @@ shinyServer(function(input, output) {
         datatable(template_data(), rownames = FALSE, options = list(pageLength = 100)) %>%
             formatStyle('Target Color', backgroundColor = styleEqual(t_col_names, t_col_hex)) %>%
             formatStyle('Sample Color', backgroundColor = styleEqual(s_col_names, s_col_hex))
-    })
-    
-    output$export_table <- renderTable({
-        req(input$export_file)
-        export_data()
     })
     
     output$template <- downloadHandler(
@@ -135,6 +142,5 @@ shinyServer(function(input, output) {
                             mutate(`Sample Color` = paste0("\"", `Sample Color`, "\"")) %>%
                             mutate(`Target Color` = paste0("\"", `Target Color`, "\"")),
                         file, quote = FALSE, sep ='\t', row.names = FALSE, eol = "\r\n")
-        })
-    
+    })
 })
