@@ -31,6 +31,15 @@ rgb_color_rep <- function(n) {
     return(rgb)
 }
 
+rgb_color_ran <- function(n) {
+    rgb = vector(length = n)
+    for (i in 1:n) {
+        rgb[i] = paste0("RGB(", sample(25:255, 1), ",", sample(0:255, 1), ",", sample(50:255, 1), ")")
+    }
+    names(rgb) = 1:n
+    return(rgb)
+}
+
 
 ### Shiny Server
 shinyServer(function(input, output) {
@@ -88,9 +97,11 @@ shinyServer(function(input, output) {
         
         if (input$colors == "repeat") {
             sample_colors = rgb_color_rep(max(dat$Well))
+        } else if (input$colors == "random") {
+            sample_colors = rgb_color_ran(max(dat$Well))
         } else {
             sample_colors = rgb_color_rain(max(dat$Well))
-        }
+        } 
         
         dat = dat %>%
             mutate(`Sample Color` = sample_colors[Well]) %>%
@@ -104,7 +115,7 @@ shinyServer(function(input, output) {
     })
     
     output$colors <- renderUI({
-        radioButtons("colors", "Sample Colors", choices = c("repeat", "rainbow"), selected = "repeat")
+        radioButtons("colors", "Sample Colors", choices = c("repeat", "rainbow", "random"), selected = "repeat")
     })
 
     output$cycler <- renderUI({
@@ -138,9 +149,15 @@ shinyServer(function(input, output) {
             paste("template-", Sys.Date(), ".txt", sep = "")
         },
         content = function(file) {
+            writeLines("[Sample Setup]", file)
             write.table(template_data() %>%
                             mutate(`Sample Color` = paste0("\"", `Sample Color`, "\"")) %>%
                             mutate(`Target Color` = paste0("\"", `Target Color`, "\"")),
-                        file, quote = FALSE, sep ='\t', row.names = FALSE, eol = "\r\n")
+                        file,
+                        quote = FALSE,
+                        sep ='\t',
+                        row.names = FALSE,
+                        eol = "\r\n",
+                        append = TRUE)
     })
 })
