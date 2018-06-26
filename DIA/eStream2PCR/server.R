@@ -17,21 +17,21 @@ rgb2hex <- function(v) {
     sapply(strsplit(as.character(v), "RGB\\(|,|)"), function(x) rgb(x[2], x[3], x[4], maxColorValue=255))
 }
 
-rgb_color_rain <- function(n) {
+rgb_color_rainbow <- function(n) {
     col = rainbow(n, s = 1, v = 1, start = 0, end = max(1, n - 1)/n, alpha = 1)
     rgb = sapply(col, function(x) paste0("RGB(", col2rgb(x, alpha = FALSE)[1], ",", col2rgb(x, alpha = FALSE)[2], ",", col2rgb(x, alpha = FALSE)[3], ")"))
     names(rgb) = 1:n
     return(rgb)
 }
 
-rgb_color_rep <- function(n) {
+rgb_color_repeat <- function(n) {
     col = c("RGB(230,159,0)", "RGB(86,180,233)", "RGB(0,158,115)", "RGB(240,228,66)", "RGB(0,114,178)", "RGB(213,94,0)", "RGB(204,121,167)", "RGB(153,153,153)")
     rgb = rep(col, length.out = n)
     names(rgb) = 1:n
     return(rgb)
 }
 
-rgb_color_ran <- function(n) {
+rgb_color_random <- function(n) {
     rgb = vector(length = n)
     for (i in 1:n) {
         rgb[i] = paste0("RGB(", sample(25:255, 1), ",", sample(0:255, 1), ",", sample(50:255, 1), ")")
@@ -93,18 +93,19 @@ shinyServer(function(input, output) {
                 `Target Name` == "GAPDH" ~ "RGB(213,94,0)",
                 `Target Name` == "Lambda" ~ "RGB(204,121,167)",
                 TRUE ~ "RGB(0,0,0)"
-            ))
+            )) %>%
+            mutate(sample_color_id = group_indices(.,`Sample Name`))
         
         if (input$colors == "repeat") {
-            sample_colors = rgb_color_rep(max(dat$Well))
+            sample_colors = rgb_color_repeat(max(dat$sample_color_id))
         } else if (input$colors == "random") {
-            sample_colors = rgb_color_ran(max(dat$Well))
+            sample_colors = rgb_color_random(max(dat$sample_color_id))
         } else {
-            sample_colors = rgb_color_rain(max(dat$Well))
+            sample_colors = rgb_color_rainbow(max(dat$sample_color_id))
         } 
         
         dat = dat %>%
-            mutate(`Sample Color` = sample_colors[Well]) %>%
+            mutate(`Sample Color` = sample_colors[sample_color_id]) %>%
             mutate(Quencher = "TAMRA") %>%
             mutate(Task = "UNKNOWN") %>%
             mutate('Biogroup Name' = "", 'Biogroup Color' = "", Quantity = "", Comments = "") %>%
