@@ -119,20 +119,19 @@ shinyServer(function(input, output) {
         radioButtons("colors", "Sample Colors", choices = c("repeat", "rainbow", "random"), selected = "repeat")
     })
 
-    output$cycler <- renderUI({
-        radioButtons("cycler", "Cycler", choices = c("QuantStudio 3", "QuantStudio 5"), selected = "QuantStudio 3")
-    })
-    
-        
-    all_targets = reactive({
-        template_data() %>% pull(`Target Name`) %>% unique()
-    })
-
-    output$targets <- renderUI({
-        checkboxGroupInput("targets", "Targets", #multiple = TRUE, selectize = FALSE,
-                    choices = all_targets(),
-                    selected = all_targets())
-    })
+    # output$cycler <- renderUI({
+    #     radioButtons("cycler", "Cycler", choices = c("QuantStudio 3", "QuantStudio 5"), selected = "QuantStudio 3")
+    # })
+    # 
+    # all_targets = reactive({
+    #     template_data() %>% pull(`Target Name`) %>% unique()
+    # })
+    # 
+    # output$targets <- renderUI({
+    #     checkboxGroupInput("targets", "Targets", #multiple = TRUE, selectize = FALSE,
+    #                 choices = all_targets(),
+    #                 selected = all_targets())
+    # })
     
     output$template_table <- DT::renderDataTable({
         t_col_names = template_data() %>% pull('Target Color')
