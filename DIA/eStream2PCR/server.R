@@ -44,19 +44,11 @@ rgb_color_random <- function(n) {
 ### Shiny Server
 shinyServer(function(input, output) {
     
-    export_data <- reactive({
-        req(input$export_file)
-        read_csv(input$export_file$datapath)
-    })
-    
-    
-    template_data <- reactive({
-        #sample_colors = (nrow(export_data()))
-        
-        dat = export_data() %>%
+    eStream_data <- reactive({
+        req(input$eStream_file)
+        read_csv(input$eStream_file$datapath) %>%
             mutate(Lambda_pat = ifelse(`GAPDH-Lambda Patientenproben PCR` == 1, 1, 0)) %>%
             mutate(Lambda_contr = ifelse(`GAPDH-Lambda Kontrollen PCR` == 1, 1, 0)) %>%
-            
             select(-`Source plate-ID`, -`Target plate ID`, -Id, -Conc.) %>%
             rename(`Sample Name` = Name) %>%
             
@@ -93,7 +85,14 @@ shinyServer(function(input, output) {
                 `Target Name` == "GAPDH" ~ "RGB(213,94,0)",
                 `Target Name` == "Lambda" ~ "RGB(204,121,167)",
                 TRUE ~ "RGB(0,0,0)"
-            )) %>%
+            )) 
+    })
+    
+    
+    template_data <- reactive({
+        
+        dat = eStream_data() %>%
+            filter(`Target Name` %in% input$targets) %>%
             mutate(sample_color_id = group_indices(.,`Sample Name`))
         
         if (input$colors == "repeat") {
@@ -104,34 +103,26 @@ shinyServer(function(input, output) {
             sample_colors = rgb_color_rainbow(max(dat$sample_color_id))
         } 
         
-        dat = dat %>%
+        dat %>%
             mutate(`Sample Color` = sample_colors[sample_color_id]) %>%
             mutate(Quencher = "TAMRA") %>%
             mutate(Task = "UNKNOWN") %>%
             mutate('Biogroup Name' = "", 'Biogroup Color' = "", Quantity = "", Comments = "") %>%
             arrange(Well) %>%
             select(Well, `Well Position`, `Sample Name`, `Sample Color`, `Biogroup Name`, `Biogroup Color`, `Target Name`, `Target Color`, Task,	Reporter, Quencher, Quantity, Comments)
-        
-        return(dat)
     })
     
     output$colors <- renderUI({
         radioButtons("colors", "Sample Colors", choices = c("repeat", "rainbow", "random"), selected = "repeat")
     })
 
-    # output$cycler <- renderUI({
-    #     radioButtons("cycler", "Cycler", choices = c("QuantStudio 3", "QuantStudio 5"), selected = "QuantStudio 3")
-    # })
-    # 
-    # all_targets = reactive({
-    #     template_data() %>% pull(`Target Name`) %>% unique()
-    # })
-    # 
-    # output$targets <- renderUI({
-    #     checkboxGroupInput("targets", "Targets", #multiple = TRUE, selectize = FALSE,
-    #                 choices = all_targets(),
-    #                 selected = all_targets())
-    # })
+    all_targets = reactive({
+        eStream_data() %>% pull(`Target Name`) %>% unique()
+    })
+
+    output$targets <- renderUI({
+        checkboxGroupInput("targets", "Targets", choices = all_targets(), selected = all_targets())
+    })
     
     output$template_table <- DT::renderDataTable({
         t_col_names = template_data() %>% pull('Target Color')
@@ -144,7 +135,7 @@ shinyServer(function(input, output) {
             formatStyle('Sample Color', backgroundColor = styleEqual(s_col_names, s_col_hex))
     })
     
-    output$template <- downloadHandler(
+    output$template_file <- downloadHandler(
         filename = function() {
             paste("template-", Sys.Date(), ".txt", sep = "")
         },
