@@ -31,10 +31,11 @@ rgb_color_repeat <- function(n) {
     return(rgb)
 }
 
-rgb_color_random <- function(n) {
+rgb_color_random <- function(n, s, v) {
     rgb = vector(length = n)
     for (i in 1:n) {
-        rgb[i] = paste0("RGB(", sample(25:255, 1), ",", sample(0:255, 1), ",", sample(50:255, 1), ")")
+        col = hsv(runif(1), s, v)
+        rgb[i] = paste0("RGB(", col2rgb(col, alpha = FALSE)[1], ",", col2rgb(col, alpha = FALSE)[2], ",", col2rgb(col, alpha = FALSE)[3], ")")
     }
     names(rgb) = 1:n
     return(rgb)
@@ -42,7 +43,7 @@ rgb_color_random <- function(n) {
 
 
 ### Shiny Server
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
     
     eStream_data <- reactive({
         req(input$eStream_file)
@@ -98,7 +99,7 @@ shinyServer(function(input, output) {
         if (input$colors == "repeat") {
             sample_colors = rgb_color_repeat(max(dat$sample_color_id))
         } else if (input$colors == "random") {
-            sample_colors = rgb_color_random(max(dat$sample_color_id))
+            sample_colors = rgb_color_random(max(dat$sample_color_id), input$saturation, input$value)
         } else {
             sample_colors = rgb_color_rainbow(max(dat$sample_color_id))
         } 
@@ -116,6 +117,16 @@ shinyServer(function(input, output) {
         radioButtons("colors", "Sample Colors", choices = c("repeat", "rainbow", "random"), selected = "repeat")
     })
 
+    output$saturation <- renderUI({
+        req(input$colors == "random")
+        sliderInput("saturation", "Saturation", 0, 1, value = .5, ticks = FALSE)
+    })
+    
+    output$value <- renderUI({
+        req(input$colors == "random")
+        sliderInput("value", "Value", 0, 1, value = .75, ticks = FALSE)
+    })
+    
     all_targets = reactive({
         eStream_data() %>% pull(`Target Name`) %>% unique()
     })
@@ -123,6 +134,10 @@ shinyServer(function(input, output) {
     output$targets <- renderUI({
         checkboxGroupInput("targets", "Targets", choices = all_targets(), selected = all_targets())
     })
+    
+    observeEvent(input$select_all_targets, {
+        updateSelectInput(session = session, "targets", selected = all_targets())
+        })
     
     output$template_table <- DT::renderDataTable({
         t_col_names = template_data() %>% pull('Target Color')

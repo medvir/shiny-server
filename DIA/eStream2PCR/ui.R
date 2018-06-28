@@ -8,15 +8,18 @@ shinyUI(fluidPage(
                wellPanel(
                    fileInput("eStream_file", "eStream Export Datei [.csv]:", accept = ".csv")
                )),
-        column(2,
+        column(3,
                wellPanel(
-                   uiOutput("colors")
+                   uiOutput("colors"),
+                   uiOutput("saturation"),
+                   uiOutput("value")
                )),
         column(2,
                wellPanel(
-                   uiOutput("targets")
+                   uiOutput("targets"),
+                   actionButton("select_all_targets", "Select all")
                )),
-        column(2,
+        column(3,
                h5("Download"),
                downloadButton("template_file", "Download")
         )
