@@ -17,9 +17,9 @@ rgb2hex <- function(v) {
     sapply(strsplit(as.character(v), "RGB\\(|,|)"), function(x) rgb(x[2], x[3], x[4], maxColorValue=255))
 }
 
-rgb_color_rainbow <- function(n) {
-    col = rainbow(n, s = 1, v = 1, start = 0, end = max(1, n - 1)/n, alpha = 1)
-    rgb = sapply(col, function(x) paste0("RGB(", col2rgb(x, alpha = FALSE)[1], ",", col2rgb(x, alpha = FALSE)[2], ",", col2rgb(x, alpha = FALSE)[3], ")"))
+rgb_color_rainbow <- function(n, s, v) {
+    col = rainbow(n, s, v, start = 0, end = max(1, n - 1)/n)
+    rgb = sapply(col, function(x) paste0("RGB(", col2rgb(x)[1], ",", col2rgb(x)[2], ",", col2rgb(x)[3], ")"))
     names(rgb) = 1:n
     return(rgb)
 }
@@ -35,7 +35,7 @@ rgb_color_random <- function(n, s, v) {
     rgb = vector(length = n)
     for (i in 1:n) {
         col = hsv(runif(1), s, v)
-        rgb[i] = paste0("RGB(", col2rgb(col, alpha = FALSE)[1], ",", col2rgb(col, alpha = FALSE)[2], ",", col2rgb(col, alpha = FALSE)[3], ")")
+        rgb[i] = paste0("RGB(", col2rgb(col)[1], ",", col2rgb(col)[2], ",", col2rgb(col)[3], ")")
     }
     names(rgb) = 1:n
     return(rgb)
@@ -101,7 +101,7 @@ shinyServer(function(input, output, session) {
         } else if (input$colors == "random") {
             sample_colors = rgb_color_random(max(dat$sample_color_id), input$saturation, input$value)
         } else {
-            sample_colors = rgb_color_rainbow(max(dat$sample_color_id))
+            sample_colors = rgb_color_rainbow(max(dat$sample_color_id), input$saturation, input$value)
         } 
         
         dat %>%
@@ -118,13 +118,13 @@ shinyServer(function(input, output, session) {
     })
 
     output$saturation <- renderUI({
-        req(input$colors == "random")
-        sliderInput("saturation", "Saturation", 0, 1, value = .5, ticks = FALSE)
+        req(input$colors %in% c("random", "rainbow"))
+        sliderInput("saturation", "Saturation", 0, 1, value = .4, step = .1, ticks = FALSE)
     })
     
     output$value <- renderUI({
-        req(input$colors == "random")
-        sliderInput("value", "Value", 0, 1, value = .75, ticks = FALSE)
+        req(input$colors %in% c("random", "rainbow"))
+        sliderInput("value", "Value", 0, 1, value = .9, step = .1, ticks = FALSE)
     })
     
     all_targets = reactive({

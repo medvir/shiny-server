@@ -4,11 +4,11 @@ library(DT)
 shinyUI(fluidPage(
     titlePanel("eStream2PCR"),
     fluidRow(
-        column(4,
+        column(3,
                wellPanel(
                    fileInput("eStream_file", "eStream Export Datei [.csv]:", accept = ".csv")
                )),
-        column(3,
+        column(2,
                wellPanel(
                    uiOutput("colors"),
                    uiOutput("saturation"),
