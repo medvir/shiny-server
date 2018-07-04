@@ -1,36 +1,46 @@
 # PCR2MOLIS
 
 library(shiny)
-library(DT)
+library(tidyverse)
 
 shinyUI(fluidPage(
-    titlePanel("eStream2PCR"),
+    titlePanel("PCR2MOLIS"),
     fluidRow(
         column(3,
                wellPanel(
-                   fileInput("eStream_file", "eStream Export Datei [.csv]:", accept = ".csv")
+                   fileInput("pcr_file", "PCR raw data [.xlsx]:", accept = ".xlsx")
                )),
-        column(2,
+        column(3,
                wellPanel(
-                   uiOutput("colors"),
-                   uiOutput("saturation"),
-                   uiOutput("value")
-               )),
-        column(2,
-               wellPanel(
-                   uiOutput("targets"),
-                   actionButton("select_all_targets", "Select all")
+                   uiOutput("targets")
                )),
         column(3,
                h5("Download"),
-               downloadButton("template_file", "Download")
+               downloadButton("results_file", "Download")
         )
     ),
-    hr(),
     fluidRow(
         column(12,
-               h3("PCR Template"),
-               DT::dataTableOutput(outputId = "template_table")
+               h3("PCR Results"),
+               plotOutput("plot")
         )
-    ))
-)
+    ),
+    fluidRow(
+        hr(),
+        column(6,
+               h3("Samples"),
+               dataTableOutput("results")
+        ),
+        column(6,
+               h3("Sample Plot"),
+               plotOutput("sample_plot")
+               )
+    ),
+    fluidRow(
+        hr(),
+        column(6,
+               h3("Raw data"),
+               tableOutput("raw_data")
+        )
+    )
+))
