@@ -112,6 +112,8 @@ shinyServer(function(input, output) {
         rownames = FALSE,
         options = list(pageLength = 100,
                        autoWidth = FALSE,
+                       ordering = FALSE,
+                       dom = 't',
                        rowCallback = JS('function(row, data) {
                                                   $(row).mouseenter(function(){
                                                   var hover_index = $(this)[0]._DT_RowIndex
