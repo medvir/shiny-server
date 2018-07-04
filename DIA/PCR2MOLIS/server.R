@@ -7,27 +7,43 @@ library(readxl)
 library(cowplot)
 library(DT)
 
+path = "/Volumes/Home$/Repositories/shiny-server/DIA/PCR2MOLIS/data/"
 
 ### Shiny Server
 shinyServer(function(input, output, session) {
     
+    ### files
+    folders = c("/Volumes/Home$/Repositories/shiny-server/DIA/PCR2MOLIS/data/")
+    
+    output$folders <- renderUI({
+        selectInput("folders", "Folder", choices = folders, selected = folders[1])
+    })
+    
+    files <- reactive({
+        list.files(input$folders, pattern = ".xls")
+    })
+    
+    output$files <- renderUI({
+        selectInput("pcr_file", "File", choices = files(), selected = files()[1])
+    })
+    
     ### read raw data from different cyclers
-    pcr_data <- reactive({
+    raw_data <- reactive({
         req(input$pcr_file)
-        
-        cycler = as.character(read_excel(input$pcr_file$datapath) %>% unlist)
+        pcr_file = paste0(path, input$pcr_file)
+        cycler = as.character(read_excel(pcr_file) %>% unlist)
         ### QuantStudio
         if ("278870036" %in% cycler | "272322000" %in% cycler) { 
-            first_row_amp = match("Well", read_excel(input$pcr_file$datapath, sheet = "Amplification Data") %>% pull('Block Type'))
-            amp = read_excel(input$pcr_file$datapath, sheet = "Amplification Data", skip = first_row_amp) %>%
+            first_row_amp = match("Well", read_excel(pcr_file, sheet = "Amplification Data") %>% pull('Block Type'))
+            amp = read_excel(pcr_file, sheet = "Amplification Data", skip = first_row_amp) %>%
                 rename(well = "Well") %>%
                 rename(cycle = "Cycle") %>%
                 rename(target = "Target Name") %>%
                 rename(delta_Rn = "Delta Rn") %>%
                 select(well, cycle, target, Rn, delta_Rn)
             
-            first_row_res = match("Well", read_excel(input$pcr_file$datapath, sheet = "Results") %>% pull('Block Type'))
-            res = read_excel(input$pcr_file$datapath, sheet = "Results", skip = first_row_res) %>%
+            first_row_res = match("Well", read_excel(pcr_file, sheet = "Results") %>% pull('Block Type'))
+            res = read_excel(pcr_file, sheet = "Results", skip = first_row_res) %>%
                 rename(well = "Well") %>%
                 rename(well_pos = "Well Position") %>%
                 rename(target = "Target Name") %>%
@@ -44,72 +60,109 @@ shinyServer(function(input, output, session) {
         left_join(res, amp, by = c('well', 'target'))
     })
     
-    targets <- reactive({pcr_data() %>% pull(target) %>% unique()})
+    
+    ### target selection and threshold by target
+    targets <- reactive({raw_data() %>% pull(target) %>% unique()})
     
     output$targets <- renderUI({
         radioButtons("selected_targets", "Targets", choices = targets(), selected = targets()[1])
     })
     
+    target_data <- reactive({
+        raw_data() %>%
+            filter(target %in% input$selected_targets)
+    })
+    
     threshold <- reactive({
-        pcr_data() %>%
+        target_data() %>%
             pull(threshold) %>%
             unique()
     })
     
-
-    output$plot <- renderPlot({
-        pcr_data() %>%
-            ggplot(aes(x = cycle, y = (log10(delta_Rn)), color = sample_name)) +
-            geom_line(size = .75) +
-            geom_hline(yintercept = threshold(), size = 0.5, linetype="dashed") +
-            #geom_text(aes(label = ifelse(cycle == 45, as.character(sample), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
-            #ylim(-0.1, NA) +
-            #xlim(0, 45) +
-            ylab("log delta Rn") +
-            xlab("cycles") +
-            #facet_wrap( ~ sample_name) +
-            panel_border() +
-            background_grid(major = "xy", minor = "xy") +
-            theme(legend.title=element_blank())
+    
+    ### lin log
+    output$lin_log <- renderUI({
+        radioButtons("lin_log", "Lin/Log", choiceNames = c("logarithmic", "linear"), choiceValues = c("log", "lin"), selected = "log")
     })
     
     
-    output$sample_plot <- renderPlot({
-        pcr_data() %>%
-            filter(sample_name %in% samples_selected()) %>%
-            ggplot(aes(x = cycle, y = (log10(delta_Rn)), color = sample_name)) +
-            geom_line(size = .75) +
-            geom_hline(yintercept = threshold(), size = 0.5, linetype="dashed") +
-            #geom_text(aes(label = ifelse(cycle == 45, as.character(sample), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
-            #ylim(-0.1, NA) +
-            #xlim(0, 45) +
-            ylab("log delta Rn") +
-            xlab("cycles") +
-            #facet_wrap( ~ sample_name) +
-            panel_border() +
-            background_grid(major = "xy", minor = "xy") +
-            theme(legend.title=element_blank())
-    })
-    
-    
-
-    output$raw_data <- renderTable({
-        pcr_data()
-    })
-    
-    
+    ### results
     results <- reactive({
-        pcr_data() %>% select(sample_name, target, ct, threshold) %>%
-            filter(target %in% input$selected_targets) %>%
-            group_by(sample_name) %>%
+        target_data() %>% select(sample_name, well_pos, target, ct, threshold) %>%
+            group_by(sample_name, well_pos) %>%
             sample_n(1)
     })
-
+    
+    ### Output Plots
+    output$plot <- renderPlot({
+        if (input$lin_log == "log") {
+            target_data() %>%
+                ggplot(aes(x = cycle, y = (log10(delta_Rn)), color = sample_name, group = well_pos)) +
+                geom_line(size = .75) +
+                geom_hline(yintercept = threshold(), size = 0.5, linetype="dashed") +
+                geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
+                xlim(0, 50) +
+                ylab("log10 delta Rn") +
+                xlab("cycles") +
+                panel_border() +
+                background_grid(major = "xy", minor = "xy") +
+                theme(legend.title=element_blank())
+        } else {
+            target_data() %>%
+                ggplot(aes(x = cycle, y = (delta_Rn), color = sample_name, group = well_pos)) +
+                geom_line(size = .75) +
+                geom_hline(yintercept = threshold(), size = 0.5, linetype="dashed") +
+                geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
+                ylim(-0.1, NA) +
+                xlim(0, 50) +
+                ylab("delta Rn") +
+                xlab("cycles") +
+                panel_border() +
+                background_grid(major = "xy", minor = "xy") +
+                theme(legend.title=element_blank())
+        }
+    })
+    
+    output$sample_plot <- renderPlot({
+        if (input$lin_log == "log") {
+            target_data() %>%
+                filter(sample_name %in% samples_selected()) %>%
+                ggplot(aes(x = cycle, y = (log10(delta_Rn)), color = "black", group = well_pos)) +
+                geom_line(size = .75) +
+                geom_hline(yintercept = threshold(), size = 0.5, linetype="dashed") +
+                geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
+                xlim(0, 50) +
+                ylab("log10 delta Rn") +
+                xlab("cycles") +
+                panel_border() +
+                background_grid(major = "xy", minor = "xy") +
+                theme(legend.title=element_blank())
+        } else {
+            target_data() %>%
+                filter(sample_name %in% samples_selected()) %>%
+                ggplot(aes(x = cycle, y = (delta_Rn), group = well_pos)) +
+                geom_line(size = .75) +
+                geom_hline(yintercept = threshold(), size = 0.5, linetype="dashed") +
+                geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
+                ylim(-0.1, NA) +
+                xlim(0, 50) +
+                ylab("delta Rn") +
+                xlab("cycles") +
+                panel_border() +
+                background_grid(major = "xy", minor = "xy") +
+                theme(legend.title=element_blank())
+        }
+    })
+    
+    
+    ### Output tables
     output$results <- DT::renderDataTable(
         filter = "none",
         rownames = FALSE,
         options = list(pageLength = 100,
+                       ordering = FALSE,
                        autoWidth = FALSE,
+                       dom = 't',
                        rowCallback = JS('function(row, data) {
                                         $(row).mouseenter(function(){
                                         var hover_index = $(this)[0]._DT_RowIndex
@@ -122,45 +175,59 @@ shinyServer(function(input, output, session) {
             results()
         })
 
-    
     samples_selected <- reactive({
         results()[input$hoverIndexJS + 1, ] %>%
             pull(sample_name) 
-    })  
+    }) 
     
     
-      
- 
-    # all_targets = reactive({
-    #     eStream_data() %>% pull(`Target Name`) %>% unique()
-    # })
-    # 
-    # 
-    # output$targets <- renderUI({
-    #     checkboxGroupInput("targets", "Targets", choices = all_targets(), selected = all_targets())
-    # })
-    # 
-    # 
-    # observeEvent(input$select_all_targets, {
-    #     updateSelectInput(session = session, "targets", selected = all_targets())
-    #     })
-    # 
-    # 
-    # 
-    # output$template_file <- downloadHandler(
+    ### Export
+    molis_out <- reactive({
+        results()[input$results_rows_selected, ] %>%
+            group_by(sample_name, target) %>%
+            mutate(mean = mean(as.numeric(ct))) %>%
+            sample_n(1) %>%
+            select(sample_name, target, mean)
+    })
+    
+    
+    ### Raw data (to be removed)
+    output$raw_data <- renderTable({
+        raw_data()
+    })
+    
+    output$molis_export <- downloadHandler(
+        filename = function() {
+            paste0("molis-", Sys.Date(), ".txt")
+        },
+        content = function(file) {
+            write.table(molis_out(),
+                        file,
+                        quote = FALSE,
+                        sep ='\t',
+                        row.names = FALSE,
+                        eol = "\r\n",
+                        append = FALSE)
+    })
+    
+    # output$report <- downloadHandler(
     #     filename = function() {
-    #         paste("template-", Sys.Date(), ".txt", sep = "")
+    #         paste0(substr(input$chosen_sample[1], 1, 13), ".pdf")
     #     },
     #     content = function(file) {
-    #         writeLines("[Sample Setup]", file)
-    #         write.table(template_data() %>%
-    #                         mutate(`Sample Color` = paste0("\"", `Sample Color`, "\"")) %>%
-    #                         mutate(`Target Color` = paste0("\"", `Target Color`, "\"")),
-    #                     file,
-    #                     quote = FALSE,
-    #                     sep ='\t',
-    #                     row.names = FALSE,
-    #                     eol = "\r\n",
-    #                     append = TRUE)
-    # })
+    #         tempReport <- file.path(tempdir(), "report.Rmd")
+    #         file.copy("RunReport.Rmd", tempReport, overwrite = TRUE)
+    #         
+    #         params <- list(orgs_file = input$orgs_file$datapath,
+    #                        reads_file = input$reads_file$datapath,
+    #                        sample_name = input$chosen_sample,
+    #                        rows_selected = input$table_species_rows_selected)
+    #         
+    #         rmarkdown::render(tempReport, output_file = file,
+    #                           params = params,
+    #                           envir = new.env(parent = globalenv()))
+    #     })
+        
+    # 
+
 })
