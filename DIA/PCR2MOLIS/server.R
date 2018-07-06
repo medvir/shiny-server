@@ -60,6 +60,12 @@ shinyServer(function(input, output, session) {
         left_join(res, amp, by = c('well', 'target'))
     })
     
+    ### knobel function
+    knobel <- function(x,y) {
+        fit = nls(y ~ p1 + p2*x + p3*x^2 + p4*x^3,
+              start=list(p1 = 1, p2 = 0.1, p3 = 0.1, p4 = 0.1))
+        y_fit = predict(fit, x)
+    }
     
     ### target selection and threshold by target
     targets <- reactive({raw_data() %>% pull(target) %>% unique()})
@@ -88,10 +94,29 @@ shinyServer(function(input, output, session) {
     
     ### results
     results <- reactive({
-        target_data() %>% select(sample_name, well_pos, target, ct, threshold) %>%
+        target_data() %>%
+            select(sample_name, well_pos, target, ct, threshold) %>%
             group_by(sample_name, well_pos) %>%
             sample_n(1) %>%
             mutate(interpretation = ifelse(ct <= 35, "positive", "negative"))
+    })
+    
+    ### curve fit
+    output$curve <- renderPlot({
+        dat = target_data() %>%
+            filter(sample_name %in% samples_selected()) 
+        x = dat$cycle
+        y = dat$delta_Rn
+        fit = nls(y ~ p1 + p2*x + p3*x^2 + p4*x^3,
+                   start=list(p1 = 1, p2 = 0.1, p3 = 0.1, p4 = 0.1))
+        print(fit)
+        df_fit = data.frame(delta_Rn_pred = predict(fit, dat), cycle = dat$cycle)
+        #plot(x,y,pch=19)
+        #lines(x, predict(fit, data.frame(x=xx)), col="red")
+        ggplot(dat, aes(x = dat$cycle, y = dat$delta_Rn)) + 
+            geom_point() + #color = "well_pos") +
+            geom_line(color = "red", data = df_fit, aes(y = delta_Rn_pred, x = cycle))
+        
     })
     
     ### Output Plots
@@ -99,7 +124,8 @@ shinyServer(function(input, output, session) {
         if (input$lin_log == "log") {
             target_data() %>%
                 ggplot(aes(x = cycle, y = (log10(delta_Rn)), color = sample_name, group = well_pos)) +
-                geom_line(size = .75) +
+                geom_point() +
+                #geom_line(size = .75) +
                 geom_hline(yintercept = threshold(), size = 0.5, linetype="dashed") +
                 geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
                 xlim(0, 50) +
@@ -111,7 +137,8 @@ shinyServer(function(input, output, session) {
         } else {
             target_data() %>%
                 ggplot(aes(x = cycle, y = delta_Rn, color = sample_name, group = well_pos)) +
-                geom_line(size = .75) +
+                geom_point() +
+                #geom_line(size = .75) +
                 geom_hline(yintercept = threshold(), size = 0.5, linetype="dashed") +
                 geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
                 ylim(-0.1, NA) +

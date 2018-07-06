@@ -41,7 +41,8 @@ shinyUI(fluidPage(
         ),
         column(6,
                h3("Sample Plot"),
-               plotOutput("sample_plot")
+               plotOutput("sample_plot"),
+               plotOutput("curve")
                )
     ),
     fluidRow(
