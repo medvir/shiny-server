@@ -90,7 +90,8 @@ shinyServer(function(input, output, session) {
     results <- reactive({
         target_data() %>% select(sample_name, well_pos, target, ct, threshold) %>%
             group_by(sample_name, well_pos) %>%
-            sample_n(1)
+            sample_n(1) %>%
+            mutate(interpretation = ifelse(ct <= 35, "positive", "negative"))
     })
     
     ### Output Plots
@@ -109,7 +110,7 @@ shinyServer(function(input, output, session) {
                 theme(legend.title=element_blank())
         } else {
             target_data() %>%
-                ggplot(aes(x = cycle, y = (delta_Rn), color = sample_name, group = well_pos)) +
+                ggplot(aes(x = cycle, y = delta_Rn, color = sample_name, group = well_pos)) +
                 geom_line(size = .75) +
                 geom_hline(yintercept = threshold(), size = 0.5, linetype="dashed") +
                 geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
@@ -140,7 +141,7 @@ shinyServer(function(input, output, session) {
         } else {
             target_data() %>%
                 filter(sample_name %in% samples_selected()) %>%
-                ggplot(aes(x = cycle, y = (delta_Rn), group = well_pos)) +
+                ggplot(aes(x = cycle, y = delta_Rn, color = "black", group = well_pos)) +
                 geom_line(size = .75) +
                 geom_hline(yintercept = threshold(), size = 0.5, linetype="dashed") +
                 geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
@@ -187,7 +188,7 @@ shinyServer(function(input, output, session) {
             group_by(sample_name, target) %>%
             mutate(mean = mean(as.numeric(ct))) %>%
             sample_n(1) %>%
-            select(sample_name, target, mean)
+            select(sample_name, target, mean, interpretation)
     })
     
     
