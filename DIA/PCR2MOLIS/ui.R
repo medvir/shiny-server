@@ -2,6 +2,10 @@
 
 library(shiny)
 library(tidyverse)
+library(stringr)
+library(readxl)
+library(cowplot)
+library(DT)
 
 shinyUI(fluidPage(
     titlePanel("PCR2MOLIS"),
@@ -15,7 +19,8 @@ shinyUI(fluidPage(
                )),
         column(1,
                wellPanel(
-                   uiOutput("lin_log")
+                   uiOutput("lin_log"),
+                   uiOutput("threshold_selection")
                )
         ),
         column(8,
@@ -26,14 +31,12 @@ shinyUI(fluidPage(
     fluidRow(
         hr(),
         column(4,
-               h3("Sample Plot"),
                uiOutput("sample_selection"),
-               plotOutput("curve")
+               plotOutput("curve"),
+               tableOutput("fit_data_table")
                ),
         column(8,
-               h3("Samples"),
-               dataTableOutput("results"),
-               tableOutput("fit_data_table")
+               dataTableOutput("results")
         )
     ),
     

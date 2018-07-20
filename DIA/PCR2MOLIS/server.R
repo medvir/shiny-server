@@ -9,11 +9,35 @@ library(DT)
 
 path = "/Volumes/Home$/Repositories/shiny-server/DIA/PCR2MOLIS/data/"
 
-### Shiny Server
+# # # # # # #
+# FUNCTIONS #
+# # # # # # #
+
+curve_fit <- function(x,y) {
+    #sigmoidal dose response with variable slope
+    nls(y ~ p1 + (p2-p1)/(1 + 10^((p3-x)*p4)), start = list(p1 = 0, p2 = 3, p3 = 30, p4 = 0.2))
+    
+    # 7 parameter Knobel
+    #nls(y ~ p1 * (1 + p2*x + (p3 / ((1 + exp(-p4 * (x - p5)))*(1 + exp(-p6 * (x - p7)))))),
+    #start = list(p1 = 0, p2 = 0.5, p3 = -4.5, p4 = 0.04, p5 = 30, p6 = -0.4, p7 = 38),
+    #start = list(p1 = 0.98, p2 = 0.4, p3 = -4.6, p4 = 0.04, p5 = 30, p6 = -0.49, p7 = 38), #works for 405266
+    #start = list(p1 = 0.9, p2 = 0.4, p3 = -4.6, p4 = 0.04, p5 = 30, p6 = -0.49, p7 = 38),
+    #lower = c(  0, -1, -6, 0,  0, -1,  0),
+    #upper = c(  2,  1,  0, 1, 50,  0, 50),
+    #control = list(maxiter = 10000))
+}
+
+
+
+
+# # # # # # # # #
+# Shiny Server  #
+# # # # # # # # #
+
 shinyServer(function(input, output, session) {
     
-
     ### file selection
+    
     available_folders = c("/Volumes/Home$/Repositories/shiny-server/DIA/PCR2MOLIS/data/", "/Volumes/Diagnostic/")
     
     output$folder_selection <- renderUI({
@@ -50,9 +74,12 @@ shinyServer(function(input, output, session) {
                 rename(well_pos = "Well Position") %>%
                 rename(target = "Target Name") %>%
                 rename(sample_name = "Sample Name") %>%
-                rename(ct = "CT") %>%
+                rename(ct_export = "CT") %>%
                 rename(threshold = "Ct Threshold") %>%
-                select(well, well_pos, target, sample_name, ct, threshold) 
+                group_by(sample_name, target) %>%
+                mutate(replicate = row_number()) %>%
+                mutate(sample_name_replicate = paste0(sample_name, "_", replicate)) %>%
+                select(well, well_pos, target, sample_name, ct_export, threshold, replicate, sample_name_replicate) 
             
         } else {
             print("cycler not recognized")
@@ -79,18 +106,30 @@ shinyServer(function(input, output, session) {
             filter(target == input$selected_target)
     })
     
-    threshold <- reactive({
+    
+    ### threshold
+    suggested_threshold <- reactive({
         target_data() %>%
             pull(threshold) %>%
             unique()
     })
     
-    ### samples
+    output$threshold_selection <- renderUI({
+        numericInput("threshold", "Threshold", value = suggested_threshold(), step = 0.01)
+    })
     
+
+    ### samples
     available_samples <- reactive({
         target_data() %>%
             pull(sample_name) %>%
             unique()})
+    
+    available_sample_name_replicates <- reactive({
+        target_data() %>%
+            pull(sample_name_replicate) %>%
+            unique()})
+    
     
     output$sample_selection <- renderUI({
         selectInput("samples_selected", "Samples", choices = available_samples(), selected = available_samples()[1], selectize = FALSE)
@@ -103,90 +142,113 @@ shinyServer(function(input, output, session) {
     })
     
 
-    
-    
-    
     ### curve fit
     fit_data = reactive({
         fit_data = data.frame()
-        for (i in available_samples()) {
-            dat = target_data() %>%
-                filter(sample_name == i)
-            x = dat$cycle
-            y = dat$delta_Rn
-            
-            try = class(try(nls(y ~ p1 + (p2-p1)/(1 + 10^((p3-x)*p4)), #sigmoidal dose response with variable slope
-                                start = list(p1 = 0, p2 = 2.5, p3 = 30, p4 = 0.1)))) 
-            
+        for (i in available_sample_name_replicates()) {
+            df = target_data() %>%
+                filter(sample_name_replicate == i)
+            try = class(try(curve_fit(df$cycle, df$delta_Rn)))
             if (try == "nls") { 
-                fit = nls(y ~ p1 + (p2-p1)/(1 + 10^((p3-x)*p4)), #sigmoidal dose response with variable slope
-                          start = list(p1 = 0, p2 = 2.5, p3 = 30, p4 = 0.1))
-                fit_data = rbind(fit_data, data.frame(sample_name = i,
-                                          p1 = summary(fit)$coefficients[1,1],
-                                          p2 = summary(fit)$coefficients[2,1],
-                                          p3 = summary(fit)$coefficients[3,1],
-                                          p4 = summary(fit)$coefficients[4,1]))
+                fit = curve_fit(df$cycle, df$delta_Rn)
+                fit_data = rbind(fit_data, data.frame(sample_name_replicate = i,
+                                          p1 = round(summary(fit)$coefficients[1,1],3),
+                                          p2 = round(summary(fit)$coefficients[2,1],3),
+                                          p3 = round(summary(fit)$coefficients[3,1],1),
+                                          p4 = round(summary(fit)$coefficients[4,1],3),
+                                          #p5 = round(summary(fit)$coefficients[5,1],3),
+                                          #p6 = round(summary(fit)$coefficients[6,1],3),
+                                          #p7 = round(summary(fit)$coefficients[7,1],3),
+                                          ct = round(approx(x = fitted.values(fit), y = df$cycle, xout = input$threshold)$y, 1)
+                                          ))
             } 
         }
         return(fit_data)
     })
     
     
-    
-    
     ### results
     results <- reactive({
         target_data() %>%
-            left_join(. , fit_data(), by = "sample_name") %>%
-            select(sample_name, well_pos, target, ct, p1, p2, p3, p4) %>%
+            left_join(. , fit_data(), by = "sample_name_replicate") %>%
             group_by(sample_name, well_pos) %>%
             sample_n(1) %>%
-            mutate(interpretation = ifelse(p3 <= 45 & p2 >= 2, "positive", "negative"))
+            group_by(sample_name) %>%
+            mutate(ct_mean = mean(ct)) %>%
+            mutate(interpretation = case_when(
+                ct <= 45 & p2 >= 2 ~ "positive",
+                TRUE ~" negative"
+                )) %>%
+            ungroup()
     })
-    
     
     
     ### plot curve fit
     output$curve <- renderPlot({
     
-        
         dat = target_data() %>%
-            #filter(sample_name %in% samples_selected())
             filter(sample_name == input$samples_selected)
-        x = dat$cycle
-        y = dat$delta_Rn
-        fit = nls(y ~ p1 + (p2-p1)/(1 + 10^((p3-x)*p4)), start = list(p1 = 0, p2 = 2.5, p3 = 30, p4 = 0.1)) #sigmoidal dose response with variable slope
-        df_fit = data.frame(delta_Rn_pred = predict(fit, dat), cycle = dat$cycle)
         
+        dat1 = dat %>% filter(replicate == 1)
+        try1 = class(try(curve_fit(dat1$cycle, dat1$delta_Rn)))
+        if (try1 == "nls") {
+            fit = curve_fit(dat1$cycle, dat1$delta_Rn)
+            df_fit_1 = data.frame(delta_Rn_pred = predict(fit, dat), cycle = dat$cycle)
+        }
+    
+        dat2 = dat %>% filter(replicate == 2)
+        try2 = class(try(curve_fit(dat2$cycle, dat2$delta_Rn)))
+        if (try2 == "nls") {
+            fit = curve_fit(dat2$cycle, dat2$delta_Rn)
+            df_fit_2 = data.frame(delta_Rn_pred = predict(fit, dat), cycle = dat$cycle)
+        }
+
         if (input$lin_log == "lin") {
-            ggplot(dat, aes(x = dat$cycle, y = dat$delta_Rn)) + 
+            p = ggplot(dat, aes(x = dat$cycle, y = dat$delta_Rn, color = replicate)) + 
                 geom_point() +
-                geom_line(color = "red", data = df_fit, aes(y = delta_Rn_pred, x = cycle)) +
+                geom_hline(yintercept = input$threshold, size = 0.5, linetype="dashed") +
                 ylab("delta Rn") +
                 xlab("cycles") +
                 panel_border() +
                 background_grid(major = "xy", minor = "xy") +
                 theme(legend.title=element_blank())
+            if (try1 == "nls") {
+                p = p +
+                    geom_line(color = "red", data = df_fit_1, aes(y = delta_Rn_pred, x = cycle))
+            }
+            if (try2 == "nls") {
+                p = p +
+                    geom_line(color = "red", data = df_fit_2, aes(y = delta_Rn_pred, x = cycle))
+            }
         } else {
-            ggplot(dat, aes(x = dat$cycle, y = log10(dat$delta_Rn))) + 
+            p = ggplot(dat, aes(x = dat$cycle, y = log10(dat$delta_Rn), color = replicate)) + 
                 geom_point() +
-                geom_line(color = "red", data = df_fit, aes(y = log10(delta_Rn_pred), x = cycle)) +
+                geom_hline(yintercept = log10(input$threshold), size = 0.5, linetype="dashed") +
                 ylab("log10 delta Rn") +
                 xlab("cycles") +
                 panel_border() +
                 background_grid(major = "xy", minor = "xy") +
                 theme(legend.title=element_blank())
+            if (try1 == "nls") {
+                p = p +
+                    geom_line(color = "red", data = df_fit_1, aes(y = log10(delta_Rn_pred), x = cycle))
+            }
+            if (try2 == "nls") {
+                p = p +
+                    geom_line(color = "red", data = df_fit_2, aes(y = log10(delta_Rn_pred), x = cycle))
+            }
         }
+        p
     })
     
-    ### Output Plots
+    
+    ### run plot
     output$run_plot <- renderPlot({
         if (input$lin_log == "log") {
             target_data() %>%
                 ggplot(aes(x = cycle, y = (log10(delta_Rn)), color = sample_name, group = well_pos)) +
-                #geom_point() +
                 geom_line(size = .75) +
-                geom_hline(yintercept = threshold(), size = 0.5, linetype="dashed") +
+                geom_hline(yintercept = log10(input$threshold), size = 0.5, linetype="dashed") +
                 geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
                 xlim(0, 50) +
                 ylab("log10 delta Rn") +
@@ -197,9 +259,8 @@ shinyServer(function(input, output, session) {
         } else {
             target_data() %>%
                 ggplot(aes(x = cycle, y = delta_Rn, color = sample_name, group = well_pos)) +
-                #geom_point() +
                 geom_line(size = .75) +
-                geom_hline(yintercept = threshold(), size = 0.5, linetype="dashed") +
+                geom_hline(yintercept = input$threshold, size = 0.5, linetype="dashed") +
                 geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
                 ylim(-0.1, NA) +
                 xlim(0, 50) +
@@ -211,41 +272,15 @@ shinyServer(function(input, output, session) {
         }
     })
     
-    # output$sample_plot <- renderPlot({
-    #     if (input$lin_log == "log") {
-    #         target_data() %>%
-    #             #filter(sample_name %in% samples_selected()) %>%
-    #             filter(sample_name == input$samples_selected) %>%
-    #             ggplot(aes(x = cycle, y = (log10(delta_Rn)), color = "black", group = well_pos)) +
-    #             geom_line(size = .75) +
-    #             geom_hline(yintercept = threshold(), size = 0.5, linetype="dashed") +
-    #             geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
-    #             xlim(0, 50) +
-    #             ylab("log10 delta Rn") +
-    #             xlab("cycles") +
-    #             panel_border() +
-    #             background_grid(major = "xy", minor = "xy") +
-    #             theme(legend.title=element_blank())
-    #     } else {
-    #         target_data() %>%
-    #             #filter(sample_name %in% samples_selected()) %>%
-    #             filter(sample_name == input$samples_selected) %>%
-    #             ggplot(aes(x = cycle, y = delta_Rn, color = "black", group = well_pos)) +
-    #             geom_line(size = .75) +
-    #             geom_hline(yintercept = threshold(), size = 0.5, linetype="dashed") +
-    #             geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
-    #             ylim(-0.1, NA) +
-    #             xlim(0, 50) +
-    #             ylab("delta Rn") +
-    #             xlab("cycles") +
-    #             panel_border() +
-    #             background_grid(major = "xy", minor = "xy") +
-    #             theme(legend.title=element_blank())
-    #     }
-    # })
+    
+    ### table
+    output$fit_data_table <- renderTable({
+        results() %>%
+            filter(sample_name == input$samples_selected) %>%
+            select(replicate, ct_export, p1, p2, p3, p4, ct)
+    })
     
     
-    ### Output tables
     output$results <- DT::renderDataTable(
         filter = "none",
         rownames = FALSE,
@@ -262,7 +297,8 @@ shinyServer(function(input, output, session) {
                         }')
         ),
         {
-            results()
+            results() %>%
+                select(sample_name, replicate, well_pos, target, ct_export, p1, p2, p3, p4, ct, ct_mean, interpretation)
         })
 
     # samples_selected <- reactive({
