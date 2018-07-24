@@ -126,7 +126,7 @@ shinyServer(function(input, output, session) {
     
     
     output$colors <- renderUI({
-        radioButtons("colors", "Sample Colors", choices = c("repeat", "rainbow", "random"), selected = "repeat")
+        radioButtons("colors", "Colors", choices = c("repeat", "rainbow", "random"), selected = "repeat")
     })
 
     

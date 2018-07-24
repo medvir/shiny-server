@@ -1,4 +1,4 @@
-"Well","Source plate-ID","Target plate ID","Name","Id","Conc.","CMV Patientenproben PCR","CMV Kontrollen PCR","EBV Patientenproben PCR","EBV Kontrollen PCR","BK Patientenproben PCR","BK Kontrollen PCR","GAPDH-Lambda Patientenproben PCR","GAPDH-Lambda Kontrollen PCR"
+"Well","Source plate-ID","Target plate ID","Name","Id","Conc.","Parvovirus Patientenproben PCR","Parvovirus Kontrollen PCR","EBV Patientenproben PCR","EBV Kontrollen PCR","BK Patientenproben PCR","BK Kontrollen PCR","GAPDH-Lambda Patientenproben PCR","GAPDH-Lambda Kontrollen PCR"
 "7.A1","","","100040082001","",0.10,1,0,0,0,0,0,0,0
 "7.A2","","","100040082701","",0.10,1,0,0,0,0,0,0,0
 "7.A3","","","100040082801","",0.10,1,0,0,0,0,0,0,0
