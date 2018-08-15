@@ -15,11 +15,20 @@ shinyServer(function(input, output) {
     
     orgs_data <- reactive({
         req(input$orgs_file)
-        read.delim(input$orgs_file$datapath, sep = "\t") %>%
+        orgs_data <-
+          read.delim(input$orgs_file$datapath, sep = "\t") %>%
           mutate(covered_percent = 100 * covered_region / seq_len) %>%
           mutate(covered_exp = 100 * (1 - exp(-reads * 151 / seq_len))) %>%
           mutate(covered_score = round(100 * covered_percent / covered_exp, 1)) %>%
           mutate(covered_percent = round(covered_percent, 1))
+        
+        if (isTRUE(input$checkbox)) {
+          orgs_data <-
+            orgs_data %>%
+            filter(grepl("phage", species) == FALSE) %>%
+            filter(grepl("phage", ssciname) == FALSE)
+        }
+        orgs_data
     })
     
     output$plot_run <- renderPlot({

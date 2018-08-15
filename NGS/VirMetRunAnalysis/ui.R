@@ -31,6 +31,13 @@ shinyUI(fluidPage(
                 h3("Distribution of sequencing reads into taxonomic categories"),
                 plotOutput(outputId = "plot_domain")
         )),
+        
+        checkboxInput("checkbox", label = "Hide phages", value = FALSE),
+        verbatimTextOutput("value"),
+        
+        #hr(),
+        #fluidRow(column(3, verbatimTextOutput("value"))),
+        
         hr(),
         fluidRow(
                 column(
