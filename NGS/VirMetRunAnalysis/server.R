@@ -25,8 +25,8 @@ shinyServer(function(input, output) {
         if (isTRUE(input$checkbox)) {
           orgs_data <-
             orgs_data %>%
-            filter(grepl("phage", species) == FALSE) %>%
-            filter(grepl("phage", ssciname) == FALSE)
+            filter(grepl("phage", species) == FALSE, ignore.case = TRUE) %>%
+            filter(grepl("phage", ssciname) == FALSE, ignore.case = TRUE)
         }
         orgs_data
     })
