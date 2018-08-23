@@ -88,7 +88,7 @@ t_species <-
   select(species, reads, sample) %>%
   group_by(species, sample) %>%
   summarise(reads_sum = sum(reads)) %>%
-  spread(key = sample, value = reads_sum) %>%
+  spread(key = sample, value = reads_sum, fill = 0) %>%
   ungroup() %>%
   mutate(reads_total = as.integer(rowSums(.[,-1], na.rm = TRUE))) %>%
   mutate(percent = round(reads_total/sum(reads_total)*100, 3)) %>%

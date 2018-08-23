@@ -105,7 +105,7 @@ shinyServer(function(input, output) {
             select(species, reads, sample) %>%
             group_by(species, sample) %>%
             summarise(reads_sum = sum(reads)) %>%
-            spread(key = sample, value = reads_sum) %>%
+            spread(key = sample, value = reads_sum, fill = 0) %>%
             ungroup() %>%
             mutate(reads_total = as.integer(rowSums(.[,-1], na.rm = TRUE))) %>%
             arrange(desc(reads_total))
