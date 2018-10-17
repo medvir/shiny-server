@@ -6,6 +6,7 @@ library(stringr)
 library(DT)
 library(readr)
 
+
 ### setup
 setup = read_csv("setup.csv")
 
@@ -31,14 +32,12 @@ rgb2hex <- function(v) {
     sapply(strsplit(as.character(v), "RGB\\(|,|)"), function(x) rgb(x[2], x[3], x[4], maxColorValue=255))
 }
 
-
 rgb_color_rainbow <- function(n, s, v) {
     col = rainbow(n, s, v, start = 0, end = max(1, n - 1)/n)
     rgb = sapply(col, function(x) paste0("RGB(", col2rgb(x)[1], ",", col2rgb(x)[2], ",", col2rgb(x)[3], ")"))
     names(rgb) = 1:n
     return(rgb)
 }
-
 
 rgb_color_repeat <- function(n) {
     col = c("RGB(230,159,0)", "RGB(86,180,233)", "RGB(0,158,115)", "RGB(240,228,66)", "RGB(0,114,178)", "RGB(213,94,0)", "RGB(204,121,167)", "RGB(153,153,153)")
@@ -64,26 +63,32 @@ shinyServer(function(input, output, session) {
     
     eStream_data <- reactive({
         req(input$eStream_file)
-        read_csv(input$eStream_file$datapath) %>%
-            mutate(Lambda_pat = ifelse(`GAPDH-Lambda Patientenproben PCR` == 1, 1, 0)) %>%
-            mutate(Lambda_contr = ifelse(`GAPDH-Lambda Kontrollen PCR` == 1, 1, 0)) %>%
+        tab = read_csv(input$eStream_file$datapath) %>%
             select(-`Source plate-ID`, -`Target plate ID`, -Id, -Conc.) %>%
-            rename(`Sample Name` = Name) %>%
-            
-            gather(key = target, value = value, -Well, -`Sample Name`) %>%
+            rename(`Sample Name` = Name)
+
+        ci = grepl("GAPDH", names(tab)) & grepl("Lambda", names(tab))
+        tab = cbind(tab,tab[,ci])
+        names(tab)[ci] <- "Lambda"
+
+        tab %>% gather(key = target, value = value, -Well, -`Sample Name`) %>%
             filter(value == 1) %>%
             select(-value) %>%
             
             mutate(`Target Name` = case_when(
+                grepl("GAPDH", target) ~ "GAPDH",
+                grepl("Lambda", target) ~ "Lambda", # GAPDH has to be in front of Lambda
                 grepl("CMV", target) ~ "CMV",
                 grepl("EBV", target) ~ "EBV",
                 grepl("BK", target) ~ "BK",
-                grepl("GAPDH", target) ~ "GAPDH",
-                grepl("Lambda", target) ~ "Lambda",
                 grepl("HHV-6", target) ~ "HHV-6",
                 grepl("VZV", target) ~ "VZV",
                 grepl("HSV-1", target) ~ "HSV-1",
+                grepl("HSV 1", target) ~ "HSV-1",
+                grepl("HSV1", target) ~ "HSV-1",
                 grepl("HSV-2", target) ~ "HSV-2",
+                grepl("HSV 2", target) ~ "HSV-2",
+                grepl("HSV2", target) ~ "HSV-2",
                 grepl("Parvo", target) ~ "Parvo",
                 grepl("Adeno", target) ~ "Adeno",
                 grepl("JC", target) ~ "JC",
