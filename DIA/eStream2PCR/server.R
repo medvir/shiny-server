@@ -67,9 +67,11 @@ shinyServer(function(input, output, session) {
             select(-`Source plate-ID`, -`Target plate ID`, -Id, -Conc.) %>%
             rename(`Sample Name` = Name)
 
-        ci = grepl("GAPDH", names(tab)) & grepl("Lambda", names(tab))
+        ci = grepl("GAPDH", names(tab)) & grepl("Lambda", colnames(tab))
         tab = cbind(tab,tab[,ci])
-        names(tab)[ci] <- "Lambda"
+        colnames(tab)[ci] <- c("Lambda_1", "Lambda_2")
+        
+        print(tab)
 
         tab %>% gather(key = target, value = value, -Well, -`Sample Name`) %>%
             filter(value == 1) %>%
