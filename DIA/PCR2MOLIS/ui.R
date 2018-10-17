@@ -10,17 +10,20 @@ library(DT)
 shinyUI(fluidPage(
     titlePanel("PCR2MOLIS"),
     fluidRow(
-        column(3,
+        column(2,
                wellPanel(
                    #fileInput("pcr_file", "PCR raw data [.xlsx]:", accept = ".xlsx"),
                    uiOutput("folder_selection"),
                    uiOutput("file_selection"),
+                   fileInput("pcr_file_upload", "PCR Export Datei [.xlsx]:", accept = ".xls"),
                    uiOutput("target_selection")
                )),
-        column(1,
+        column(2,
                wellPanel(
-                   uiOutput("lin_log"),
-                   uiOutput("threshold_selection")
+                   uiOutput("lin_log_selection"),
+                   uiOutput("threshold_selection"),
+                   uiOutput("max_ct_selection"),
+                   uiOutput("min_delta_Rn_selection")
                )
         ),
         column(8,

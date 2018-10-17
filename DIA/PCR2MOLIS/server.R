@@ -7,8 +7,6 @@ library(readxl)
 library(cowplot)
 library(DT)
 
-path = "/Volumes/Home$/Repositories/shiny-server/DIA/PCR2MOLIS/data/"
-
 # # # # # # #
 # FUNCTIONS #
 # # # # # # #
@@ -18,16 +16,22 @@ curve_fit <- function(x,y) {
     nls(y ~ p1 + (p2-p1)/(1 + 10^((p3-x)*p4)), start = list(p1 = 0, p2 = 3, p3 = 30, p4 = 0.2))
     
     # 7 parameter Knobel
+    # p1 = O? (1)
+    # p2 = Baseline Drift (0)
+    # p3 = Saturation Line (-4.5)
+    # p4 = Exponential Slope (0.04)
+    # p5 = Growth Infliction (30)
+    # p6 = Saturation Slope (-0.4)
+    # p7 = Saturation Infliction (38)
+    
     #nls(y ~ p1 * (1 + p2*x + (p3 / ((1 + exp(-p4 * (x - p5)))*(1 + exp(-p6 * (x - p7)))))),
     #start = list(p1 = 0, p2 = 0.5, p3 = -4.5, p4 = 0.04, p5 = 30, p6 = -0.4, p7 = 38),
     #start = list(p1 = 0.98, p2 = 0.4, p3 = -4.6, p4 = 0.04, p5 = 30, p6 = -0.49, p7 = 38), #works for 405266
     #start = list(p1 = 0.9, p2 = 0.4, p3 = -4.6, p4 = 0.04, p5 = 30, p6 = -0.49, p7 = 38),
-    #lower = c(  0, -1, -6, 0,  0, -1,  0),
-    #upper = c(  2,  1,  0, 1, 50,  0, 50),
+    #lower = c( 0, -1, -6, 0,  0, -1,  0),
+    #upper = c( 2,  1,  0, 1, 50,  0, 50),
     #control = list(maxiter = 10000))
 }
-
-
 
 
 # # # # # # # # #
@@ -38,14 +42,16 @@ shinyServer(function(input, output, session) {
     
     ### file selection
     
-    available_folders = c("/Volumes/Home$/Repositories/shiny-server/DIA/PCR2MOLIS/data/", "/Volumes/Diagnostic/")
+    available_folders = c("/Volumes/Home$/Repositories/shiny-server/DIA/PCR2MOLIS/data/",
+                          "/Volumes/huber.michael/Repositories/shiny-server/DIA/PCR2MOLIS/data/",
+                          "/Volumes/Diagnostic/")
     
     output$folder_selection <- renderUI({
-        selectInput("folders", "Folder", choices = available_folders, selected = available_folders[1], selectize = FALSE)
+        selectInput("folder", "Folder", choices = available_folders, selected = available_folders[1], selectize = FALSE)
     })
     
     available_files <- reactive({
-        list.files(input$folders, pattern = ".xls")
+        list.files(input$folder, pattern = ".xls")
     })
     
     output$file_selection <- renderUI({
@@ -55,8 +61,14 @@ shinyServer(function(input, output, session) {
     
     ### read raw data from different cyclers, join amp and res data sheets
     raw_data <- reactive({
-        req(input$pcr_file)
-        pcr_file = paste0(path, input$pcr_file)
+        if (is.null( input$pcr_file_upload)) {
+            pcr_file = paste0(input$folder, input$pcr_file)
+        } else {
+            pcr_file = input$pcr_file_upload$datapath
+        }
+        
+        print(pcr_file)
+        
         cycler = as.character(read_excel(pcr_file) %>% unlist)
         ### QuantStudio
         if ("278870036" %in% cycler | "272322000" %in% cycler) { 
@@ -106,18 +118,6 @@ shinyServer(function(input, output, session) {
             filter(target == input$selected_target)
     })
     
-    
-    ### threshold
-    suggested_threshold <- reactive({
-        target_data() %>%
-            pull(threshold) %>%
-            unique()
-    })
-    
-    output$threshold_selection <- renderUI({
-        numericInput("threshold", "Threshold", value = suggested_threshold(), step = 0.01)
-    })
-    
 
     ### samples
     available_samples <- reactive({
@@ -136,10 +136,29 @@ shinyServer(function(input, output, session) {
     })
     
     
-    ### lin log
-    output$lin_log <- renderUI({
+    ### Parameter selection
+    output$lin_log_selection <- renderUI({
         radioButtons("lin_log", "Lin/Log", choiceNames = c("logarithmic", "linear"), choiceValues = c("log", "lin"), selected = "log")
     })
+    
+    suggested_threshold <- reactive({
+        target_data() %>%
+            pull(threshold) %>%
+            unique()
+    })
+    
+    output$threshold_selection <- renderUI({
+        numericInput("threshold", "Threshold", value = suggested_threshold(), step = 0.01)
+    })
+    
+    output$max_ct_selection <- renderUI({
+        numericInput("max_ct", "Minimal Ct", value = 45, step = 1)
+    })
+    
+    output$min_delta_Rn_selection <- renderUI({
+        numericInput("min_delta_Rn", "Minimal delta Rn", value = 2, step = 0.1)
+    })
+    
     
 
     ### curve fit
@@ -176,7 +195,7 @@ shinyServer(function(input, output, session) {
             group_by(sample_name) %>%
             mutate(ct_mean = mean(ct)) %>%
             mutate(interpretation = case_when(
-                ct <= 45 & p2 >= 2 ~ "positive",
+                ct <= input$max_ct & p2 >= input$min_delta_Rn ~ "positive",
                 TRUE ~" negative"
                 )) %>%
             ungroup()
@@ -207,6 +226,8 @@ shinyServer(function(input, output, session) {
             p = ggplot(dat, aes(x = dat$cycle, y = dat$delta_Rn, color = replicate)) + 
                 geom_point() +
                 geom_hline(yintercept = input$threshold, size = 0.5, linetype="dashed") +
+                geom_hline(yintercept = input$min_delta_Rn, size = 0.5, linetype="dashed") +
+                geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
                 ylab("delta Rn") +
                 xlab("cycles") +
                 panel_border() +
@@ -224,6 +245,8 @@ shinyServer(function(input, output, session) {
             p = ggplot(dat, aes(x = dat$cycle, y = log10(dat$delta_Rn), color = replicate)) + 
                 geom_point() +
                 geom_hline(yintercept = log10(input$threshold), size = 0.5, linetype="dashed") +
+                geom_hline(yintercept = log10(input$min_delta_Rn), size = 0.5, linetype="dashed") +
+                geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
                 ylab("log10 delta Rn") +
                 xlab("cycles") +
                 panel_border() +
@@ -249,6 +272,8 @@ shinyServer(function(input, output, session) {
                 ggplot(aes(x = cycle, y = (log10(delta_Rn)), color = sample_name, group = well_pos)) +
                 geom_line(size = .75) +
                 geom_hline(yintercept = log10(input$threshold), size = 0.5, linetype="dashed") +
+                geom_hline(yintercept = log10(input$min_delta_Rn), size = 0.5, linetype="dashed") +
+                geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
                 geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
                 xlim(0, 50) +
                 ylab("log10 delta Rn") +
@@ -261,6 +286,8 @@ shinyServer(function(input, output, session) {
                 ggplot(aes(x = cycle, y = delta_Rn, color = sample_name, group = well_pos)) +
                 geom_line(size = .75) +
                 geom_hline(yintercept = input$threshold, size = 0.5, linetype="dashed") +
+                geom_hline(yintercept = input$min_delta_Rn, size = 0.5, linetype="dashed") +
+                geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
                 geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
                 ylim(-0.1, NA) +
                 xlim(0, 50) +
