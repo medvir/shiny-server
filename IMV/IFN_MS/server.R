@@ -22,7 +22,24 @@ shinyServer(function(input, output) {
     pvalue = col_double(),
     qvalue = col_double()
   )
-  selected <- read_csv('appdata/selected.csv', col_types = selected_cols)
+  
+  path = "appdata/"
+  
+  files <- reactive({
+      list.files(path = path, pattern = ".csv")
+  })
+  
+  output$datafile <- renderUI({
+      selectInput("datafile",
+                  label= "Data File",
+                  choices = files())
+  })
+  
+  selected <- reactive({
+      print(input$files)
+      read_csv(input$datafile$datapath, col_types = selected_cols)
+  })
+  #selected <- read_csv('appdata/selected.csv', col_types = selected_cols)
 
   p_threshold <- reactive({
     if (input$filter_p){
