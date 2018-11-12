@@ -29,17 +29,16 @@ shinyServer(function(input, output) {
       list.files(path = path, pattern = ".csv")
   })
   
-  output$datafile <- renderUI({
+  output$fileselect <- renderUI({
       selectInput("datafile",
-                  label= "Data File",
+                  label = "Data File",
                   choices = files())
   })
   
   selected <- reactive({
-      print(input$files)
-      read_csv(input$datafile$datapath, col_types = selected_cols)
+      print(input$datafile)
+      read_csv(paste0(path, input$datafile), col_types = selected_cols)
   })
-  #selected <- read_csv('appdata/selected.csv', col_types = selected_cols)
 
   p_threshold <- reactive({
     if (input$filter_p){
@@ -69,7 +68,7 @@ shinyServer(function(input, output) {
   })
 
   all_treatments <- reactive({
-    selected %>%
+    selected() %>%
       filter(time == input$time,
              abs(log_fc) >= fc_threshold(),
              pvalue <= p_threshold(),

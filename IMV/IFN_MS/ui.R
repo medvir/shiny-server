@@ -18,7 +18,7 @@ shinyUI(fluidPage(
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
     sidebarPanel(
-      uiOutput("datafile"),
+      uiOutput("fileselect"),
       checkboxInput("filter_p", "Filter on p-value"),
       conditionalPanel(
         condition = "input.filter_p == true",
