@@ -50,10 +50,11 @@ shinyUI(fluidPage(
       ),
       selectInput("time",
                   "Time point",
-                  c('30min', '90min', '4h')),
-      selectInput("treatment",
-                  "Treatment",
-                  c('alpha2', 'beta', 'omega', 'gamma', 'lambda1')),
+                  c('10min', '30min', '90min', '4h')),
+      uiOutput("treatmentselect"),
+      # selectInput("treatment",
+      #             "Treatment",
+      #             c('alpha2', 'beta', 'omega', 'gamma', 'lambda1')),
       actionButton("goButton", "Plot!")
     ),
     

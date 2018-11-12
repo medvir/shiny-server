@@ -35,8 +35,19 @@ shinyServer(function(input, output) {
                   choices = files())
   })
   
+  treatments <- reactive({
+      selected() %>%
+          pull(treatment) %>%
+          unique()
+  })
+  
+  output$treatmentselect <- renderUI({
+      selectInput("treatment",
+                  label = "Treatment",
+                  choices = treatments())
+  })
+  
   selected <- reactive({
-      print(input$datafile)
       read_csv(paste0(path, input$datafile), col_types = selected_cols)
   })
 
