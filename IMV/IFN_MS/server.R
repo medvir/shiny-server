@@ -144,11 +144,11 @@ shinyServer(function(input, output) {
       all_treatments() %>%
         select(c(treatment, gene, log_fc, qvalue, pvalue, full_id)) %>%
         mutate(colour = ifelse(log_fc > 0, '#E69F00', '#56B4E9')) %>%
-        rbind(c('alpha2', NA, 0.0, 1, 1, 'fake_alpha2', '#FFFFFF')) %>%
-        rbind(c('omega', NA, 0.0, 1, 1, 'fake_omega', '#FFFFFF')) %>%
-        rbind(c('beta', NA, 0.0, 1, 1, 'fake_beta', '#FFFFFF')) %>%
-        rbind(c('lambda1', NA, 0.0, 1, 1, 'fake_lambda1', '#FFFFFF')) %>%
-        rbind(c('gamma', NA, 0.0, 1, 1, 'fake_gamma', '#FFFFFF')) %>%
+        #rbind(c('alpha2', NA, 0.0, 1, 1, 'fake_alpha2', '#FFFFFF')) %>%
+        #rbind(c('omega', NA, 0.0, 1, 1, 'fake_omega', '#FFFFFF')) %>%
+        #rbind(c('beta', NA, 0.0, 1, 1, 'fake_beta', '#FFFFFF')) %>%
+        #rbind(c('lambda1', NA, 0.0, 1, 1, 'fake_lambda1', '#FFFFFF')) %>%
+        #rbind(c('gamma', NA, 0.0, 1, 1, 'fake_gamma', '#FFFFFF')) %>%
         mutate(log_fc = as.numeric(log_fc), qvalue = as.numeric(qvalue))
     })
     
