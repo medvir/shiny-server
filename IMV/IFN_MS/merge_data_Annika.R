@@ -1,7 +1,7 @@
 library(readr)
 library(tidyverse)
 
-path = "/Volumes/Research/Common/personal folders/Annika/Michael_Roundlbots/"
+path = "/Volumes/Research/Common/personal folders/Annika/Michael_Roundlbots/Progenisis/"
 
 files = list.files(path, pattern = ".csv")
 
@@ -11,10 +11,10 @@ for (f in files) {
                ";",
                escape_double = FALSE,
                trim_ws = TRUE, 
-               skip = 2) %>% ### skipping first two lines!!
+               skip = 2) %>% ### skipping first n lines!! ###
         select(time, treatment, full_id, gene, log_fc, pvalue, qvalue) %>%
         mutate(treatment = gsub("[^/]+$", "", treatment))
     data = rbind(data, file_f)
     }
 
-write.csv(data, file = paste0(path, "all_data_Annika.csv"))
+write.csv(data, file = paste0(path, "Progenisis.csv"))
