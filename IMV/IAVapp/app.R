@@ -54,7 +54,7 @@ shinyApp(
         server = function(input, output, session) {
 
                 results = reactive({
-                        rbind(read_excel("analysis_HI_data.xlsx", range = "A1:F31"), read_excel("analysis_HI_data.xlsx", range = "I1:N31")) %>%
+                        rbind(read_excel("2018-11-30_HI-titers.xlsx")) %>%
                                 rename(sample_name = number) %>%
                                 gather(key = measurment, value = titer, -sample_name, -virus) %>%
                                 select(-measurment) %>%
@@ -90,7 +90,9 @@ shinyApp(
                                 facet_grid(. ~ influenza_status, scales = "free") +
                                 panel_border() + background_grid(major = "y", minor = "") +
                                 xlab("") +
-                                ylab("IAV titer (log2)")
+                                ylab("IAV titer (log2)") +
+                                theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+                                theme(strip.text.x = element_text(size = 15))
                         p = p + plot_theme
                         return(p)
                 })
@@ -102,7 +104,8 @@ shinyApp(
                                 facet_grid(virus ~ influenza_status) +
                                 panel_border() + background_grid(major = "y", minor = "") +
                                 xlab("") +
-                                ylab("Number of samples")
+                                ylab("Number of samples") +
+                                theme(strip.text.x = element_text(size = 15))
                         p = p + plot_theme
                         return(p)
                 })
