@@ -1,1 +1,36 @@
-lab_code,year_of_birth,sex,ethnicity,influenza_status,last_influenza,influenza_confirmed,last_vaccination,ebv_infection,ebv_confirmed,comorbidities,list_comorbidities,medication,list_medication,respiratory_infection,list_respiratory_infection,urogential_infection,list_urogenital_infection,results17bht,1982,female,white,4,2016,no,2017,no,no,no,,no,,no,,no,,yes17cco,1995,male,white,1,unknown,unknown,unknown,no,unknown,no,,no,,no,,no,,yes17itg,1996,female,white,2,unkown,unkown,2017,no,unkown,no,,no,,no,,no,,yes17jns,1994,male,white,2,unkown,unkown,2017,no,unkown,no,,no,,no,,no,,yes17kzg,1989,female,white,2,unkown,unkown,2017,unkown,unkown,no,,yes,Nuvaring,yes,common cold signs,no,,yes17ler,1996,male,white,1,unkown,unkown,unkown,no,unkown,no,,no,,no,,no,,yes17mae,1960,female,white,2,unkown,unkown,unkown,no,no,no,,no,,no,,no,,yes17ogm,1995,female,white,1,unkown,unkown,unkown,no,no,yes,Rheuma with Immune suppression,yes,"Remicade, Methotrexat",no,,no,,yes17pgw,1989,female,white,4,2014,unkown,2017,no,no,no,,yes,Birth Control pill ,no,,no,,yes17psm,1996,female,white,1,unknown,unknown,unknown,unknown,unknown,no,,yes,Birth Control Pille,yes,sore throat,no,,yes17pxq,1994,female,white,2,unkown,no,2017,no,no,no,,yes,Terbinafin Mepha,no,,no,,yes17qyz,1996,female,white,4,2014,no,1996,no,unknown,no,,no,,yes,common cold signs,no,,yes17rju,1992,female,white,3,2013,no,unkown,no,no,no,,no,,no,,no,,yes17rmp,1996,male,white,3,2016,no,unkown,unkown,unkown,no,,no,,yes,cough,no,,yes17ryk,1994,female,white,4,unkown,unkown,2017,no,unkown,no,,yes,Focalin,no,,no,,yes17tmb,1989,female,white,2,unkown,unkown,unkown,no,unkown,no,,no,,no,,no,,yes17tsp,1960,female,white,4,unkown,no,2016,yes,yes,no,,no,,no,,no,,yes17uqs,1995,female,white,2,unkown,unkown,2017,no,unkown,no,,no,,no,,no,,yes17uuv,1994,male,white,2,unkown,unkown,2017,no,no,no,,no,,no,,no,,yes17voi,1994,male,white,2,unkown,unkown,2017,no,unkown,no,,no,,no,,no,,yes17vom,1996,male,white,2,unkown,unkown,2017,unkown,unkown,no,,no,,no,,no,,yes17vqh,1996,female,white,4,2013,no,2017,unkown,no,no,,no,,no,,no,,yes17vxr,1965,female,white,4,2016,no,2017,no,unkown,no,,no,,no,,no,,yes17wic,1993,female,white,2,unknown,unknown,2017,no,no,no,,yes,"Elvanse 2x30mg, Trittico Retaral 150mg",no,,no,,yes17wxz,1995,female,white,2,unkown,no,2017,no,no,no,,no,,no,,no,,yes17xkg,1961,male,white,4,1996,yes,2017,yes,yes,no,,no,,no,,no,,yes17xux,1978,male,white,2,unkown,unkown,2017,no,no,no,,no,,no,,no,,yes17yvv,1977,male,white,2,unkown,unkown,2017,yes,yes,no,,yes,Lisinopril,no,,no,,yes17zgd,1994,female,white,1,unknown,unknown,unknown,no,unknown,no,,yes,Nuvaring,no,,no,,yes17zjq,1995,male,white,3,unknown,no,unknown,no,unknown,no,,no,,no,,no,,yes
+code,lab_code,year_of_birth,sex,ethnicity,influenza_status,last_influenza,influenza_confirmed,last_vaccination,ebv_infection,ebv_confirmed,comorbidities,list_comorbidities,medication,list_medication,respiratory_infection,list_respiratory_infection,urogential_infection,list_urogenital_infection,results,,,,,
+18001,18bck,1997,male,white ,1,N/A,N/A,N/A,no,no,no,,no,,yes,Husten nach bakterieller (wahrscheinlich) Rhinoliusitis,no,,yes,,,,,
+18002,18bky,1997,female,white,1,N/A,N/A,N/A,unknown,no,no,,no,,no,,yes,,yes,,,,,
+18003,18bms,1995,female,white,1,N/A,N/A,N/A,yes,yes,no,,no,,no,,no,,yes,,,,,
+18004,18bua,1996,male,white,2,N/A,N/A,2018,unknown,no,no,,no,,no,,no,,yes,,,,,
+18005,18cuz,1997,female,white,2,N/A,N/A,2018,yes,yes,no,,yes,Valette (Pille),yes,"Husten, Schnupfen",no,,yes,,,,,
+18006,18dbc,1997,female,white,3,N/A,no,N/A,unknown,no,no,,yes,Eisen (komplementär),no,,no,,yes,,,,,
+18007,18fnl,1995,female,white,4,N/A,unknown,2018,unkown,N/A,yes,Asthma,yes,Strattera,no,,no,,yes,,,,,
+18008,18gkb,1996,female,white,2,N/A,N/A,2018,no,N/A,no,N/A,no,,no,,no,,yes,,,,,
+18009,18grf,1996,female,white,1,N/A,N/A,N/A,unknown,N/A,no,,no,,no,,no,,yes,,,,,
+18010,18hkv,1995,male,white,2,N/A,N/A,2014,unknown,no,no,,no,,yes,Erkältung,no,,yes,,,,,
+18011,18ikc,1996,female,white,2,N/A,N/A,2018,no,N/A,no,,yes,Pille,no,,no,,yes,,,,,
+18012,18isq,1998,male,white,4,N/A,no,2018,unknown,no,no,,no,,no,,no,,yes,,,,,
+18013,18jcd,1995,female,white,4,N/A,no,2018,unknown,N/A,no,,yes,Pille,no,,no,,yes,,,,,
+18014,18jhx,1997,female,white,1,N/A,N/A,N/A,unknown,no,no,,no,,yes,Husten,yes,häufig zur Toilette müssen,yes,,,,,
+18015,18jtb,1995,male,white,1,N/A,N/A,N/A,unknown,unknown,no,,no,,no,,no,,yes,,,,,
+18016,18knj,1982,female,hispanic,2,N/A,N/A,2017,yes,yes,no,,no,,no,,no,,no,,,,,
+18017,18mbs,1960,female,white,2,N/A,no,2016,N/A,N/A,no,,no,,no,,no,,N/A,,,,,
+18021,18qkd,1985,female,white,1,N/A,N/A,N/A,no,N/A,no,,no,,no,,no,,yes,,,,,
+18022,18smc,1996,female,white,1,N/A,N/A,N/A,no,no,yes,von Willebrand,no,,yes,Halsschmerzen (leicht),no,,yes,,,,,
+18023,18vcz,1998,female,white,1,N/A,N/A,N/A,unknown,unknown,no,,no,,no,,no,,yes,,,,,
+18024,18vkn,1993,male,white,2,N/A,unknown,2018,unknown,unknown,yes,"Asthma, Borreliose",no,,yes,Husten (erkältung) Asthma,no,,yes,,,,,
+18025,18wbb,1997,female,white,2,N/A,N/A,2018,unknown,N/A,yes,,no,,no,,no,,yes,,,,,
+18026,18wpf,1998,female,white,3,N/A,no,N/A,unknown,no,no,,yes,Elyfen30,yes,"Husten, Niessen, Nase läuft",no,,yes,,,,,
+18027,18wqn,1997,male,white,2,N/A,N/A,2018,no,N/A,no,,no,,no,,no,,yes,,,,,
+18028,18xgn,1993,female,white,2,N/A,N/A,2018,unknown,no,no,,no,,yes,leichte Halsschmerzen,no,,yes,,,,,
+18029,18xii,1998,female,white,1,N/A,N/A,N/A,unknown,N/A,no,,no,,no,,no,,yes,,,,,
+18030,18ygv,1998,male,white,3,2000,unknown,no,no,no,no,,no,,no,,no,,yes,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,
