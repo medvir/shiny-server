@@ -57,7 +57,7 @@ shinyServer(function(input, output, session) {
         
         ### plot style
         plot_labels = list(ylab("HHV-7 copies/ml"))
-        plot_theme = theme(legend.position="none", axis.text=element_text(size = 15), axis.title=element_text(size = 20, face = "bold"), strip.text = element_text(size = 20))
+        plot_theme = theme(legend.position="none", axis.text=element_text(size = 30), axis.title=element_text(size = 30, face = "bold"), strip.text = element_text(size = 30))
         
         ### output plots
         output$plot_quant = renderPlot({
@@ -123,7 +123,8 @@ shinyServer(function(input, output, session) {
                         geom_jitter(height = 0, width = 0.2, size = 4) +
                         facet_grid(. ~ sample_type) +
                         panel_border() + background_grid(major = "y", minor = "") +
-                        xlab("Symptoms")
+                        xlab("Symptoms") +
+                        theme(axis.text.x = element_text(angle = 90, hjust = 1))
                 p = p + plot_labels + plot_theme
                 return(p)
                 })
