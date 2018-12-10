@@ -26,10 +26,12 @@ shinyApp(
                                      ),
                         mainPanel(
                                 tabsetPanel(
-                                        tabPanel("Quantitative",
+                                        tabPanel("Quantitative - by vaccine status",
                                                  verticalLayout(h2("IAV titer by vaccine status"),
-                                                                plotOutput("plot_quant", height = plot_height),
-                                                                h2("IAV titer of non vaccinated by influenza status"),
+                                                                plotOutput("plot_quant", height = plot_height)
+                                                 )),
+                                        tabPanel("Quantitative - by influenza status",
+                                                 verticalLayout(h2("IAV titer of non vaccinated by influenza status"),
                                                                 plotOutput("plot_quant_2", height = plot_height)
                                                  )),
                                         tabPanel("Sex",
