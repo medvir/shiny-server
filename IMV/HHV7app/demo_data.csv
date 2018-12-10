@@ -1,28 +1,28 @@
 code,lab_code,year_of_birth,sex,ethnicity,influenza_status,last_influenza,influenza_confirmed,last_vaccination,ebv_infection,ebv_confirmed,comorbidities,list_comorbidities,medication,list_medication,respiratory_infection,list_respiratory_infection,urogential_infection,list_urogenital_infection,results
-18001,18bck,1997,male,white ,1,N/A,N/A,N/A,no,no,no,,no,,yes,Husten nach bakterieller (wahrscheinlich) Rhinoliusitis,no,,yes
+18001,18bck,1997,male,white ,1,N/A,N/A,N/A,no,no,no,,no,,yes,cough,no,,yes
 18002,18bky,1997,female,white,1,N/A,N/A,N/A,unknown,no,no,,no,,no,,yes,,yes
 18003,18bms,1995,female,white,1,N/A,N/A,N/A,yes,yes,no,,no,,no,,no,,yes
 18004,18bua,1996,male,white,2,N/A,N/A,2018,unknown,no,no,,no,,no,,no,,yes
-18005,18cuz,1997,female,white,2,N/A,N/A,2018,yes,yes,no,,yes,Valette (Pille),yes,"Husten, Schnupfen",no,,yes
-18006,18dbc,1997,female,white,3,N/A,no,N/A,unknown,no,no,,yes,Eisen (komplementär),no,,no,,yes
+18005,18cuz,1997,female,white,2,N/A,N/A,2018,yes,yes,no,,yes,Valette (Pille),yes,common cold signs,no,,yes
+18006,18dbc,1997,female,white,3,N/A,no,N/A,unknown,no,no,,yes,Eisen (komplement_r),no,,no,,yes
 18007,18fnl,1995,female,white,4,N/A,unknown,2018,unkown,N/A,yes,Asthma,yes,Strattera,no,,no,,yes
 18008,18gkb,1996,female,white,2,N/A,N/A,2018,no,N/A,no,N/A,no,,no,,no,,yes
 18009,18grf,1996,female,white,1,N/A,N/A,N/A,unknown,N/A,no,,no,,no,,no,,yes
-18010,18hkv,1995,male,white,2,N/A,N/A,2014,unknown,no,no,,no,,yes,Erkältung,no,,yes
+18010,18hkv,1995,male,white,2,N/A,N/A,2014,unknown,no,no,,no,,yes,common cold signs,no,,yes
 18011,18ikc,1996,female,white,2,N/A,N/A,2018,no,N/A,no,,yes,Pille,no,,no,,yes
 18012,18isq,1998,male,white,4,N/A,no,2018,unknown,no,no,,no,,no,,no,,yes
 18013,18jcd,1995,female,white,4,N/A,no,2018,unknown,N/A,no,,yes,Pille,no,,no,,yes
-18014,18jhx,1997,female,white,1,N/A,N/A,N/A,unknown,no,no,,no,,yes,Husten,yes,häufig zur Toilette müssen,yes
+18014,18jhx,1997,female,white,1,N/A,N/A,N/A,unknown,no,no,,no,,yes,cough,yes,urge to urinate,yes
 18015,18jtb,1995,male,white,1,N/A,N/A,N/A,unknown,unknown,no,,no,,no,,no,,yes
 18016,18knj,1982,female,hispanic,2,N/A,N/A,2017,yes,yes,no,,no,,no,,no,,no
 18017,18mbs,1960,female,white,2,N/A,no,2016,N/A,N/A,no,,no,,no,,no,,N/A
 18021,18qkd,1985,female,white,1,N/A,N/A,N/A,no,N/A,no,,no,,no,,no,,yes
-18022,18smc,1996,female,white,1,N/A,N/A,N/A,no,no,yes,von Willebrand,no,,yes,Halsschmerzen (leicht),no,,yes
+18022,18smc,1996,female,white,1,N/A,N/A,N/A,no,no,yes,von Willebrand,no,,yes,sore throat,no,,yes
 18023,18vcz,1998,female,white,1,N/A,N/A,N/A,unknown,unknown,no,,no,,no,,no,,yes
-18024,18vkn,1993,male,white,2,N/A,unknown,2018,unknown,unknown,yes,"Asthma, Borreliose",no,,yes,Husten (erkältung) Asthma,no,,yes
+18024,18vkn,1993,male,white,2,N/A,unknown,2018,unknown,unknown,yes,"Asthma, Borreliose",no,,yes,cough,no,,yes
 18025,18wbb,1997,female,white,2,N/A,N/A,2018,unknown,N/A,yes,,no,,no,,no,,yes
-18026,18wpf,1998,female,white,3,N/A,no,N/A,unknown,no,no,,yes,Elyfen30,yes,"Husten, Niessen, Nase läuft",no,,yes
+18026,18wpf,1998,female,white,3,N/A,no,N/A,unknown,no,no,,yes,Elyfen30,yes,common cold signs,no,,yes
 18027,18wqn,1997,male,white,2,N/A,N/A,2018,no,N/A,no,,no,,no,,no,,yes
-18028,18xgn,1993,female,white,2,N/A,N/A,2018,unknown,no,no,,no,,yes,leichte Halsschmerzen,no,,yes
+18028,18xgn,1993,female,white,2,N/A,N/A,2018,unknown,no,no,,no,,yes,sore throat,no,,yes
 18029,18xii,1998,female,white,1,N/A,N/A,N/A,unknown,N/A,no,,no,,no,,no,,yes
 18030,18ygv,1998,male,white,3,2000,unknown,no,no,no,no,,no,,no,,no,,yes
