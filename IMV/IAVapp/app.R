@@ -4,6 +4,7 @@ library(shiny)
 library(tidyverse)
 library(cowplot)
 library(readxl)
+library(forcats)
 
 plot_height = 800
 
