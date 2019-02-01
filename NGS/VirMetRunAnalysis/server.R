@@ -41,6 +41,7 @@ shinyServer(function(input, output) {
             ### plot 
             ggplot(aes(x = quality, y = reads, fill = quality)) +
             geom_col(colour = "black") +
+            geom_text(aes(label = reads), vjust = -0.5) +
             scale_fill_manual(name = "",
                               values = c("#D55E00", "#009E73")) +
             panel_border() + background_grid(major = "xy", minor = "") +
