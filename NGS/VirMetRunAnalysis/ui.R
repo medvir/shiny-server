@@ -1,5 +1,6 @@
 library(shiny)
 library(DT)
+library(shinycustomloader)
 
 shinyUI(fluidPage(
         #theme = shinytheme("lumen"),
@@ -24,12 +25,12 @@ shinyUI(fluidPage(
         fluidRow(column(
                 6,
                 h3("Number of raw and quality filtered reads"),
-                plotOutput(outputId = "plot_run")
+                withLoader(plotOutput(outputId = "plot_run"), type = "html", loader = "dnaspin")
         ),
         column(
                 6,
                 h3("Distribution of sequencing reads into taxonomic categories"),
-                plotOutput(outputId = "plot_domain")
+                withLoader(plotOutput(outputId = "plot_domain"), type = "html", loader = "dnaspin")
         )),
         
         checkboxInput("checkbox", label = "Hide phages", value = FALSE),
