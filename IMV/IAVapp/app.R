@@ -5,6 +5,7 @@ library(tidyverse)
 library(cowplot)
 library(readxl)
 library(forcats)
+library(ggpubr)
 
 plot_height = 800
 
@@ -86,10 +87,10 @@ shinyApp(
                 
                 output$plot_quant = renderPlot({
                         req(input$results$datapath)
-                        p = ggplot(results(), aes(x = fct_relevel(virus, "current H3", "current H1", "older H1"), y = log2(IAV_titer), colour = vaccinated_status , fill = vaccinated_status)) +
+                        p = ggplot(results(), aes(x = vaccinated_status, y = log2(IAV_titer), colour = vaccinated_status , fill = vaccinated_status)) +
                                 geom_boxplot(outlier.color = "white", alpha = 0.3) +
                                 geom_jitter(height = 0, width = 0.2, size = 4) +
-                                facet_grid(. ~ vaccinated_status, scales = "free") +
+                                facet_grid(. ~ fct_relevel(virus, "current H3", "current H1", "older H1"), scales = "free") +
                                 panel_border() + background_grid(major = "y", minor = "") +
                                 xlab("") +
                                 ylab("IAV titer (log2)") +
@@ -97,7 +98,7 @@ shinyApp(
                                 scale_fill_manual(values = c("#E69F00", "#56B4E9")) +
                                 geom_hline(aes(yintercept = log2(40)), linetype = 2) +
                                 geom_hline(aes(yintercept = log2(10)), linetype = 2)
-                        p = p + plot_theme
+                        p = p + stat_compare_means(method = "t.test", size = 8) + plot_theme 
                         return(p)
                 })
                 
