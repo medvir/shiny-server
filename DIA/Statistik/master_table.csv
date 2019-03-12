@@ -34,7 +34,7 @@ FSME,IgG qual. (ELISA),Serologie,Antikoerpernachweis,ELISA/CMIA,F01OS
 FSME,IgG qual. (Liquor) / quant. (Se/Li-Index) (ELISA),Serologie,Antikoerpernachweis,ELISA/CMIA,F01OSE
 FSME,IgM qual. (ELISA),Serologie,Antikoerpernachweis,ELISA/CMIA,F01RS
 FSME,IgM im Liquor (ELISA),Serologie,Antikoerpernachweis,ELISA/CMIA,F01RSE
-Gastrointestinale Viren,"Blockanalyse gastrointenstinale Viren (PCR, qual.)",PCR-basierte Analytik,Genomnachweis mittels (RT-)PCR,,A02FKN
+Gastrointestinale Viren,"Blockanalyse gastrointestinale Viren (PCR, qual.)",PCR-basierte Analytik,Genomnachweis mittels (RT-)PCR,,A02FKN
 HAV,HAV-Total Antikoerper quant. (CMIA)  (Architect),Serologie,Antikoerpernachweis,ELISA/CMIA,H22VST
 HAV,HAV IgM qual. (CMIA)  (Architect),Serologie,Antikoerpernachweis,ELISA/CMIA,H22RST
 HBV,DNA-Nachweis quant. (PCR)  (Cobas Roche),PCR-basierte Analytik,Genomnachweis mittels (RT-)PCR,,H23EK
