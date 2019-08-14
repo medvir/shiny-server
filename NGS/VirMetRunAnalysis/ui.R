@@ -33,7 +33,8 @@ shinyUI(fluidPage(
                 withLoader(plotOutput(outputId = "plot_domain"), type = "html", loader = "dnaspin")
         )),
         
-        checkboxInput("checkbox", label = "Hide phages", value = FALSE),
+        checkboxInput("checkbox_phages", label = "Hide phages", value = FALSE),
+        checkboxInput("checkbox_blacklist", label = "Hide blacklisted viruses", value = FALSE),
         verbatimTextOutput("value"),
         
         #hr(),
