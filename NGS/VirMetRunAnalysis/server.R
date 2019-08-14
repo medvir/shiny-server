@@ -154,11 +154,15 @@ shinyServer(function(input, output) {
             tempReport <- file.path(tempdir(), "report.Rmd")
             file.copy("RunReport.Rmd", tempReport, overwrite = TRUE)
             
+            tempblacklist <- file.path(tempdir(), "blacklist.csv")
+            file.copy("data/blacklist.csv", tempblacklist, overwrite = TRUE)
+            
             params <- list(orgs_file = input$orgs_file$datapath,
                            reads_file = input$reads_file$datapath,
                            sample_name = input$chosen_sample,
                            rows_selected = input$table_species_rows_selected,
                            checkbox_phages = input$checkbox_phages,
+                           blacklist_file = tempblacklist,
                            checkbox_blacklist = input$checkbox_blacklist
                            )
             

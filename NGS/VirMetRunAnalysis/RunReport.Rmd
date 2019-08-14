@@ -7,6 +7,7 @@ params:
    sample_name: ""
    rows_selected: ""
    checkbox_phages: ""
+   blacklist_file: ""
    checkbox_blacklist: ""
 ---
 
@@ -17,10 +18,9 @@ library(dplyr)
 library(ggplot2)
 library(readr)
 library(knitr)
-library(here)
 
 blacklist <-
-  read_csv(here::here("NGS", "VirMetRunAnalysis", "data", "blacklist.csv"))
+  read_csv(params$blacklist_file)
 
 orgs_data <-
   read_delim(params$orgs_file, "\t") %>%
