@@ -6,6 +6,8 @@ params:
    reads_file: ""
    sample_name: ""
    rows_selected: ""
+   checkbox_phages: ""
+   checkbox_blacklist: ""
 ---
 
 ```{r, include = FALSE}
@@ -15,6 +17,10 @@ library(dplyr)
 library(ggplot2)
 library(readr)
 library(knitr)
+library(here)
+
+blacklist <-
+  read_csv(here::here("NGS", "VirMetRunAnalysis", "data", "blacklist.csv"))
 
 orgs_data <-
   read_delim(params$orgs_file, "\t") %>%
@@ -23,6 +29,20 @@ orgs_data <-
   mutate(covered_max = if_else(covered_max > 100, 100, covered_max)) %>%
   mutate(covered_score = round(100 * covered_percent / covered_max, 1)) %>%
   mutate(covered_percent = round(covered_percent, 1))
+
+if (isTRUE(params$checkbox_phages)) {
+  orgs_data <-
+    orgs_data %>%
+    filter(grepl("phage", species, ignore.case = TRUE) == FALSE) %>%
+    filter(grepl("phage", ssciname, ignore.case = TRUE) == FALSE)
+}
+
+if (isTRUE(params$checkbox_blacklist)) {
+  orgs_data <-
+    orgs_data %>%
+    anti_join(blacklist, by = "stitle")
+}
+
 
 reads_data <-
   read_delim(params$reads_file, "\t")

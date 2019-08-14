@@ -157,7 +157,10 @@ shinyServer(function(input, output) {
             params <- list(orgs_file = input$orgs_file$datapath,
                            reads_file = input$reads_file$datapath,
                            sample_name = input$chosen_sample,
-                           rows_selected = input$table_species_rows_selected)
+                           rows_selected = input$table_species_rows_selected,
+                           checkbox_phages = input$checkbox_phages,
+                           checkbox_blacklist = input$checkbox_blacklist
+                           )
             
             rmarkdown::render(tempReport, output_file = file,
                               params = params,
