@@ -19,6 +19,7 @@ library(ggplot2)
 library(readr)
 library(knitr)
 library(stringr)
+library(forcats)
 ```
 
 
@@ -75,43 +76,69 @@ filtered_reads_rna <-
   select(reads) %>%
   as.integer()
 
-t_info = data.frame()
-t_info = rbind(t_info, data.frame(key = "Run name", value = run_name))
-t_info = rbind(t_info, data.frame(key = "Sample name", value = params$sample_name))
-t_info = rbind(t_info, data.frame(key = "Quality-filtered reads (DNA/RNA)", value = paste0(round(filtered_reads_dna/1000000, 3), "/", round(filtered_reads_rna/1000000, 3), " M")))
-t_info = rbind(t_info, data.frame(key = "Report date", value = factor(Sys.Date())))
+t_info <-
+  data.frame() %>%
+  rbind(data.frame(key = "Run name", value = run_name)) %>%
+  rbind(data.frame(key = "Sample name", value = params$sample_name)) %>%
+  rbind(data.frame(key = "Quality-filtered reads (DNA/RNA)", value = paste0(round(filtered_reads_dna/1000000, 3), "/", round(filtered_reads_rna/1000000, 3), " M"))) %>%
+  rbind(data.frame(key = "Report date", value = factor(Sys.Date())))
+
 # User name doesn't work if shiny app was used on the shiny server
-#t_info = rbind(t_info, data.frame(key = "User name", value = Sys.info()[7]))
-row.names(t_info) = NULL
-colnames(t_info) = NULL
+#t_info <- rbind(t_info, data.frame(key = "User name", value = Sys.info()[7]))
+row.names(t_info) <- NULL
+colnames(t_info) <- NULL
 
 kable(t_info)
 ```
 
 ## Domain level taxonomy profile
-```{r, echo=FALSE}
-t_domain = reads_data %>%
-        filter(sample %in% params$sample_name) %>%
-        filter(!(category == "raw_reads" | category == "passing_filter" | category == "reads_to_blast")) %>%
-        mutate(domain = case_when(
-                category %in% c("matching_bact1", "matching_bact2", "matching_bact3") ~ "bacterial",
-                category %in% c("viral_reads") ~ "viral",
-                category %in% c("matching_humanGRCh38") ~ "human",
-                category %in% c("undetermined_reads") ~ "unknown",
-                category %in% c("matching_bt_ref") ~ "bovine",
-                category %in% c("matching_fungi1") ~ "fungal",
-                TRUE ~ "none"
-                )) %>%
-        filter(!(domain == "none")) %>%
-        select(domain, reads) %>%
-        group_by(domain) %>%
-        mutate(reads = sum(reads)) %>%
-        sample_n(1) %>%
-        ungroup() %>%
-        mutate(percent = round(reads/sum(reads)*100, 3)) %>%
-        mutate(abundance = strrep("+", 1 + round(percent/max(percent)*19)))
+```{r read-category, echo=FALSE, fig.width=6, fig.height=3}
+domain <-
+  reads_data %>%
+  filter(sample %in% params$sample_name) %>%
+  filter(!(category == "raw_reads" | category == "passing_filter" | category == "reads_to_blast")) %>%
+  mutate(domain = case_when(
+    category %in% c("matching_bact1", "matching_bact2", "matching_bact3") ~ "bacterial",
+    category %in% c("viral_reads") ~ "viral",
+    category %in% c("matching_humanGRCh38") ~ "human",
+    category %in% c("undetermined_reads") ~ "undetermined",
+    category %in% c("matching_bt_ref") ~ "bovine",
+    category %in% c("matching_fungi1") ~ "fungal",
+    TRUE ~ "none")) %>%
+  mutate(workflow = case_when(
+    str_detect(sample, "DNA") ~ "DNA",
+    str_detect(sample, "RNA") ~ "RNA",
+    TRUE ~ "none")) %>%
+  filter(!(domain == "none"),
+         !(workflow == "none"))
+
+domain_order <- c("human", "bacterial", "fungal", "bovine", "viral", "undetermined")
+
+t_domain <-
+  domain %>%
+  select(domain, reads) %>%
+  group_by(domain) %>%
+  mutate(reads = sum(reads)) %>%
+  sample_n(1) %>%
+  ungroup() %>%
+  mutate(domain = fct_relevel(domain, domain_order)) %>%
+  arrange(domain) %>%
+  mutate(percent = round(reads/sum(reads)*100, 3)) %>%
+  mutate(abundance = strrep("+", 1 + round(percent/max(percent)*19)))
 
 kable(t_domain)
+
+domain %>%
+  select(domain, workflow, reads) %>%
+  group_by(domain, workflow) %>%
+  mutate(reads = sum(reads)) %>%
+  sample_n(1) %>%
+  ggplot(aes(x = fct_relevel(domain, rev(domain_order)), y = reads)) +
+  geom_col(aes(fill = workflow), colour = "black", position = "dodge") +
+  scale_y_log10() +
+  scale_fill_manual(values = c("white", "grey")) +
+  coord_flip() +
+  labs(x = NULL)
 ```
 
 ## Relevant[^1] Virus species
