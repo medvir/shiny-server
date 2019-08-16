@@ -2,13 +2,13 @@
 title: "VirMet Report"
 output: pdf_document
 params:
-   orgs_file: ""
-   reads_file: ""
-   sample_name: ""
-   rows_selected: ""
-   checkbox_phages: ""
-   blacklist_file: ""
-   checkbox_blacklist: ""
+  orgs_file: ""
+  reads_file: ""
+  sample_name: ""
+  rows_selected: ""
+  checkbox_phages: ""
+  blacklist_file: ""
+  checkbox_blacklist: ""
 ---
 
 ```{r load-packages, include=FALSE}
@@ -21,8 +21,6 @@ library(knitr)
 library(stringr)
 library(forcats)
 ```
-
-
 
 ```{r read-data, include=FALSE}
 blacklist <-
@@ -76,6 +74,11 @@ filtered_reads_rna <-
   select(reads) %>%
   as.integer()
 
+molis_nr <-
+  unique(str_extract(params$sample_name, "\\d{10,}-*[A-z]*(?=-)"))
+
+
+
 t_info <-
   data.frame() %>%
   rbind(data.frame(key = "Run name", value = run_name)) %>%
@@ -91,8 +94,12 @@ colnames(t_info) <- NULL
 kable(t_info)
 ```
 
-## Domain level taxonomy profile
-```{r read-category, echo=FALSE, fig.width=6, fig.height=3}
+---
+subtitle: `r molis_nr`
+---
+
+## Domain Level Taxonomy Profile
+```{r read-category, echo=FALSE, fig.width=6, fig.height=2.5}
 domain <-
   reads_data %>%
   filter(sample %in% params$sample_name) %>%
@@ -128,7 +135,8 @@ t_domain <-
 
 kable(t_domain)
 
-domain %>%
+domain_plot <-
+  domain %>%
   select(domain, workflow, reads) %>%
   group_by(domain, workflow) %>%
   mutate(reads = sum(reads)) %>%
@@ -141,20 +149,24 @@ domain %>%
   labs(x = NULL)
 ```
 
-## Relevant[^1] Virus species
+## Relevant[^1] Virus Species
 
-```{r, results='asis', echo=FALSE}
+```{r list-relevant, results='asis', echo=FALSE}
 t_species <-
   orgs_data %>%
   filter(sample %in% params$sample_name) %>%
-  select(species, reads, sample) %>%
-  group_by(species, sample) %>%
+  mutate(workflow = case_when(
+    str_detect(sample, "DNA") ~ "DNA workflow",
+    str_detect(sample, "RNA") ~ "RNA workflow",
+    TRUE ~ "none")) %>%
+  select(species, reads, workflow) %>%
+  group_by(species, workflow) %>%
   summarise(reads_sum = sum(reads)) %>%
-  spread(key = sample, value = reads_sum, fill = 0) %>%
+  spread(key = workflow, value = reads_sum, fill = 0) %>%
   ungroup() %>%
-  mutate(reads_total = as.integer(rowSums(.[,-1], na.rm = TRUE))) %>%
-  mutate(percent = round(reads_total/sum(reads_total)*100, 3)) %>%
-  arrange(desc(reads_total)) %>%
+  mutate(total = as.integer(rowSums(.[,-1], na.rm = TRUE))) %>%
+  mutate(percent = round(total/sum(total)*100, 3)) %>%
+  arrange(desc(total)) %>%
   select(-percent)
 
 t_species_selected <-
@@ -170,7 +182,19 @@ if (nrow(t_species_selected) == 0) {
 
 ```
 
-```{r, echo=FALSE, comment=NA}
+[^1]: definition of relevant in that context
+
+\newpage
+
+## Rejected[^2] Virus Species
+```{r list-rejected, echo = FALSE}
+t_species_unselected <-
+  setdiff(t_species, t_species_selected)
+
+kable(t_species_unselected)
+```
+
+```{r additional-statements, echo=FALSE, comment=NA}
 # Print statements in report if phages or blacklisted viruses were removed
 phages_removed_text <- ""
 if (isTRUE(params$checkbox_phages)) {
@@ -179,7 +203,7 @@ if (isTRUE(params$checkbox_phages)) {
 
 blacklisted_text <- ""
 if (isTRUE(params$checkbox_blacklist)) {
-  blacklisted_text <- "Blacklisted references[^2] were excluded."
+  blacklisted_text <- "Blacklisted references[^3] were excluded."
 }
 
 ```
@@ -188,17 +212,5 @@ if (isTRUE(params$checkbox_blacklist)) {
 
 `r blacklisted_text`
 
-[^1]: definition of relevant in that context
-[^2]: false annotated references
-
-\newpage
-
-## Rejected[^3] Virus species
-```{r, echo = FALSE}
-t_species_unselected <-
-  setdiff(t_species, t_species_selected)
-
-kable(t_species_unselected)
-```
-
-[^3]: when do we reject a virus
+[^2]: when do we reject a virus
+[^3]: false annotated references
