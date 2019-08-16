@@ -11,24 +11,29 @@ params:
    checkbox_blacklist: ""
 ---
 
-```{r, include = FALSE}
+```{r load-packages, include=FALSE}
 library(tidyr)
 library(cowplot)
 library(dplyr)
 library(ggplot2)
 library(readr)
 library(knitr)
+library(stringr)
+```
 
+
+
+```{r read-data, include=FALSE}
 blacklist <-
   read_csv(params$blacklist_file)
 
 orgs_data <-
   read_delim(params$orgs_file, "\t") %>%
-  mutate(covered_percent = 100 * covered_region / seq_len) %>%
-  mutate(covered_max = 100 * reads * 151 / seq_len) %>%
-  mutate(covered_max = if_else(covered_max > 100, 100, covered_max)) %>%
-  mutate(covered_score = round(100 * covered_percent / covered_max, 1)) %>%
-  mutate(covered_percent = round(covered_percent, 1))
+  mutate(covered_percent = 100 * covered_region / seq_len,
+         covered_max = 100 * reads * 151 / seq_len,
+         covered_max = if_else(covered_max > 100, 100, covered_max),
+         covered_score = round(100 * covered_percent / covered_max, 1),
+         covered_percent = round(covered_percent, 1))
 
 # if in shiny app selected, remove entries containing "phage"
 if (isTRUE(params$checkbox_phages)) {
@@ -45,31 +50,38 @@ if (isTRUE(params$checkbox_blacklist)) {
     anti_join(blacklist, by = "stitle")
 }
 
-
 reads_data <-
   read_delim(params$reads_file, "\t")
-
-run_name <-
-  reads_data$run[1]
-
-filtered_reads <-
-  reads_data %>%
-  filter(category == "passing_filter") %>%
-  filter(sample %in% params$sample_name) %>%
-  select(reads) %>%
-  mutate(reads = sum(reads)) %>%
-  sample_n(1) %>%
-  as.integer()
 ```
 
 ## Run Information
-```{r, echo = FALSE, comment=NA, tidy=TRUE}
+```{r run-information, echo=FALSE, comment=NA, tidy=TRUE}
+run_name <-
+  reads_data$run[1]
+
+filtered_reads_dna <-
+  reads_data %>%
+  filter(category == "passing_filter",
+         sample %in% params$sample_name,
+         str_detect(sample, "DNA")) %>%
+  select(reads) %>%
+  as.integer()
+
+filtered_reads_rna <-
+  reads_data %>%
+  filter(category == "passing_filter",
+         sample %in% params$sample_name,
+         str_detect(sample, "RNA")) %>%
+  select(reads) %>%
+  as.integer()
+
 t_info = data.frame()
 t_info = rbind(t_info, data.frame(key = "Run name", value = run_name))
 t_info = rbind(t_info, data.frame(key = "Sample name", value = params$sample_name))
-t_info = rbind(t_info, data.frame(key = "Total filtered reads", value = paste(round(filtered_reads/1000000, 3), "M")))
-t_info = rbind(t_info, data.frame(key = "Report date", value = date()))
-t_info = rbind(t_info, data.frame(key = "User name", value = Sys.info()[7]))
+t_info = rbind(t_info, data.frame(key = "Quality-filtered reads (DNA/RNA)", value = paste0(round(filtered_reads_dna/1000000, 3), "/", round(filtered_reads_rna/1000000, 3), " M")))
+t_info = rbind(t_info, data.frame(key = "Report date", value = factor(Sys.Date())))
+# User name doesn't work if shiny app was used on the shiny server
+#t_info = rbind(t_info, data.frame(key = "User name", value = Sys.info()[7]))
 row.names(t_info) = NULL
 colnames(t_info) = NULL
 
@@ -102,7 +114,7 @@ t_domain = reads_data %>%
 kable(t_domain)
 ```
 
-## Relevant Virus species
+## Relevant[^1] Virus species
 
 ```{r, results='asis', echo=FALSE}
 t_species <-
@@ -140,7 +152,7 @@ if (isTRUE(params$checkbox_phages)) {
 
 blacklisted_text <- ""
 if (isTRUE(params$checkbox_blacklist)) {
-  blacklisted_text <- "Blacklisted references[^1] were excluded."
+  blacklisted_text <- "Blacklisted references[^2] were excluded."
 }
 
 ```
@@ -149,14 +161,17 @@ if (isTRUE(params$checkbox_blacklist)) {
 
 `r blacklisted_text`
 
-[^1]: false annotated references
+[^1]: definition of relevant in that context
+[^2]: false annotated references
 
 \newpage
 
-## Rejected Virus species
+## Rejected[^3] Virus species
 ```{r, echo = FALSE}
 t_species_unselected <-
   setdiff(t_species, t_species_selected)
 
 kable(t_species_unselected)
 ```
+
+[^3]: when do we reject a virus
