@@ -103,18 +103,6 @@ kable(t_domain)
 ```
 
 ## Relevant Virus species
-```{r, echo=FALSE, comment=NA}
-# Print statements in report if phages or blacklisted viruses were removed
-if (isTRUE(params$checkbox_phages)) {
-  cat("Virus species containing 'phage' were excluded.")
-}
-
-if (isTRUE(params$checkbox_blacklist)) {
-  cat("Blacklisted Virus species were excluded.")
-}
-```
-
-
 
 ```{r, results='asis', echo=FALSE}
 t_species <-
@@ -142,6 +130,26 @@ if (nrow(t_species_selected) == 0) {
 }
 
 ```
+
+```{r, echo=FALSE, comment=NA}
+# Print statements in report if phages or blacklisted viruses were removed
+phages_removed_text <- ""
+if (isTRUE(params$checkbox_phages)) {
+  phages_removed_text <- "Virus species containing 'phage' were excluded."
+}
+
+blacklisted_text <- ""
+if (isTRUE(params$checkbox_blacklist)) {
+  blacklisted_text <- "Blacklisted references[^1] were excluded."
+}
+
+```
+
+`r phages_removed_text`
+
+`r blacklisted_text`
+
+[^1]: false annotated references
 
 \newpage
 
