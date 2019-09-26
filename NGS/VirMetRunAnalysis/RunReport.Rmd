@@ -5,6 +5,7 @@ params:
   orgs_file: ""
   reads_file: ""
   sample_name: ""
+  user_name: ""
   rows_selected: ""
   checkbox_phages: ""
   blacklist_file: ""
@@ -87,7 +88,7 @@ t_info <-
   rbind(data.frame(key = "Report date", value = factor(Sys.Date())))
 
 # User name doesn't work if shiny app was used on the shiny server
-#t_info <- rbind(t_info, data.frame(key = "User name", value = Sys.info()[7]))
+t_info <- rbind(t_info, data.frame(key = "User name", value = params$user_name))
 row.names(t_info) <- NULL
 colnames(t_info) <- NULL
 
@@ -149,7 +150,7 @@ domain_plot <-
   labs(x = NULL)
 ```
 
-## Relevant[^1] Virus Species
+## Detected[^1] Virus Species
 
 ```{r list-relevant, results='asis', echo=FALSE}
 t_species <-
@@ -182,11 +183,11 @@ if (nrow(t_species_selected) == 0) {
 
 ```
 
-[^1]: definition of relevant in that context
+[^1]: excluding phages and endogenous retroviruses
 
 \newpage
 
-## Rejected[^2] Virus Species
+## Rejected Virus Species
 ```{r list-rejected, echo = FALSE}
 t_species_unselected <-
   setdiff(t_species, t_species_selected)
@@ -203,7 +204,7 @@ if (isTRUE(params$checkbox_phages)) {
 
 blacklisted_text <- ""
 if (isTRUE(params$checkbox_blacklist)) {
-  blacklisted_text <- "Blacklisted references[^3] were excluded."
+  blacklisted_text <- "Blacklisted references[^2] were excluded."
 }
 
 ```
@@ -212,5 +213,4 @@ if (isTRUE(params$checkbox_blacklist)) {
 
 `r blacklisted_text`
 
-[^2]: when do we reject a virus
-[^3]: false annotated references
+[^2]: false annotated references
