@@ -82,13 +82,17 @@ molis_nr <-
 
 t_info <-
   data.frame() %>%
-  rbind(data.frame(key = "Run name", value = run_name)) %>%
-  rbind(data.frame(key = "Sample name", value = params$sample_name)) %>%
-  rbind(data.frame(key = "Quality-filtered reads (DNA/RNA)", value = paste0(round(filtered_reads_dna/1000000, 3), "/", round(filtered_reads_rna/1000000, 3), " M"))) %>%
-  rbind(data.frame(key = "Report date", value = factor(Sys.Date())))
+  rbind(data.frame(key = "Run name",
+                   value = run_name)) %>%
+  rbind(data.frame(key = "Sample name",
+                   value = params$sample_name)) %>%
+  rbind(data.frame(key = "Quality-filtered reads (DNA/RNA)",
+                   value = paste0(round(filtered_reads_dna/1000000, 3), "/", round(filtered_reads_rna/1000000, 3), " M"))) %>%
+  rbind(data.frame(key = "Report date",
+                   value = factor(Sys.Date()))) %>%
+  rbind(t_info, data.frame(key = "Analyzed by",
+                           value = params$user_name))
 
-# User name doesn't work if shiny app was used on the shiny server
-t_info <- rbind(t_info, data.frame(key = "User name", value = params$user_name))
 row.names(t_info) <- NULL
 colnames(t_info) <- NULL
 
