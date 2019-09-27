@@ -2,33 +2,38 @@
 title: "VirMet Report"
 output: pdf_document
 params:
-   orgs_file: ""
-   reads_file: ""
-   sample_name: ""
-   rows_selected: ""
-   checkbox_phages: ""
-   blacklist_file: ""
-   checkbox_blacklist: ""
+  orgs_file: ""
+  reads_file: ""
+  sample_name: ""
+  user_name: ""
+  rows_selected: ""
+  checkbox_phages: ""
+  blacklist_file: ""
+  checkbox_blacklist: ""
 ---
 
-```{r, include = FALSE}
+```{r load-packages, include=FALSE}
 library(tidyr)
 library(cowplot)
 library(dplyr)
 library(ggplot2)
 library(readr)
 library(knitr)
+library(stringr)
+library(forcats)
+```
 
+```{r read-data, include=FALSE}
 blacklist <-
   read_csv(params$blacklist_file)
 
 orgs_data <-
   read_delim(params$orgs_file, "\t") %>%
-  mutate(covered_percent = 100 * covered_region / seq_len) %>%
-  mutate(covered_max = 100 * reads * 151 / seq_len) %>%
-  mutate(covered_max = if_else(covered_max > 100, 100, covered_max)) %>%
-  mutate(covered_score = round(100 * covered_percent / covered_max, 1)) %>%
-  mutate(covered_percent = round(covered_percent, 1))
+  mutate(covered_percent = 100 * covered_region / seq_len,
+         covered_max = 100 * reads * 151 / seq_len,
+         covered_max = if_else(covered_max > 100, 100, covered_max),
+         covered_score = round(100 * covered_percent / covered_max, 1),
+         covered_percent = round(covered_percent, 1))
 
 # if in shiny app selected, remove entries containing "phage"
 if (isTRUE(params$checkbox_phages)) {
@@ -45,89 +50,124 @@ if (isTRUE(params$checkbox_blacklist)) {
     anti_join(blacklist, by = "stitle")
 }
 
-
 reads_data <-
   read_delim(params$reads_file, "\t")
-
-run_name <-
-  reads_data$run[1]
-
-filtered_reads <-
-  reads_data %>%
-  filter(category == "passing_filter") %>%
-  filter(sample %in% params$sample_name) %>%
-  select(reads) %>%
-  mutate(reads = sum(reads)) %>%
-  sample_n(1) %>%
-  as.integer()
 ```
 
 ## Run Information
-```{r, echo = FALSE, comment=NA, tidy=TRUE}
-t_info = data.frame()
-t_info = rbind(t_info, data.frame(key = "Run name", value = run_name))
-t_info = rbind(t_info, data.frame(key = "Sample name", value = params$sample_name))
-t_info = rbind(t_info, data.frame(key = "Total filtered reads", value = paste(round(filtered_reads/1000000, 3), "M")))
-t_info = rbind(t_info, data.frame(key = "Report date", value = date()))
-t_info = rbind(t_info, data.frame(key = "User name", value = Sys.info()[7]))
-row.names(t_info) = NULL
-colnames(t_info) = NULL
+```{r run-information, echo=FALSE, comment=NA, tidy=TRUE}
+run_name <-
+  reads_data$run[1]
+
+filtered_reads_dna <-
+  reads_data %>%
+  filter(category == "passing_filter",
+         sample %in% params$sample_name,
+         str_detect(sample, "DNA")) %>%
+  select(reads) %>%
+  as.integer()
+
+filtered_reads_rna <-
+  reads_data %>%
+  filter(category == "passing_filter",
+         sample %in% params$sample_name,
+         str_detect(sample, "RNA")) %>%
+  select(reads) %>%
+  as.integer()
+
+molis_nr <-
+  unique(str_extract(params$sample_name, "\\d{10,}-*[A-z]*(?=-)"))
+
+
+
+t_info <-
+  data.frame() %>%
+  rbind(data.frame(key = "Run name", value = run_name)) %>%
+  rbind(data.frame(key = "Sample name", value = params$sample_name)) %>%
+  rbind(data.frame(key = "Quality-filtered reads (DNA/RNA)", value = paste0(round(filtered_reads_dna/1000000, 3), "/", round(filtered_reads_rna/1000000, 3), " M"))) %>%
+  rbind(data.frame(key = "Report date", value = factor(Sys.Date())))
+
+# User name doesn't work if shiny app was used on the shiny server
+t_info <- rbind(t_info, data.frame(key = "User name", value = params$user_name))
+row.names(t_info) <- NULL
+colnames(t_info) <- NULL
 
 kable(t_info)
 ```
 
-## Domain level taxonomy profile
-```{r, echo=FALSE}
-t_domain = reads_data %>%
-        filter(sample %in% params$sample_name) %>%
-        filter(!(category == "raw_reads" | category == "passing_filter" | category == "reads_to_blast")) %>%
-        mutate(domain = case_when(
-                category %in% c("matching_bact1", "matching_bact2", "matching_bact3") ~ "bacterial",
-                category %in% c("viral_reads") ~ "viral",
-                category %in% c("matching_humanGRCh38") ~ "human",
-                category %in% c("undetermined_reads") ~ "unknown",
-                category %in% c("matching_bt_ref") ~ "bovine",
-                category %in% c("matching_fungi1") ~ "fungal",
-                TRUE ~ "none"
-                )) %>%
-        filter(!(domain == "none")) %>%
-        select(domain, reads) %>%
-        group_by(domain) %>%
-        mutate(reads = sum(reads)) %>%
-        sample_n(1) %>%
-        ungroup() %>%
-        mutate(percent = round(reads/sum(reads)*100, 3)) %>%
-        mutate(abundance = strrep("+", 1 + round(percent/max(percent)*19)))
+---
+subtitle: `r molis_nr`
+---
+
+## Domain Level Taxonomy Profile
+```{r read-category, echo=FALSE, fig.width=6, fig.height=2.5}
+domain <-
+  reads_data %>%
+  filter(sample %in% params$sample_name) %>%
+  filter(!(category == "raw_reads" | category == "passing_filter" | category == "reads_to_blast")) %>%
+  mutate(domain = case_when(
+    category %in% c("matching_bact1", "matching_bact2", "matching_bact3") ~ "bacterial",
+    category %in% c("viral_reads") ~ "viral",
+    category %in% c("matching_humanGRCh38") ~ "human",
+    category %in% c("undetermined_reads") ~ "undetermined",
+    category %in% c("matching_bt_ref") ~ "bovine",
+    category %in% c("matching_fungi1") ~ "fungal",
+    TRUE ~ "none")) %>%
+  mutate(workflow = case_when(
+    str_detect(sample, "DNA") ~ "DNA",
+    str_detect(sample, "RNA") ~ "RNA",
+    TRUE ~ "none")) %>%
+  filter(!(domain == "none"),
+         !(workflow == "none"))
+
+domain_order <- c("human", "bacterial", "fungal", "bovine", "viral", "undetermined")
+
+t_domain <-
+  domain %>%
+  select(domain, reads) %>%
+  group_by(domain) %>%
+  mutate(reads = sum(reads)) %>%
+  sample_n(1) %>%
+  ungroup() %>%
+  mutate(domain = fct_relevel(domain, domain_order)) %>%
+  arrange(domain) %>%
+  mutate(percent = round(reads/sum(reads)*100, 3)) %>%
+  mutate(abundance = strrep("+", 1 + round(percent/max(percent)*19)))
 
 kable(t_domain)
+
+domain_plot <-
+  domain %>%
+  select(domain, workflow, reads) %>%
+  group_by(domain, workflow) %>%
+  mutate(reads = sum(reads)) %>%
+  sample_n(1) %>%
+  ggplot(aes(x = fct_relevel(domain, rev(domain_order)), y = reads)) +
+  geom_col(aes(fill = workflow), colour = "black", position = "dodge") +
+  scale_y_log10() +
+  scale_fill_manual(values = c("white", "grey")) +
+  coord_flip() +
+  labs(x = NULL)
 ```
 
-## Relevant Virus species
-```{r, echo=FALSE, comment=NA}
-# Print statements in report if phages or blacklisted viruses were removed
-if (isTRUE(params$checkbox_phages)) {
-  cat("Virus species containing 'phage' were excluded.")
-}
+## Detected[^1] Virus Species
 
-if (isTRUE(params$checkbox_blacklist)) {
-  cat("Blacklisted Virus species were excluded.")
-}
-```
-
-
-
-```{r, results='asis', echo=FALSE}
+```{r list-relevant, results='asis', echo=FALSE}
 t_species <-
   orgs_data %>%
   filter(sample %in% params$sample_name) %>%
-  select(species, reads, sample) %>%
-  group_by(species, sample) %>%
+  mutate(workflow = case_when(
+    str_detect(sample, "DNA") ~ "DNA workflow",
+    str_detect(sample, "RNA") ~ "RNA workflow",
+    TRUE ~ "none")) %>%
+  select(species, reads, workflow) %>%
+  group_by(species, workflow) %>%
   summarise(reads_sum = sum(reads)) %>%
-  spread(key = sample, value = reads_sum, fill = 0) %>%
+  spread(key = workflow, value = reads_sum, fill = 0) %>%
   ungroup() %>%
-  mutate(reads_total = as.integer(rowSums(.[,-1], na.rm = TRUE))) %>%
-  mutate(percent = round(reads_total/sum(reads_total)*100, 3)) %>%
-  arrange(desc(reads_total)) %>%
+  mutate(total = as.integer(rowSums(.[,-1], na.rm = TRUE))) %>%
+  mutate(percent = round(total/sum(total)*100, 3)) %>%
+  arrange(desc(total)) %>%
   select(-percent)
 
 t_species_selected <-
@@ -143,12 +183,34 @@ if (nrow(t_species_selected) == 0) {
 
 ```
 
+[^1]: excluding phages and endogenous retroviruses
+
 \newpage
 
-## Rejected Virus species
-```{r, echo = FALSE}
+## Rejected Virus Species
+```{r list-rejected, echo = FALSE}
 t_species_unselected <-
   setdiff(t_species, t_species_selected)
 
 kable(t_species_unselected)
 ```
+
+```{r additional-statements, echo=FALSE, comment=NA}
+# Print statements in report if phages or blacklisted viruses were removed
+phages_removed_text <- ""
+if (isTRUE(params$checkbox_phages)) {
+  phages_removed_text <- "Virus species containing 'phage' were excluded."
+}
+
+blacklisted_text <- ""
+if (isTRUE(params$checkbox_blacklist)) {
+  blacklisted_text <- "Blacklisted references[^2] were excluded."
+}
+
+```
+
+`r phages_removed_text`
+
+`r blacklisted_text`
+
+[^2]: false annotated references
