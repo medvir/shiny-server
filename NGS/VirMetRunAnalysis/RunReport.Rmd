@@ -90,7 +90,7 @@ t_info <-
                    value = paste0(round(filtered_reads_dna/1000000, 3), "/", round(filtered_reads_rna/1000000, 3), " M"))) %>%
   rbind(data.frame(key = "Report date",
                    value = factor(Sys.Date()))) %>%
-  rbind(t_info, data.frame(key = "Analyzed by",
+  rbind(data.frame(key = "Analyzed by",
                            value = params$user_name))
 
 row.names(t_info) <- NULL
