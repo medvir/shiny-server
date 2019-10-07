@@ -21,7 +21,7 @@ shinyServer(function(input, output) {
         orgs_data <-
           read.delim(input$orgs_file$datapath, sep = "\t") %>%
           mutate(covered_percent = 100 * covered_region / seq_len) %>%
-          mutate(covered_exp = 100 * (1 - exp(-reads * 151 / seq_len))) %>%
+          mutate(covered_exp = 100 * (1 - exp(-reads * input$read_length / seq_len))) %>%
           mutate(covered_score = round(100 * covered_percent / covered_exp, 1)) %>%
           mutate(covered_percent = round(covered_percent, 1))
         

@@ -19,7 +19,8 @@ shinyUI(fluidPage(
                                                      "Verena Kufner",
                                                      "Maryam Zaheri",
                                                      "Michael Huber",
-                                                     "Stefan Schmutz")))),
+                                                     "Stefan Schmutz"))),
+                        numericInput("read_length", "Read length", value = 151)),
                  column(4,
                         wellPanel(
                                 downloadButton("report", "Generate report"),
