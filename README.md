@@ -17,7 +17,7 @@ R packages can be installed with the following commands:
 `sudo su - -c "R -e \"install.packages('knitr', repos='https://cran.rstudio.com/')\""`  
 `sudo su - -c "R -e \"install.packages('rmarkdown', repos='https://cran.rstudio.com/')\""`  
 `sudo su - -c "R -e \"install.packages('DT', repos='https://cran.rstudio.com/')\""`  
-`sudo su - -c "R -e \"install.packages('ape', repos='https://cran.rstudio.com/')\""`
+`sudo su - -c "R -e \"install.packages('ape', repos='https://cran.rstudio.com/')\""` 
 `sudo su - -c "R -e \"install.packages('plotly', repos='https://cran.rstudio.com/')\""`
 `sudo su - -c "R -e \"install.packages('readxl', repos='https://cran.rstudio.com/')\""`   
 
