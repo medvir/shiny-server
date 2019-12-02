@@ -17,7 +17,9 @@ R packages can be installed with the following commands:
 `sudo su - -c "R -e \"install.packages('knitr', repos='https://cran.rstudio.com/')\""`  
 `sudo su - -c "R -e \"install.packages('rmarkdown', repos='https://cran.rstudio.com/')\""`  
 `sudo su - -c "R -e \"install.packages('DT', repos='https://cran.rstudio.com/')\""`  
-`sudo su - -c "R -e \"install.packages('ape', repos='https://cran.rstudio.com/')\""`    
+`sudo su - -c "R -e \"install.packages('ape', repos='https://cran.rstudio.com/')\""`
+`sudo su - -c "R -e \"install.packages('plotly', repos='https://cran.rstudio.com/')\""`
+`sudo su - -c "R -e \"install.packages('readxl', repos='https://cran.rstudio.com/')\""`   
 
 I also installed latex
 `wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz` and/or (?) `sudo apt-get install texlive-full`
