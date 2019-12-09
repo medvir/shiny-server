@@ -12,7 +12,7 @@ plot_height = 800
 ### Load demographic data
 demo_data = read_csv("demo_data.csv") %>%
         rename(sample_name = lab_code) %>%
-        mutate(age = as.integer(2017 - year_of_birth)) %>%
+        mutate(age = as.integer(2019 - year_of_birth)) %>%
         select("sample_name", "age", "sex", "influenza_status", "last_influenza", "influenza_confirmed")
 
 ### Shiny apps
@@ -52,13 +52,14 @@ shinyApp(
         server = function(input, output, session) {
 
                 results = reactive({
-                        rbind(read_excel("2018-11-30_HI-titers.xlsx")) %>%
+                        #rbind(read_excel("analysis HI data  file for Shiny App.xlsx")) %>%
+                        rbind(read_excel(input$results$datapath)) %>%
                                 rename(sample_name = number) %>%
                                 gather(key = measurment, value = titer, -sample_name, -virus, -virus_strain) %>%
                                 select(-measurment) %>%
                                 filter(!(is.na(titer))) %>%
                                 group_by(sample_name, virus) %>%
-                                mutate(IAV_titer = mean(titer)) %>%
+                                mutate(IAV_titer = mean(as.numeric(titer))) %>%
                                 select(-titer) %>%
                                 sample_n(1) %>%
                                 ungroup() %>%
