@@ -6,7 +6,8 @@ library(plotly)
 library(shinythemes)
 library(shinycustomloader)
 
-date.range.years = 1
+date.range.months = 12
+ref.range.months = 3
 n.ref.values = 100
 
 ############################## Westgard Rules ##############################
@@ -89,7 +90,11 @@ ui <- fluidPage(
             uiOutput("lot"),
             dateRangeInput("dateRange",
                            label = "Date range input: yyyy-mm-dd",
-                           start = Sys.Date() - (date.range.years*365), end = Sys.Date(),
+                           start = Sys.Date() - (date.range.months/12*365), end = Sys.Date(),
+                           weekstart = 1),
+            dateRangeInput("refRange",
+                           label = "Reference range input: yyyy-mm-dd",
+                           start = Sys.Date() - (ref.range.months/12*365), end = Sys.Date(),
                            weekstart = 1),
             numericInput("n.ref", "N reference", value = n.ref.values, min = 2, step = 10),
             width = 3
@@ -180,38 +185,32 @@ server <- function(input, output) {
         req(input$file)
         targetn = input$target
         dfn = plot_data() %>% filter(target == targetn)
-        n.data = nrow(dfn)
-        n.ref = if (input$n.ref >= n.data) {n.data} else {input$n.ref}
-        mean = dfn %>% pull(value) %>% .[1:n.ref] %>% base::mean()
-        sd = dfn %>% pull(value) %>% .[1:n.ref] %>% stats::sd()
-        pn = dfn  %>% apply_westgard_rules(mean, sd) %>% ggplot(aes(x = date, y = value, color = rule)) +
-            ggtitle(paste0(targetn," (n.data = ", n.data,"; n.ref = ", n.ref, ")")) + plot_lines(mean, sd) + plot_lines(mean, sd) + plot_colors + plot_style
+        mean = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% base::mean()
+        sd = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% stats::sd()
+        pn = dfn %>% apply_westgard_rules(mean, sd) %>% ggplot(aes(x = date, y = value, color = rule)) +
+            ggtitle(paste0(targetn," (n.data = ", nrow(dfn),"; n.ref = ", input$n.ref, ")")) + plot_lines(mean, sd) + plot_lines(mean, sd) + plot_colors + plot_style
         ggplotly(pn)
     })
     
     output$HSV_1_plot = renderPlotly({
-        req(input$file)
         targetn = "HSV 1"
+        req(input$file)
         dfn = plot_data() %>% filter(target == targetn)
-        n.data = nrow(dfn)
-        n.ref = if (input$n.ref >= n.data) {n.data} else {input$n.ref}
-        mean = dfn %>% pull(value) %>% .[1:n.ref] %>% base::mean()
-        sd = dfn %>% pull(value) %>% .[1:n.ref] %>% stats::sd()
-        pn = dfn  %>% apply_westgard_rules(mean, sd) %>% ggplot(aes(x = date, y = value, color = rule)) +
-            ggtitle(paste0(targetn," (n.data = ", n.data,"; n.ref = ", n.ref, ")")) + plot_lines(mean, sd) + plot_lines(mean, sd) + plot_colors + plot_style
+        mean = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% base::mean()
+        sd = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% stats::sd()
+        pn = dfn %>% apply_westgard_rules(mean, sd) %>% ggplot(aes(x = date, y = value, color = rule)) +
+            ggtitle(paste0(targetn," (n.data = ", nrow(dfn),"; n.ref = ", input$n.ref, ")")) + plot_lines(mean, sd) + plot_lines(mean, sd) + plot_colors + plot_style
         ggplotly(pn)
     })
     
     output$HSV_2_plot = renderPlotly({
-        req(input$file)
         targetn = "HSV 2"
+        req(input$file)
         dfn = plot_data() %>% filter(target == targetn)
-        n.data = nrow(dfn)
-        n.ref = if (input$n.ref >= n.data) {n.data} else {input$n.ref}
-        mean = dfn %>% pull(value) %>% .[1:n.ref] %>% base::mean()
-        sd = dfn %>% pull(value) %>% .[1:n.ref] %>% stats::sd()
-        pn = dfn  %>% apply_westgard_rules(mean, sd) %>% ggplot(aes(x = date, y = value, color = rule)) +
-            ggtitle(paste0(targetn," (n.data = ", n.data,"; n.ref = ", n.ref, ")")) + plot_lines(mean, sd) + plot_lines(mean, sd) + plot_colors + plot_style
+        mean = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% base::mean()
+        sd = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% stats::sd()
+        pn = dfn %>% apply_westgard_rules(mean, sd) %>% ggplot(aes(x = date, y = value, color = rule)) +
+            ggtitle(paste0(targetn," (n.data = ", nrow(dfn),"; n.ref = ", input$n.ref, ")")) + plot_lines(mean, sd) + plot_lines(mean, sd) + plot_colors + plot_style
         ggplotly(pn)
     })
     
@@ -219,12 +218,10 @@ server <- function(input, output) {
         req(input$file)
         targetn = "CMV low"
         dfn = plot_data() %>% filter(target == targetn)
-        n.data = nrow(dfn)
-        n.ref = if (input$n.ref >= n.data) {n.data} else {input$n.ref}
-        mean = dfn %>% pull(value) %>% .[1:n.ref] %>% base::mean()
-        sd = dfn %>% pull(value) %>% .[1:n.ref] %>% stats::sd()
+        mean = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% base::mean()
+        sd = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% stats::sd()
         pn = dfn %>% apply_westgard_rules(mean, sd) %>% ggplot(aes(x = date, y = value, color = rule)) +
-            ggtitle(paste0(targetn," (n.data = ", n.data,"; n.ref = ", n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
+            ggtitle(paste0(targetn," (n.data = ", nrow(dfn),"; n.ref = ", input$n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
         ggplotly(pn)
     })
     
@@ -232,12 +229,10 @@ server <- function(input, output) {
         req(input$file)
         targetn = "CMV high"
         dfn = plot_data() %>% filter(target == targetn)
-        n.data = nrow(dfn)
-        n.ref = if (input$n.ref >= n.data) {n.data} else {input$n.ref}
-        mean = dfn %>% pull(value) %>% .[1:n.ref] %>% base::mean()
-        sd = dfn %>% pull(value) %>% .[1:n.ref] %>% stats::sd()
+        mean = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% base::mean()
+        sd = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% stats::sd()
         pn = dfn %>% apply_westgard_rules(mean, sd) %>% ggplot(aes(x = date, y = value, color = rule)) +
-            ggtitle(paste0(targetn," (n.data = ", n.data,"; n.ref = ", n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
+            ggtitle(paste0(targetn," (n.data = ", nrow(dfn),"; n.ref = ", input$n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
         ggplotly(pn)
     })
     
@@ -245,12 +240,10 @@ server <- function(input, output) {
         req(input$file)
         targetn = "EBV low"
         dfn = plot_data() %>% filter(target == targetn)
-        n.data = nrow(dfn)
-        n.ref = if (input$n.ref >= n.data) {n.data} else {input$n.ref}
-        mean = dfn %>% pull(value) %>% .[1:n.ref] %>% base::mean()
-        sd = dfn %>% pull(value) %>% .[1:n.ref] %>% stats::sd()
+        mean = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% base::mean()
+        sd = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% stats::sd()
         pn = dfn %>% apply_westgard_rules(mean, sd) %>% ggplot(aes(x = date, y = value, color = rule)) +
-            ggtitle(paste0(targetn," (n.data = ", n.data,"; n.ref = ", n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
+            ggtitle(paste0(targetn," (n.data = ", nrow(dfn),"; n.ref = ", input$n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
         ggplotly(pn)
     })
     
@@ -258,12 +251,10 @@ server <- function(input, output) {
         req(input$file)
         targetn = "EBV high"
         dfn = plot_data() %>% filter(target == targetn)
-        n.data = nrow(dfn)
-        n.ref = if (input$n.ref >= n.data) {n.data} else {input$n.ref}
-        mean = dfn %>% pull(value) %>% .[1:n.ref] %>% base::mean()
-        sd = dfn %>% pull(value) %>% .[1:n.ref] %>% stats::sd()
+        mean = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% base::mean()
+        sd = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% stats::sd()
         pn = dfn %>% apply_westgard_rules(mean, sd) %>% ggplot(aes(x = date, y = value, color = rule)) +
-            ggtitle(paste0(targetn," (n.data = ", n.data,"; n.ref = ", n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
+            ggtitle(paste0(targetn," (n.data = ", nrow(dfn),"; n.ref = ", input$n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
         ggplotly(pn)
     })
     
@@ -271,12 +262,10 @@ server <- function(input, output) {
         req(input$file)
         targetn = "VZV"
         dfn = plot_data() %>% filter(target == targetn)
-        n.data = nrow(dfn)
-        n.ref = if (input$n.ref >= n.data) {n.data} else {input$n.ref}
-        mean = dfn %>% pull(value) %>% .[1:n.ref] %>% base::mean()
-        sd = dfn %>% pull(value) %>% .[1:n.ref] %>% stats::sd()
+        mean = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% base::mean()
+        sd = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% stats::sd()
         pn = dfn %>% apply_westgard_rules(mean, sd) %>% ggplot(aes(x = date, y = value, color = rule)) +
-            ggtitle(paste0(targetn," (n.data = ", n.data,"; n.ref = ", n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
+            ggtitle(paste0(targetn," (n.data = ", nrow(dfn),"; n.ref = ", input$n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
         ggplotly(pn)
     })
     
@@ -284,12 +273,10 @@ server <- function(input, output) {
         req(input$file)
         targetn = "Parvo"
         dfn = plot_data() %>% filter(target == targetn)
-        n.data = nrow(dfn)
-        n.ref = if (input$n.ref >= n.data) {n.data} else {input$n.ref}
-        mean = dfn %>% pull(value) %>% .[1:n.ref] %>% base::mean()
-        sd = dfn %>% pull(value) %>% .[1:n.ref] %>% stats::sd()
+        mean = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% base::mean()
+        sd = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% stats::sd()
         pn = dfn %>% apply_westgard_rules(mean, sd) %>% ggplot(aes(x = date, y = value, color = rule)) +
-            ggtitle(paste0(targetn," (n.data = ", n.data,"; n.ref = ", n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
+            ggtitle(paste0(targetn," (n.data = ", nrow(dfn),"; n.ref = ", input$n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
         ggplotly(pn)
     })
     
@@ -297,12 +284,10 @@ server <- function(input, output) {
         req(input$file)
         targetn = "Adeno"
         dfn = plot_data() %>% filter(target == targetn)
-        n.data = nrow(dfn)
-        n.ref = if (input$n.ref >= n.data) {n.data} else {input$n.ref}
-        mean = dfn %>% pull(value) %>% .[1:n.ref] %>% base::mean()
-        sd = dfn %>% pull(value) %>% .[1:n.ref] %>% stats::sd()
+        mean = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% base::mean()
+        sd = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% stats::sd()
         pn = dfn %>% apply_westgard_rules(mean, sd) %>% ggplot(aes(x = date, y = value, color = rule)) +
-            ggtitle(paste0(targetn," (n.data = ", n.data,"; n.ref = ", n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
+            ggtitle(paste0(targetn," (n.data = ", nrow(dfn),"; n.ref = ", input$n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
         ggplotly(pn)
     })
     
@@ -310,12 +295,10 @@ server <- function(input, output) {
         req(input$file)
         targetn = "HHV6A+B"
         dfn = plot_data() %>% filter(target == targetn)
-        n.data = nrow(dfn)
-        n.ref = if (input$n.ref >= n.data) {n.data} else {input$n.ref}
-        mean = dfn %>% pull(value) %>% .[1:n.ref] %>% base::mean()
-        sd = dfn %>% pull(value) %>% .[1:n.ref] %>% stats::sd()
+        mean = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% base::mean()
+        sd = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% stats::sd()
         pn = dfn %>% apply_westgard_rules(mean, sd) %>% ggplot(aes(x = date, y = value, color = rule)) +
-            ggtitle(paste0(targetn," (n.data = ", n.data,"; n.ref = ", n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
+            ggtitle(paste0(targetn," (n.data = ", nrow(dfn),"; n.ref = ", input$n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
         ggplotly(pn)
     })
     
@@ -323,12 +306,10 @@ server <- function(input, output) {
         req(input$file)
         targetn = "JC"
         dfn = plot_data() %>% filter(target == targetn)
-        n.data = nrow(dfn)
-        n.ref = if (input$n.ref >= n.data) {n.data} else {input$n.ref}
-        mean = dfn %>% pull(value) %>% .[1:n.ref] %>% base::mean()
-        sd = dfn %>% pull(value) %>% .[1:n.ref] %>% stats::sd()
+        mean = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% base::mean()
+        sd = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% stats::sd()
         pn = dfn %>% apply_westgard_rules(mean, sd) %>% ggplot(aes(x = date, y = value, color = rule)) +
-            ggtitle(paste0(targetn," (n.data = ", n.data,"; n.ref = ", n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
+            ggtitle(paste0(targetn," (n.data = ", nrow(dfn),"; n.ref = ", input$n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
         ggplotly(pn)
     })
     
@@ -336,12 +317,10 @@ server <- function(input, output) {
         req(input$file)
         targetn = "BK low"
         dfn = plot_data() %>% filter(target == targetn)
-        n.data = nrow(dfn)
-        n.ref = if (input$n.ref >= n.data) {n.data} else {input$n.ref}
-        mean = dfn %>% pull(value) %>% .[1:n.ref] %>% base::mean()
-        sd = dfn %>% pull(value) %>% .[1:n.ref] %>% stats::sd()
+        mean = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% base::mean()
+        sd = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% stats::sd()
         pn = dfn %>% apply_westgard_rules(mean, sd) %>% ggplot(aes(x = date, y = value, color = rule)) +
-            ggtitle(paste0(targetn," (n.data = ", n.data,"; n.ref = ", n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
+            ggtitle(paste0(targetn," (n.data = ", nrow(dfn),"; n.ref = ", input$n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
         ggplotly(pn)
     })
     
@@ -349,12 +328,10 @@ server <- function(input, output) {
         req(input$file)
         targetn = "BK high"
         dfn = plot_data() %>% filter(target == targetn)
-        n.data = nrow(dfn)
-        n.ref = if (input$n.ref >= n.data) {n.data} else {input$n.ref}
-        mean = dfn %>% pull(value) %>% .[1:n.ref] %>% base::mean()
-        sd = dfn %>% pull(value) %>% .[1:n.ref] %>% stats::sd()
+        mean = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% base::mean()
+        sd = dfn %>% filter(date > input$refRange[1]) %>% filter(date < input$refRange[2]) %>% pull(value) %>% head(input$n.ref) %>% stats::sd()
         pn = dfn %>% apply_westgard_rules(mean, sd) %>% ggplot(aes(x = date, y = value, color = rule)) +
-            ggtitle(paste0(targetn," (n.data = ", n.data,"; n.ref = ", n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
+            ggtitle(paste0(targetn," (n.data = ", nrow(dfn),"; n.ref = ", input$n.ref, ")")) + plot_lines(mean, sd) + plot_colors + plot_style
         ggplotly(pn)
     })
 }
