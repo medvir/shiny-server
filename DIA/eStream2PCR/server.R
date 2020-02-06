@@ -24,7 +24,7 @@ names(well_dict) = c("A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10"
                      "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E11", "E12",
                      "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
                      "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12",
-                     "H1", "H2", "H3", "H4", "H5",  "H6", "H7","H8", "H9","H10", "H11", "H12")
+                     "H1", "H2", "H3", "H4", "H5", "H6", "H7", "H8", "H9", "H10", "H11", "H12")
 
 
 ### color functions
@@ -70,33 +70,27 @@ shinyServer(function(input, output, session) {
         ci = grepl("GAPDH", names(tab)) & grepl("Lambda", colnames(tab))
         tab = cbind(tab,tab[,ci])
         colnames(tab)[ci] <- c("Lambda_1", "Lambda_2")
+
+        # duplicates columns of respiratory panel and renames to correct Target Name
+        # doesn't work if those columns (with the exact same column names) are not present
+        tab = tab %>%
+            mutate("Flu Pan A" = R_panFlu,
+                   "Flu WHO H1 09" = R_Flu_H1_H3,
+                   "RSV A" = R_RSV,
+                   "GAPDH" = `R_MS-2_GAPDH`) %>%
+            rename("Flu Pan B" = R_panFlu,
+                   "Flu WHO H3" = R_Flu_H1_H3,
+                   "RSV B" = R_RSV,
+                   "MS-2" = `R_MS-2_GAPDH`)
+            
+        
         
         print(tab)
 
         tab %>% gather(key = target, value = value, -Well, -`Sample Name`) %>%
             filter(value == 1) %>%
             select(-value) %>%
-            
-            mutate(`Target Name` = case_when(
-                grepl("GAPDH", target) ~ "GAPDH",
-                grepl("Lambda", target) ~ "Lambda", # GAPDH has to be in front of Lambda
-                grepl("CMV", target) ~ "CMV",
-                grepl("EBV", target) ~ "EBV",
-                grepl("BK", target) ~ "BK",
-                grepl("HHV-6", target) ~ "HHV-6",
-                grepl("VZV", target) ~ "VZV",
-                grepl("HSV-1", target) ~ "HSV-1",
-                grepl("HSV 1", target) ~ "HSV-1",
-                grepl("HSV1", target) ~ "HSV-1",
-                grepl("HSV-2", target) ~ "HSV-2",
-                grepl("HSV 2", target) ~ "HSV-2",
-                grepl("HSV2", target) ~ "HSV-2",
-                grepl("Parvo", target) ~ "Parvo",
-                grepl("Adeno", target) ~ "Adeno",
-                grepl("JC", target) ~ "JC",
-                TRUE ~ "unknown"
-            )) %>%
-            
+            rename("Target Name" = target) %>%
             separate(Well, into = c("pos", "Well Position"), sep = "\\.") %>%
             select(-pos) %>%
             mutate(Well = well_dict[`Well Position`]) %>%
