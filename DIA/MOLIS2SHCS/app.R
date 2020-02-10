@@ -77,29 +77,29 @@ server <- function(input, output) {
     
     shcs_molis = reactive({
         tidy_molis() %>%
-            rename(LABDATE = Eingangsdatum) %>%
-            rename(S_DATE = Entnahmedatum) %>%
-            rename(S_TIME = Entn.Zt.) %>%
+            rename(LAB_DATE = Eingangsdatum) %>%
+            rename(SAMPLE_DATE = Entnahmedatum) %>%
+            rename(SAMPLE_TIME = Entn.Zt.) %>%
             rename(NAME = Patient) %>%
             rename(S_ID = Anforderungsnr.) %>%
             rename(SENDER = Eins.) %>%
             rename(EXT_ID = `Externe Patientennummer`) %>%
-            mutate(ID = ifelse(is.na(EXT_ID), Patientennummer, EXT_ID)) %>%
+            rename(IMV_ID = Patientennummer) %>%
             mutate(S_NRAL = case_when(
                 S_TYPE == "P" ~ PLASMA,
                 S_TYPE == "C" ~ ZELLE,
                 S_TYPE == "D" ~ DNA,
                 TRUE ~ S_TYPE)) %>%
             mutate(S_TIME = ifelse(S_TYPE == "P", PTF, ZTF)) %>%
-            mutate(S_SIZE = ifelse(S_TYPE == "P", PSIZE, ZSIZE)) %>%
-            mutate(FREEZING_DATE = VERARB) %>%
-            #mutate(S_ND = ifelse(LABDATE < VERARB, 1, 0)) %>%
+            mutate(S_SIZE = ifelse(S_TYPE == "P", PSIZE, ifelse(S_TYPE == "C", ZSIZE, NA))) %>%
+            mutate(FREEZING_DATE = ifelse(S_TYPE == "P" | S_TYPE == "C", VERARB, NA)) %>%
+            mutate(FREEZING_DATE = as.Date(FREEZING_DATE, origin = "1970-01-01")) %>%
             mutate(TUBE = ifelse(S_TYPE == "P", "E", "E")) %>% ### TUBE always E ?!
             mutate(LAB_STOCK = 11) %>%                         ### LAB_STOCK always 11 ?!
             mutate(S_TIME = sub("\\.", ":", S_TIME)) %>%
             mutate(ZENTRL = sub("\\.", ":", ZENTRL)) %>%
-            select(NAME, ID, S_DATE, S_TIME, S_ID, LABDATE, S_TYPE, TUBE, S_NRAL, S_SIZE, S_TIME, FREEZING_DATE, LAB_STOCK, SENDER) %>%
-            filter(LABDATE >= start.date() & LABDATE <= end.date())
+            select(S_ID, NAME, SENDER, IMV_ID, EXT_ID, SAMPLE_DATE, SAMPLE_TIME, LAB_DATE, S_TYPE, TUBE, S_NRAL, S_SIZE, FREEZING_DATE, S_TIME, LAB_STOCK) %>%
+            filter(LAB_DATE >= start.date() & LAB_DATE <= end.date())
     })
     
     output$month <- renderText({
@@ -132,4 +132,3 @@ server <- function(input, output) {
 # Run the application
 setwd("P:/Desktop/MOLIS2SHCS")
 shinyApp(ui = ui, server = server)
-
