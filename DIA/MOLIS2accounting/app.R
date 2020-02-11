@@ -2,7 +2,7 @@ library(shiny)
 library(tidyverse)
 library(readxl)
 library(shinythemes)
-#library(shinyWidgets)
+library(shinyWidgets)
 library(lubridate)
 library(DT)
 
@@ -48,7 +48,7 @@ block_discount <- function(MC, TP) {
 }
 
 ######################## SETUP ########################
-fields = c("Anforderungsnr.", "Entnahmedatum", "Eingangsdatum", "MC", "NAME", "RES", "Einsender", "Kontrakt", "Herkunft", "Stationärer Patient", "Abrechnungsstatus")
+fields = c("Anforderungsnr.", "Entnahmedatum", "Eingangsdatum", "MC", "NAME", "Einsender", "Kontrakt", "Herkunft", "Stationärer Patient", "Abrechnungsstatus", "Patientennummer")
 
 abrvb.dict = read_csv("abrvb.table.csv") %>% pull(ABRVB)
 names(abrvb.dict) = read_csv("abrvb.table.csv") %>% pull(KURZNAME)
@@ -59,48 +59,39 @@ names(tax.dict) = read_csv("tax.table.csv") %>% pull(ABRVB)
 TP.dict = read_csv("anaverf.table.csv") %>% pull(TP)
 names(TP.dict) = read_csv("anaverf.table.csv") %>% pull(MC)
 
-discount.dict = read_csv("discount.table.csv") %>% pull(PERCENT)
-names(discount.dict) = read_csv("discount.table.csv") %>% pull(SENDER)
-
-
 ######################## UI ######################## 
 ui <- fluidPage(
     theme = shinytheme("yeti"),
     titlePanel("MOLIS 2 accounting"),
-    sidebarLayout(
-        sidebarPanel(
-            fileInput("file", "MOLIS Export", accept = "xlsx"),
-            # airMonthpickerInput(
-            #     inputId = "month",
-            #     label = "Select a month:",
-            #     value = Sys.Date() - 30,
-            #     clearButton = TRUE),
-            dateRangeInput("date",
-                           label = "Date range",
-                           start = floor_date(Sys.Date(), 'year') - 2*365, end = Sys.Date(), max = Sys.Date(), weekstart = 1),
-                           #separator = " - ", format = "dd/mm/yy", startview = 'year'
-            uiOutput("status"),
-            actionButton("export", "Export"),
-            h4("Anzahl Aufträge"),
-            textOutput("n"),
-            h4("Summe"),
-            textOutput("sum"),
-            tableOutput("summary"),
-            tableOutput("selected2")
-        ),
-        mainPanel(
-            h2("Total"),
-            DT::dataTableOutput("total"),
-            h2("Subtotal"),
-            DT::dataTableOutput("selected"),
-            h1(" "),
-            tableOutput("raw"),
-            tableOutput("tidy"),
-            tableOutput("cost")
+    fluidRow(column(3,
+                    panel(
+                        fileInput("file", "MOLIS Export", accept = "xlsx"),
+                        dateRangeInput("date", label = "Date range", start = floor_date(Sys.Date(), 'year') - 2 * 365, end = Sys.Date(), max = Sys.Date(), weekstart = 1),
+                        uiOutput("status")
+                    )),
+             column(3,
+                    panel(
+                        h4("Anzahl Aufträge"),
+                        textOutput("n"),
+                        h4("Summe"),
+                        textOutput("sum")
+                    )),
+             column(3,
+                    panel(
+                        tableOutput("summary")
+                    ))),
+    fluidRow(
+        sidebarLayout(
+            sidebarPanel(h2("Subtotal"),
+                         tableOutput("selected")),
+            mainPanel(h2("Total"),
+                      DT::dataTableOutput("total"),
+                      #tableOutput("cost")
+                      ),
+                      position = "right", fluid = TRUE
         )
     )
 )
-
 
 ######################## SERVER ######################## 
 server <- function(input, output) {
@@ -120,7 +111,8 @@ server <- function(input, output) {
             slice((which(MC == "MATD")[1]):n()) %>%
             ungroup() %>%
             group_by(Anforderungsnr.) %>%
-            mutate(Material = replicate_material(MC, RES), Interpretation = move_bewertung(NAME, RES)) %>% ### functions replicate_material and move_bewertung
+            #mutate(Material = replicate_material(MC, RES), Interpretation = move_bewertung(NAME, RES)) %>% ### functions replicate_material and move_bewertung
+            #mutate(Material = replicate_material(MC, RES)) %>% ### functions replicate_material
             filter(!MC == "MATD", !is.na(NAME), NAME != 'Bewertung') %>%
             mutate(Entnahmedatum = as.Date(Entnahmedatum, "%d.%m.%Y")) %>%
             mutate(Eingangsdatum = as.Date(Eingangsdatum, "%d.%m.%Y")) %>%
@@ -132,25 +124,29 @@ server <- function(input, output) {
         tidy_molis() %>%
             mutate(TP = TP.dict[MC]) %>%
             mutate(Rechnungsempfänger = ifelse(Herkunft == "USZ", paste0(Herkunft, `Stationärer Patient`), Kontrakt)) %>%
-            group_by(Anforderungsnr.) %>%
-            mutate(counter = row_number(Anforderungsnr.)) %>%
+            group_by(Patientennummer, Eingangsdatum) %>%
+            mutate(counter.day = row_number()) %>%
+            
+            ### Auftragspauschale ###
             mutate(Auftragspauschale = case_when(
-                counter == 1 & Rechnungsempfänger == "USZJ"~ 22,
-                counter == 1 & Rechnungsempfänger == "USZN"~ 33,
-                counter == 1 ~ tax.dict[abrvb.dict[Einsender]],
+                counter.day == 1 & Einsender %in% names(abrvb.dict) ~ tax.dict[abrvb.dict[Einsender]],
+                counter.day == 1 ~ 24,
                 TRUE ~ 0)) %>%
-            mutate(TP = block_discount(MC, TP)) %>%  ### funtion block_discount
+            
+            ### Block Discount ###
+            mutate(TP = block_discount(MC, TP)) %>%
+            group_by(Anforderungsnr.) %>%
+            mutate(counter = row_number()) %>%
             mutate(Subtotal = ifelse(counter == 1, sum(TP, na.rm = TRUE), 0)) %>%
-            select(Anforderungsnr., Eingangsdatum, counter, MC, NAME, RES, Einsender, Material, TP, Subtotal, Auftragspauschale, Abrechnungsstatus)
+            select(Anforderungsnr., Eingangsdatum, counter, MC, NAME, Einsender, TP, Subtotal, Auftragspauschale, Abrechnungsstatus, Kontrakt)
     })
     
-
     total_molis = reactive({
         cost_molis() %>%
             filter(counter == 1) %>%
-            #sample_n(1) %>%
-            mutate(Discount = discount.dict[Einsender]) %>%
-            mutate(Discount = ifelse(is.na(Discount), 0, Discount)) %>%
+            
+            ### Discount ###
+            mutate(Discount = ifelse(Kontrakt == "USZ", 20, 0)) %>%
             mutate(Total = sum(c(Subtotal, Auftragspauschale), na.rm = TRUE) * (1 - Discount/100)) %>%
             select(Anforderungsnr., Eingangsdatum, Einsender, Subtotal, Auftragspauschale, Discount, Total, Abrechnungsstatus)
     })
@@ -201,13 +197,13 @@ server <- function(input, output) {
     
     output$cost <- renderTable({
         req(input$file)
-        head(cost_molis())
+        head(cost_molis(), 10000)
     })
     
     output$total <- DT::renderDataTable(
         filter = "top",
         rownames = FALSE,
-        options = list(pageLength = 25, autoWidth = TRUE,
+        options = list(pageLength = 100, autoWidth = FALSE,
                        #dom = 't',
                        rowCallback = JS('function(row, data) {
                                                   $(row).mouseenter(function(){
@@ -226,16 +222,7 @@ server <- function(input, output) {
         summary()
     })
     
-    output$selected <- DT::renderDataTable(
-        filter = "top",
-        rownames = FALSE,
-        options = list(pageLength = 25, autoWidth = TRUE),{
-        req(input$file)
-        selected() %>%
-            select(Anforderungsnr., Eingangsdatum, MC, NAME, Einsender, TP)
-        })
-    
-    output$selected2 <- renderTable({
+    output$selected <- renderTable({
             req(input$file)
             selected() %>%
                 select(Anforderungsnr., MC, NAME, TP)
@@ -250,7 +237,7 @@ server <- function(input, output) {
     
     output$status <- renderUI({
         req(input$file)
-        checkboxGroupInput("status", "Abrechnungsstatus", choices = all_status(), selected = all_status(), inline = FALSE)
+        checkboxGroupInput("status", "Abrechnungsstatus", choices = all_status(), selected = all_status(), inline = TRUE)
     })
     
     all_status = reactive({
