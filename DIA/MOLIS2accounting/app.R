@@ -77,7 +77,7 @@ ui <- fluidPage(
             #     clearButton = TRUE),
             dateRangeInput("date",
                            label = "Date range",
-                           start = Sys.Date() - 3*360, end = Sys.Date(), max = Sys.Date(), weekstart = 1),
+                           start = floor_date(Sys.Date(), 'year') - 2*365, end = Sys.Date(), max = Sys.Date(), weekstart = 1),
                            #separator = " - ", format = "dd/mm/yy", startview = 'year'
             uiOutput("status"),
             actionButton("export", "Export"),
@@ -85,15 +85,18 @@ ui <- fluidPage(
             textOutput("n"),
             h4("Summe"),
             textOutput("sum"),
-            tableOutput("summary")
+            tableOutput("summary"),
+            tableOutput("selected2")
         ),
         mainPanel(
+            h2("Total"),
             DT::dataTableOutput("total"),
+            h2("Subtotal"),
             DT::dataTableOutput("selected"),
-            h6("******************"),
+            h1(" "),
             tableOutput("raw"),
             tableOutput("tidy"),
-            tableOutput("cost"),
+            tableOutput("cost")
         )
     )
 )
@@ -135,8 +138,7 @@ server <- function(input, output) {
                 counter == 1 & Rechnungsempfänger == "USZJ"~ 22,
                 counter == 1 & Rechnungsempfänger == "USZN"~ 33,
                 counter == 1 ~ tax.dict[abrvb.dict[Einsender]],
-                TRUE ~ 0
-            )) %>%
+                TRUE ~ 0)) %>%
             mutate(TP = block_discount(MC, TP)) %>%  ### funtion block_discount
             mutate(Subtotal = ifelse(counter == 1, sum(TP, na.rm = TRUE), 0)) %>%
             select(Anforderungsnr., Eingangsdatum, counter, MC, NAME, RES, Einsender, Material, TP, Subtotal, Auftragspauschale, Abrechnungsstatus)
@@ -149,7 +151,7 @@ server <- function(input, output) {
             #sample_n(1) %>%
             mutate(Discount = discount.dict[Einsender]) %>%
             mutate(Discount = ifelse(is.na(Discount), 0, Discount)) %>%
-            mutate(Total = (Subtotal + Auftragspauschale) * (1 - Discount/100)) %>%
+            mutate(Total = sum(c(Subtotal, Auftragspauschale), na.rm = TRUE) * (1 - Discount/100)) %>%
             select(Anforderungsnr., Eingangsdatum, Einsender, Subtotal, Auftragspauschale, Discount, Total, Abrechnungsstatus)
     })
     
@@ -168,6 +170,7 @@ server <- function(input, output) {
     
     ids_selected = reactive({
         filter_molis() %>% pull(Anforderungsnr.) %>% .[input$total_rows_selected]
+        #filter_molis()[input$hoverIndexJS + 1, ] %>% pull(Anforderungsnr.) 
     })
     
     selected = reactive({
@@ -204,7 +207,16 @@ server <- function(input, output) {
     output$total <- DT::renderDataTable(
         filter = "top",
         rownames = FALSE,
-        options = list(pageLength = 10, autoWidth = FALSE),{
+        options = list(pageLength = 25, autoWidth = TRUE,
+                       #dom = 't',
+                       rowCallback = JS('function(row, data) {
+                                                  $(row).mouseenter(function(){
+                                                  var hover_index = $(this)[0]._DT_RowIndex
+                                                  /* console.log(hover_index); */
+                                                  Shiny.onInputChange("hoverIndexJS", hover_index);
+                                                  });
+                                          }')
+        ),{
         req(input$file)
         filter_molis()
     })
@@ -217,10 +229,16 @@ server <- function(input, output) {
     output$selected <- DT::renderDataTable(
         filter = "top",
         rownames = FALSE,
-        options = list(pageLength = 100, autoWidth = FALSE),{
+        options = list(pageLength = 25, autoWidth = TRUE),{
         req(input$file)
         selected() %>%
             select(Anforderungsnr., Eingangsdatum, MC, NAME, Einsender, TP)
+        })
+    
+    output$selected2 <- renderTable({
+            req(input$file)
+            selected() %>%
+                select(Anforderungsnr., MC, NAME, TP)
         })
     
     # output$month <- renderText({
@@ -232,7 +250,7 @@ server <- function(input, output) {
     
     output$status <- renderUI({
         req(input$file)
-        checkboxGroupInput("status", "Abrechnungsstatus", choices = all_status(), selected = all_status(), inline = TRUE)
+        checkboxGroupInput("status", "Abrechnungsstatus", choices = all_status(), selected = all_status(), inline = FALSE)
     })
     
     all_status = reactive({
