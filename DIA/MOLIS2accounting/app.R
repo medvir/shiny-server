@@ -1,10 +1,19 @@
-library(shiny)
-library(tidyverse)
-library(readxl)
-library(shinythemes)
-library(shinyWidgets)
-library(lubridate)
-library(DT)
+#library(shiny)
+#library(tidyverse)
+#library(readxl)
+#library(shinythemes)
+#library(lubridate)
+#library(DT)
+
+
+
+library(shiny, lib.loc = "C:/RStudio/lib")
+library(tidyverse, lib.loc = "C:/RStudio/lib")
+library(readxl, lib.loc = "C:/RStudio/lib")
+library(shinythemes, lib.loc = "C:/RStudio/lib")
+library(lubridate, lib.loc = "C:/RStudio/lib")
+library(DT, lib.loc = "C:/RStudio/lib")
+
 
 
 ######################## FUNCTIONS ########################
@@ -48,7 +57,7 @@ block_discount <- function(MC, TP) {
 }
 
 ######################## SETUP ########################
-fields = c("Anforderungsnr.", "Entnahmedatum", "Eingangsdatum", "MC", "NAME", "Einsender", "Kontrakt", "Herkunft", "Stationärer Patient", "Abrechnungsstatus", "Patientennummer")
+fields = c("Anforderungsnr.", "Entnahmedatum", "Eingangsdatum", "MC", "NAME", "Einsender", "Kontrakt", "Herkunft", "Abrechnungsstatus", "TAR_IND", "Patientennummer")  #"Stationarer Patient",
 
 abrvb.dict = read_csv("abrvb.table.csv") %>% pull(ABRVB)
 names(abrvb.dict) = read_csv("abrvb.table.csv") %>% pull(KURZNAME)
@@ -71,7 +80,7 @@ ui <- fluidPage(
                     )),
              column(3,
                     panel(
-                        h4("Anzahl Aufträge"),
+                        h4("Anzahl AuftrÃ¤ge"),
                         textOutput("n"),
                         h4("Summe"),
                         textOutput("sum")
@@ -86,7 +95,7 @@ ui <- fluidPage(
                          tableOutput("selected")),
             mainPanel(h2("Total"),
                       DT::dataTableOutput("total"),
-                      #tableOutput("cost")
+                      tableOutput("cost")
                       ),
                       position = "right", fluid = TRUE
         )
@@ -122,23 +131,26 @@ server <- function(input, output) {
 
     cost_molis = reactive({
         tidy_molis() %>%
-            mutate(TP = TP.dict[MC]) %>%
-            mutate(Rechnungsempfänger = ifelse(Herkunft == "USZ", paste0(Herkunft, `Stationärer Patient`), Kontrakt)) %>%
+            mutate(TP = ifelse(TAR_IND == "0", TP.dict[MC], 0)) %>%
+            #mutate(Rechnungsempfaenger = ifelse(Herkunft == "USZ", paste0(Herkunft, `Stationaerer Patient`), Kontrakt)) %>%
+            group_by(Anforderungsnr.) %>%
+            mutate(counter = row_number()) %>%
+            mutate(Subtotal = ifelse(counter == 1, sum(TP, na.rm = TRUE), 0)) %>%
+            ### Block Discount ###
+            mutate(TP = block_discount(MC, TP)) %>%
+            
             group_by(Patientennummer, Eingangsdatum) %>%
             mutate(counter.day = row_number()) %>%
             
             ### Auftragspauschale ###
             mutate(Auftragspauschale = case_when(
+                Subtotal == 0 ~ 0,
                 counter.day == 1 & Einsender %in% names(abrvb.dict) ~ tax.dict[abrvb.dict[Einsender]],
                 counter.day == 1 ~ 24,
                 TRUE ~ 0)) %>%
             
-            ### Block Discount ###
-            mutate(TP = block_discount(MC, TP)) %>%
             group_by(Anforderungsnr.) %>%
-            mutate(counter = row_number()) %>%
-            mutate(Subtotal = ifelse(counter == 1, sum(TP, na.rm = TRUE), 0)) %>%
-            select(Anforderungsnr., Eingangsdatum, counter, MC, NAME, Einsender, TP, Subtotal, Auftragspauschale, Abrechnungsstatus, Kontrakt)
+            select(Anforderungsnr., Eingangsdatum, counter, MC, NAME, Einsender, TP, Subtotal, Auftragspauschale, Abrechnungsstatus, TAR_IND, Kontrakt)
     })
     
     total_molis = reactive({
@@ -146,7 +158,10 @@ server <- function(input, output) {
             filter(counter == 1) %>%
             
             ### Discount ###
-            mutate(Discount = ifelse(Kontrakt == "USZ", 20, 0)) %>%
+            mutate(Discount = case_when(
+                Kontrakt == "IMV" ~ 100,
+                Kontrakt == "USZ" ~ 22.5,
+                TRUE ~ 0)) %>%
             mutate(Total = sum(c(Subtotal, Auftragspauschale), na.rm = TRUE) * (1 - Discount/100)) %>%
             select(Anforderungsnr., Eingangsdatum, Einsender, Subtotal, Auftragspauschale, Discount, Total, Abrechnungsstatus)
     })
@@ -247,4 +262,5 @@ server <- function(input, output) {
 }
 
 ######################## RUN ########################
+setwd("P:/Desktop/MOLIS2accounting")
 shinyApp(ui = ui, server = server)
