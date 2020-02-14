@@ -1,18 +1,17 @@
-#library(shiny)
-#library(tidyverse)
-#library(readxl)
-#library(shinythemes)
-#library(lubridate)
-#library(DT)
+library(shiny)
+library(tidyverse)
+library(readxl)
+library(shinythemes)
+library(lubridate)
+library(DT)
 
-
-
-library(shiny, lib.loc = "C:/RStudio/lib")
-library(tidyverse, lib.loc = "C:/RStudio/lib")
-library(readxl, lib.loc = "C:/RStudio/lib")
-library(shinythemes, lib.loc = "C:/RStudio/lib")
-library(lubridate, lib.loc = "C:/RStudio/lib")
-library(DT, lib.loc = "C:/RStudio/lib")
+# setwd("P:/Desktop/MOLIS2accounting")
+# library(shiny, lib.loc = "C:/RStudio/lib")
+# library(tidyverse, lib.loc = "C:/RStudio/lib")
+# library(readxl, lib.loc = "C:/RStudio/lib")
+# library(shinythemes, lib.loc = "C:/RStudio/lib")
+# library(lubridate, lib.loc = "C:/RStudio/lib")
+# library(DT, lib.loc = "C:/RStudio/lib")
 
 
 
@@ -57,7 +56,7 @@ block_discount <- function(MC, TP) {
 }
 
 ######################## SETUP ########################
-fields = c("Anforderungsnr.", "Entnahmedatum", "Eingangsdatum", "MC", "NAME", "Einsender", "Kontrakt", "Herkunft", "Abrechnungsstatus", "TAR_IND", "Patientennummer")  #"Stationarer Patient",
+fields = c("Periode", "Anforderungsnr.", "Entnahmedatum", "Eingangsdatum", "MC", "NAME", "Einsender", "Kontrakt", "Herkunft", "Abrechnungsstatus", "TAR_IND", "Patientennummer")  #"Stationarer Patient",
 
 abrvb.dict = read_csv("abrvb.table.csv") %>% pull(ABRVB)
 names(abrvb.dict) = read_csv("abrvb.table.csv") %>% pull(KURZNAME)
@@ -73,22 +72,26 @@ ui <- fluidPage(
     theme = shinytheme("yeti"),
     titlePanel("MOLIS 2 accounting"),
     fluidRow(column(3,
-                    panel(
+                    #panel(
                         fileInput("file", "MOLIS Export", accept = "xlsx"),
                         dateRangeInput("date", label = "Date range", start = floor_date(Sys.Date(), 'year') - 2 * 365, end = Sys.Date(), max = Sys.Date(), weekstart = 1),
                         uiOutput("status")
-                    )),
+                    ),
              column(3,
-                    panel(
+                    #panel(
                         h4("Anzahl AuftrÃ¤ge"),
                         textOutput("n"),
                         h4("Summe"),
                         textOutput("sum")
-                    )),
+                    ),
              column(3,
-                    panel(
+                    #panel(
                         tableOutput("summary")
-                    ))),
+                    ),
+             column(3,
+                    #panel(
+                    tableOutput("monthly")
+             )),
     fluidRow(
         sidebarLayout(
             sidebarPanel(h2("Subtotal"),
@@ -150,7 +153,7 @@ server <- function(input, output) {
                 TRUE ~ 0)) %>%
             
             group_by(Anforderungsnr.) %>%
-            select(Anforderungsnr., Eingangsdatum, counter, MC, NAME, Einsender, TP, Subtotal, Auftragspauschale, Abrechnungsstatus, TAR_IND, Kontrakt)
+            select(Periode, Anforderungsnr., Eingangsdatum, counter, MC, NAME, Einsender, TP, Subtotal, Auftragspauschale, Abrechnungsstatus, TAR_IND, Kontrakt)
     })
     
     total_molis = reactive({
@@ -163,7 +166,7 @@ server <- function(input, output) {
                 Kontrakt == "USZ" ~ 22.5,
                 TRUE ~ 0)) %>%
             mutate(Total = sum(c(Subtotal, Auftragspauschale), na.rm = TRUE) * (1 - Discount/100)) %>%
-            select(Anforderungsnr., Eingangsdatum, Einsender, Subtotal, Auftragspauschale, Discount, Total, Abrechnungsstatus)
+            select(Periode, Anforderungsnr., Eingangsdatum, Einsender, Subtotal, Auftragspauschale, Discount, Total, Abrechnungsstatus)
     })
     
     filter_molis = reactive({
@@ -179,6 +182,13 @@ server <- function(input, output) {
             summarise(Summe = sum(Total, na.rm = TRUE), Anzahl = n())
     })
     
+    monthly = reactive({
+        filter_molis() %>%
+            select(Periode, Total) %>%
+            group_by(Periode) %>%
+            summarise(Summe = sum(Total, na.rm = TRUE), Anzahl = n())
+    })
+    
     ids_selected = reactive({
         filter_molis() %>% pull(Anforderungsnr.) %>% .[input$total_rows_selected]
         #filter_molis()[input$hoverIndexJS + 1, ] %>% pull(Anforderungsnr.) 
@@ -189,6 +199,8 @@ server <- function(input, output) {
             filter(Anforderungsnr. %in% ids_selected())
     })
     
+    
+    ### OUTPUT ###
     
     output$sum <- renderText({
         req(input$file)
@@ -237,6 +249,11 @@ server <- function(input, output) {
         summary()
     })
     
+    output$monthly <- renderTable({
+        req(input$file)
+        monthly()
+    })
+    
     output$selected <- renderTable({
             req(input$file)
             selected() %>%
@@ -250,6 +267,9 @@ server <- function(input, output) {
     # start.date = reactive({input$month})
     # end.date = reactive({as.Date(input$month) + months(1) - days(1)})
     
+    
+    ### UI OUTPUT ###
+    
     output$status <- renderUI({
         req(input$file)
         checkboxGroupInput("status", "Abrechnungsstatus", choices = all_status(), selected = all_status(), inline = TRUE)
@@ -262,5 +282,5 @@ server <- function(input, output) {
 }
 
 ######################## RUN ########################
-setwd("P:/Desktop/MOLIS2accounting")
+
 shinyApp(ui = ui, server = server)
