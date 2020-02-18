@@ -72,10 +72,10 @@ shinyServer(function(input, output, session) {
         tab = cbind(tab,tab[,ci])
         colnames(tab)[ci] <- c("Lambda_1", "Lambda_2")
 
-        # duplicates columns of respiratory panel and renames to correct Target Name
-        # doesn't work if those columns (with the exact same column names) are not present
-        
         if (input$test == "Flu/RSV") {
+            
+            # duplicates columns of respiratory panel and renames to correct Target Name
+            # doesn't work if those columns (with the exact same column names) are not present
             tab = tab %>%
                 mutate("Flu Pan A" = R_panFlu,
                        "Flu WHO H1 09" = R_Flu_H1_H3,
@@ -85,9 +85,17 @@ shinyServer(function(input, output, session) {
                        "Flu WHO H3" = R_Flu_H1_H3,
                        "RSV B" = R_RSV,
                        "MS-2" = `R_MS-2_GAPDH`)
-            }
+            
+        } else if (input$test == "SARS-CoV-2") {
+            
+            # duplicates columns of SARS-CoV and renames to correct Target Name
+            # doesn't work if those columns (with the exact same column names) are not present
+            tab = tab %>%
+                mutate("GAPDH" = `R_MS-2_GAPDH`) %>%
+                rename("MS-2" = `R_MS-2_GAPDH`)
+        }
         
-        print(tab)
+        #print(tab)
 
         tab %>% gather(key = target, value = value, -Well, -`Sample Name`) %>%
             filter(value == 1) %>%

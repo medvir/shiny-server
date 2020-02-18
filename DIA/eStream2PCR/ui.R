@@ -12,7 +12,7 @@ shinyUI(fluidPage(
                )),
         column(2,
                wellPanel(
-                   radioButtons("test", "Test", choices = c("Flu/RSV", "SARS-CoV-2"))
+                   radioButtons("test", "Test", choices = c("Flu/RSV", "SARS-CoV-2", "Other"))
                )),
         column(2,
                wellPanel(
