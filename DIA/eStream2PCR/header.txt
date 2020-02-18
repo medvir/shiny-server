@@ -1,0 +1,16 @@
+* Block Type = 96-Well Block (0.2mL)
+* Chemistry = TAQMAN
+* Experiment Barcode = 
+* Experiment Comments = 
+* Experiment File Name = 
+* Experiment Name = 
+* Experiment Run End Time = 
+* Experiment Type = Standard Curve
+* Experiment User Name = 
+* Instrument Name = 
+* Instrument Serial Number = 
+* Instrument Type = ViiA 7
+* Passive Reference = 
+* Quantification Cycle Method = Ct
+* Signal Smoothing On = true
+* Stage/ Cycle where Analysis is performed = Stage 2, Step 2

@@ -9,6 +9,7 @@ library(readr)
 
 ### setup
 setup = read_csv("setup.csv")
+header = read_csv("header.txt")
 
 reporter = setup$reporter
 names(reporter) = setup$target
@@ -175,7 +176,19 @@ shinyServer(function(input, output, session) {
             paste("template-", Sys.Date(), ".txt", sep = "")
         },
         content = function(file) {
-            writeLines("[Sample Setup]", file)
+            write.table(header,
+                        file,
+                        quote = FALSE,
+                        sep ='\t',
+                        row.names = FALSE,
+                        eol = "\r\n",
+                        append = TRUE)
+            write("",
+                  file,
+                  append = TRUE)
+            write("[Sample Setup]",
+                  file,
+                  append = TRUE)
             write.table(template_data() %>%
                             mutate(`Sample Color` = paste0("\"", `Sample Color`, "\"")) %>%
                             mutate(`Target Color` = paste0("\"", `Target Color`, "\"")),
