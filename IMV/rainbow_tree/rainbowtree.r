@@ -252,7 +252,7 @@ rainbowtree <- function (
     }
     
     # scale bar
-    add.scale.bar(lwd = branchwidth, cex = 0.5 * textsize)
+    add.scale.bar(lwd = branchwidth, cex = 0.5 * textsize) #, x = 0, y = -0.05)
 
 }
 

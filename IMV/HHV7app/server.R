@@ -14,7 +14,9 @@ shinyServer(function(input, output, session) {
                 mutate(course = substr(student, 1, 1)) %>%
                 mutate(sample_type = substr(sample_name, 1, 2)) %>%
                 mutate(sample_name = substr(sample_name, 3, 7)) %>%
+                filter(student != "0_00_00") %>%
                 filter(valid) %>%
+                filter(sd != 0 | is.na(sd)) %>%
                 group_by(sample_name, sample_type, student) %>%
                 sample_n(1) %>%
                 group_by(sample_name, sample_type) %>%
@@ -25,7 +27,7 @@ shinyServer(function(input, output, session) {
         
         demo_data = read_csv("demo_data.csv") %>%
                 rename(sample_name = lab_code) %>%
-                mutate(age = 2017 - year_of_birth) %>%
+                mutate(age = 2018 - year_of_birth) %>%
                 mutate(symptoms = list_respiratory_infection) %>%
                 select(sample_name, age, sex, symptoms) %>%
                 mutate(symptoms = ifelse(symptoms == "common cold signs", "common cold", symptoms))
@@ -70,7 +72,7 @@ shinyServer(function(input, output, session) {
                         facet_grid(. ~ sample_type, scales = "free") +
                         panel_border() + background_grid(major = "y", minor = "") +
                         xlab("Sample type")
-                p = p + plot_labels + plot_theme
+                p = p + plot_labels + plot_theme + theme_set(theme_cowplot())
                 return(p)
                 })
         
@@ -84,7 +86,7 @@ shinyServer(function(input, output, session) {
                         panel_border() + background_grid(major = "y", minor = "") +
                         xlab("Result") +
                         ylab("Number of samples")
-                p = p + plot_theme
+                p = p + plot_theme + theme_set(theme_cowplot())
                 return(p)
                 })
         
@@ -98,7 +100,7 @@ shinyServer(function(input, output, session) {
                         facet_grid(. ~ sample_type) +
                         panel_border() + background_grid(major = "y", minor = "") +
                         xlab("Sex")
-                p = p + plot_labels + plot_theme
+                p = p + plot_labels + plot_theme + theme_set(theme_cowplot())
                 return(p)
                 })
         
@@ -110,7 +112,7 @@ shinyServer(function(input, output, session) {
                         facet_grid(. ~ sample_type) +
                         panel_border() + background_grid(major = "y", minor = "") +
                         xlab("Replicates")
-                p = p + plot_labels + plot_theme
+                p = p + plot_labels + plot_theme + theme_set(theme_cowplot())
                 return(p)
                 })
         
@@ -125,7 +127,7 @@ shinyServer(function(input, output, session) {
                         panel_border() + background_grid(major = "y", minor = "") +
                         xlab("Symptoms") +
                         theme(axis.text.x = element_text(angle = 90, hjust = 1))
-                p = p + plot_labels + plot_theme
+                p = p + plot_labels + plot_theme + theme_set(theme_cowplot())
                 return(p)
                 })
         
@@ -139,7 +141,7 @@ shinyServer(function(input, output, session) {
                         facet_grid(. ~ sample_type) +
                         panel_border() + background_grid(major = "xy", minor = "") +
                         xlab("Age")
-                p = p + plot_labels + plot_theme
+                p = p + plot_labels + plot_theme + theme_set(theme_cowplot())
                 return(p)
                 })
         
