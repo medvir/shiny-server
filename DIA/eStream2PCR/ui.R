@@ -12,16 +12,20 @@ shinyUI(fluidPage(
                )),
         column(2,
                wellPanel(
-                   uiOutput("colors"),
-                   uiOutput("saturation"),
-                   uiOutput("value")
+                   radioButtons("test", "Test", choices = c("Flu/RSV", "SARS-CoV-2"))
                )),
         column(2,
                wellPanel(
                    uiOutput("targets"),
                    actionButton("select_all_targets", "Select all")
                )),
-        column(3,
+        column(2,
+               wellPanel(
+                   uiOutput("colors"),
+                   uiOutput("saturation"),
+                   uiOutput("value")
+               )),
+        column(2,
                h5("Download"),
                downloadButton("template_file", "Download")
         )
