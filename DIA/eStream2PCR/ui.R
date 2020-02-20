@@ -27,7 +27,8 @@ shinyUI(fluidPage(
                )),
         column(2,
                h5("Download"),
-               downloadButton("template_file", "Download")
+               downloadButton("template_file", "Download"),
+               span(h4(textOutput("error")), style = "color:red")
         )
     ),
     hr(),

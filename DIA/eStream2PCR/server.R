@@ -68,14 +68,14 @@ shinyServer(function(input, output, session) {
             select(-`Source plate-ID`, -`Target plate ID`, -Id, -Conc.) %>%
             rename(`Sample Name` = Name)
 
-        ci = grepl("GAPDH", names(tab)) & grepl("Lambda", colnames(tab))
-        tab = cbind(tab,tab[,ci])
-        colnames(tab)[ci] <- c("Lambda_1", "Lambda_2")
+        # ci = grepl("GAPDH", names(tab)) & grepl("Lambda", colnames(tab))      ### This was for something with Lambda control?
+        # tab = cbind(tab,tab[,ci])                                             ### Better add in the future in the same style as below
+        # colnames(tab)[ci] <- c("Lambda_1", "Lambda_2")
 
         if (input$test == "Flu/RSV") {
             
-            # duplicates columns of respiratory panel and renames to correct Target Name
-            # doesn't work if those columns (with the exact same column names) are not present
+            ### duplicates columns of Flu/RSV panel and renames to correct Target Name
+            ### doesn't work if those columns (with the exact same column names) are not present
             tab = tab %>%
                 mutate("Flu Pan A" = R_panFlu,
                        "Flu WHO H1 09" = R_Flu_H1_H3,
@@ -88,8 +88,8 @@ shinyServer(function(input, output, session) {
             
         } else if (input$test == "SARS-CoV-2") {
             
-            # duplicates columns of SARS-CoV and renames to correct Target Name
-            # doesn't work if those columns (with the exact same column names) are not present
+            ### duplicates columns of SARS-CoV-2 panel and renames to correct Target Name
+            ### doesn't work if those columns (with the exact same column names) are not present
             tab = tab %>%
                 mutate("GAPDH" = `R_MS-2_GAPDH`) %>%
                 rename("MS-2" = `R_MS-2_GAPDH`)
@@ -135,6 +135,10 @@ shinyServer(function(input, output, session) {
             select(Well, `Well Position`, `Sample Name`, `Sample Color`, `Biogroup Name`, `Biogroup Color`, `Target Name`, `Target Color`, Task, Reporter, Quencher, Quantity, Comments)
     })
     
+    output$error <- renderText({
+        if (NA %in% template_data()$Reporter) {"Error: Some reporters are NA"} else {""}
+    })
+    
     
     output$colors <- renderUI({
         radioButtons("colors", "Colors", choices = c("repeat", "rainbow", "random"), selected = "repeat")
@@ -165,7 +169,7 @@ shinyServer(function(input, output, session) {
     
     observeEvent(input$select_all_targets, {
         updateSelectInput(session = session, "targets", selected = all_targets())
-        })
+    })
     
     
     output$template_table <- DT::renderDataTable({
