@@ -69,7 +69,7 @@ server <- function(input, output) {
     })
     
     output$results = DT::renderDataTable(
-        options = list(pageLength = 100, autoWidth = TRUE),{
+        options = list(pageLength = 100, autoWidth = FALSE),{
         req(input$files)
         results()
     })
