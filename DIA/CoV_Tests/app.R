@@ -16,8 +16,8 @@ ui <- fluidPage(
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
-            fileInput("files", "Export Files", multiple = TRUE, accept = "xlsx"),
-            selectInput("path", "Pfad", choices = c("C:/Users/VIRO/Desktop/Corona-NTIKC-export", "/Users/huber.michael/Desktop")),
+            fileInput("files", "Upload (multiple) export files", multiple = TRUE, accept = "xlsx"),
+            #selectInput("path", "Pfad", choices = c("C:/Users/VIRO/Desktop/Corona-NTIKC-export", "/Users/huber.michael/Desktop")),
             textOutput("n_files")
         ),
 
@@ -34,15 +34,15 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
     
-    files = reactive({
-        list.files(path = input$path, pattern = "export.xls", full.names = TRUE)
-    })
+    # files = reactive({
+    #     list.files(path = input$path, pattern = "export.xls", full.names = TRUE)
+    # })
     
     raw_data = reactive({
         res = data.frame()
         
-        #for (i in input$files$datapath) {
-        for (i in files()) {
+        for (i in input$files$datapath) {
+        #for (i in files()) {
             
             skip_n = match("Well", read_excel(i, sheet = "Results") %>% pull('Instrument Name'))
             
@@ -71,9 +71,6 @@ server <- function(input, output) {
     })
     
     summary = reactive({
-        
-        print(files())
-        
         results() %>%
             group_by(target) %>%
             mutate(posneg = ifelse(result == "pos", 1, 0)) %>%
@@ -84,15 +81,17 @@ server <- function(input, output) {
     })
     
     output$results = DT::renderDataTable({
+        req(input$files)
         results()
     })
     
     output$summary = renderTable({
+        req(input$files)
         summary()
     })
     
     output$n_files = renderText({
-        length(files())
+        paste("Number of files:", length(input$files))
     })
     
 }
