@@ -5,23 +5,14 @@ library(shiny)
 library(readxl)
 library(DT)
 
-
-#C:\Users\VIRO\Desktop\Corona-NTIKC-export
-
-# Define UI
 ui <- fluidPage(
-
     titlePanel("SARS-CoV-2 Nachtestungen"),
-
-    # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
             fileInput("files", "Upload (multiple) export files", multiple = TRUE, accept = "xlsx"),
             #selectInput("path", "Pfad", choices = c("C:/Users/VIRO/Desktop/Corona-NTIKC-export", "/Users/huber.michael/Desktop")),
-            textOutput("n_files")
+            numericInput("ct", "Max Ct for positive result", value = 45)
         ),
-
-        # Show a plot of the generated distribution
         mainPanel(
             h4("Summary"),
             tableOutput("summary"),
@@ -31,19 +22,15 @@ ui <- fluidPage(
     )
 )
 
-# Define server logic required to draw a histogram
 server <- function(input, output) {
-    
     # files = reactive({
     #     list.files(path = input$path, pattern = "export.xls", full.names = TRUE)
     # })
     
     raw_data = reactive({
         res = data.frame()
-        
         for (i in input$files$datapath) {
         #for (i in files()) {
-            
             skip_n = match("Well", read_excel(i, sheet = "Results") %>% pull('Instrument Name'))
             
             res_i = read_excel(i, sheet = "Results", skip = skip_n) %>%
@@ -54,7 +41,6 @@ server <- function(input, output) {
                 rename(ct = "CT") %>%
                 rename(threshold = "Ct Threshold") %>%
                 select(well, well_pos, target, sample_name, ct, threshold)
-            
             res = rbind(res, res_i)
         }
         return(res)
@@ -64,23 +50,26 @@ server <- function(input, output) {
         raw_data() %>%
             select(sample_name, target, ct) %>%
             filter(!(sample_name %in% c("run Ko", "NC", "pos. DNA", "pos. RNA"))) %>%
+            filter(!(grepl("pos", sample_name, ignore.case = TRUE))) %>%
+            filter(!(grepl("neg", sample_name, ignore.case = TRUE))) %>%
             mutate(result = case_when(
-                ct == "Undetermined" ~ "neg",
-                as.numeric(ct) < 43 ~ "pos",
+                ct == "Undetermined" ~ "negative",
+                as.numeric(ct) <= input$ct ~ "positive",
                 TRUE ~ "??"))
     })
     
     summary = reactive({
         results() %>%
             group_by(target) %>%
-            mutate(posneg = ifelse(result == "pos", 1, 0)) %>%
+            mutate(posneg = ifelse(result == "positive", 1, 0)) %>%
             mutate(positive = sum(posneg)) %>%
             mutate(negative = n() - positive) %>%
             sample_n(1) %>%
             select(target, positive, negative)
     })
     
-    output$results = DT::renderDataTable({
+    output$results = DT::renderDataTable(
+        options = list(pageLength = 100, autoWidth = TRUE),{
         req(input$files)
         results()
     })
@@ -89,11 +78,6 @@ server <- function(input, output) {
         req(input$files)
         summary()
     })
-    
-    output$n_files = renderText({
-        paste("Number of files:", length(input$files))
-    })
-    
 }
 
 # Run the application 
