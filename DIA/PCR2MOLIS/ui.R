@@ -12,10 +12,10 @@ shinyUI(fluidPage(
     fluidRow(
         column(2,
                wellPanel(
-                   #fileInput("pcr_file", "PCR raw data [.xlsx]:", accept = ".xlsx"),
-                   uiOutput("folder_selection"),
-                   uiOutput("file_selection"),
-                   fileInput("pcr_file_upload", "PCR Export Datei [.xlsx]:", accept = ".xls"),
+                   fileInput("pcr_file", "PCR raw data [.xlsx]:", accept = c(".xls",".xlsx")),
+                   #uiOutput("folder_selection"),
+                   #uiOutput("file_selection"),
+                   #fileInput("pcr_file_upload", "PCR Export Datei [.xlsx]:", accept = ".xls"),
                    uiOutput("target_selection")
                )),
         column(2,

@@ -13,7 +13,7 @@ library(DT)
 
 curve_fit <- function(x,y) {
     #sigmoidal dose response with variable slope
-    nls(y ~ p1 + (p2-p1)/(1 + 10^((p3-x)*p4)), start = list(p1 = 0, p2 = 3, p3 = 30, p4 = 0.2))
+    nls(y ~ p1 + (p2-p1)/(1 + 10^((p3-x)*p4)), start = list(p1 = 0, p2 = max(y), p3 = 30, p4 = 0.2))
     
     # 7 parameter Knobel
     # p1 = O? (1)
@@ -42,36 +42,39 @@ shinyServer(function(input, output, session) {
     
     ### file selection
     
-    available_folders = c("/Volumes/Home$/Repositories/shiny-server/DIA/PCR2MOLIS/data/",
-                          "/Volumes/huber.michael/Repositories/shiny-server/DIA/PCR2MOLIS/data/",
-                          "/Volumes/Diagnostic/")
-    
-    output$folder_selection <- renderUI({
-        selectInput("folder", "Folder", choices = available_folders, selected = available_folders[1], selectize = FALSE)
-    })
-    
-    available_files <- reactive({
-        list.files(input$folder, pattern = ".xls")
-    })
-    
-    output$file_selection <- renderUI({
-        selectInput("pcr_file", "File", choices = available_files(), selected = available_files()[1], selectize = FALSE)
-    })
+    # available_folders = c("/Volumes/Home$/Repositories/shiny-server/DIA/PCR2MOLIS/data/",
+    #                       "/Volumes/huber.michael/Repositories/shiny-server/DIA/PCR2MOLIS/data/",
+    #                       "/Volumes/Diagnostic/")
+    # 
+    # output$folder_selection <- renderUI({
+    #     selectInput("folder", "Folder", choices = available_folders, selected = available_folders[1], selectize = FALSE)
+    # })
+    # 
+    # available_files <- reactive({
+    #     list.files(input$folder, pattern = ".xls")
+    # })
+    # 
+    # output$file_selection <- renderUI({
+    #     selectInput("pcr_file", "File", choices = available_files(), selected = available_files()[1], selectize = FALSE)
+    # })
     
     
     ### read raw data from different cyclers, join amp and res data sheets
     raw_data <- reactive({
-        if (is.null( input$pcr_file_upload)) {
-            pcr_file = paste0(input$folder, input$pcr_file)
-        } else {
-            pcr_file = input$pcr_file_upload$datapath
-        }
+    #     if (is.null( input$pcr_file_upload)) {
+    #         pcr_file = paste0(input$folder, input$pcr_file)
+    #     } else {
+    #         pcr_file = input$pcr_file_upload$datapath
+    #     }
         
+    
+    pcr_file = input$pcr_file$datapath
+    
         print(pcr_file)
         
         cycler = as.character(read_excel(pcr_file) %>% unlist)
         ### QuantStudio
-        if ("278870036" %in% cycler | "272322000" %in% cycler) { 
+        if ("278870036" %in% cycler | "272322000" %in% cycler | "278880634" %in% cycler) { 
             first_row_amp = match("Well", read_excel(pcr_file, sheet = "Amplification Data") %>% pull('Block Type'))
             amp = read_excel(pcr_file, sheet = "Amplification Data", skip = first_row_amp) %>%
                 rename(well = "Well") %>%
@@ -152,7 +155,7 @@ shinyServer(function(input, output, session) {
     })
     
     output$max_ct_selection <- renderUI({
-        numericInput("max_ct", "Minimal Ct", value = 45, step = 1)
+        numericInput("max_ct", "Minimal Ct", value = 39, step = 1)
     })
     
     output$min_delta_Rn_selection <- renderUI({
@@ -170,6 +173,7 @@ shinyServer(function(input, output, session) {
             try = class(try(curve_fit(df$cycle, df$delta_Rn)))
             if (try == "nls") { 
                 fit = curve_fit(df$cycle, df$delta_Rn)
+                print(fit)
                 fit_data = rbind(fit_data, data.frame(sample_name_replicate = i,
                                           p1 = round(summary(fit)$coefficients[1,1],3),
                                           p2 = round(summary(fit)$coefficients[2,1],3),
