@@ -1,4 +1,4 @@
-# PCR2MOLIS
+# SARS2MOLIS
 
 library(shiny)
 library(tidyverse)
@@ -47,8 +47,8 @@ shinyUI(fluidPage(
         hr(),
         column(12,
                h5("Export"),
-               downloadButton("pdf_export", "PDF Export"),
-               h6(""),
+               #downloadButton("pdf_export", "PDF Export"),
+               #h6(""),
                downloadButton("molis_export", "MOLIS Export")
         )
     )
