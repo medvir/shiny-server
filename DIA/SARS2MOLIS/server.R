@@ -105,6 +105,8 @@ shinyServer(function(input, output, session) {
     })
     
     
+    
+    
     ### target selection and threshold by target
     available_targets <- reactive({
         raw_data() %>%
@@ -192,17 +194,21 @@ shinyServer(function(input, output, session) {
     
     ### results
     results <- reactive({
-        target_data() %>%
-            left_join(. , fit_data(), by = "sample_name_replicate") %>%
-            group_by(sample_name, well_pos) %>%
+        raw_data() %>%
+            group_by(sample_name, target) %>%
             sample_n(1) %>%
-            group_by(sample_name) %>%
-            mutate(ct_mean = mean(ct)) %>%
-            mutate(interpretation = case_when(
-                ct <= input$max_ct & p2 >= input$min_delta_Rn ~ "positive",
-                TRUE ~" negative"
-                )) %>%
             ungroup()
+        #target_data() %>%
+            #left_join(. , fit_data(), by = "sample_name_replicate") %>%
+            #group_by(sample_name, well_pos) %>%
+            #sample_n(1) %>%
+            #group_by(sample_name) %>%
+            #mutate(ct_mean = mean(ct)) %>%
+            #mutate(interpretation = case_when(
+            #    ct <= input$max_ct & p2 >= input$min_delta_Rn ~ "positive",
+            #    TRUE ~" negative"
+            #    )) %>%
+            #ungroup()
     })
     
     
@@ -227,7 +233,7 @@ shinyServer(function(input, output, session) {
         }
 
         if (input$lin_log == "lin") {
-            p = ggplot(dat, aes(x = dat$cycle, y = dat$delta_Rn, color = replicate)) + 
+            p = ggplot(dat, aes(x = dat$cycle, y = dat$delta_Rn, color = as.factor(replicate))) + 
                 geom_point() +
                 geom_hline(yintercept = input$threshold, size = 0.5, linetype="dashed") +
                 geom_hline(yintercept = input$min_delta_Rn, size = 0.5, linetype="dashed") +
@@ -246,7 +252,7 @@ shinyServer(function(input, output, session) {
                     geom_line(color = "red", data = df_fit_2, aes(y = delta_Rn_pred, x = cycle))
             }
         } else {
-            p = ggplot(dat, aes(x = dat$cycle, y = log10(dat$delta_Rn), color = replicate)) + 
+            p = ggplot(dat, aes(x = dat$cycle, y = log10(dat$delta_Rn), color = as.factor(replicate))) + 
                 geom_point() +
                 geom_hline(yintercept = log10(input$threshold), size = 0.5, linetype="dashed") +
                 geom_hline(yintercept = log10(input$min_delta_Rn), size = 0.5, linetype="dashed") +
@@ -305,11 +311,11 @@ shinyServer(function(input, output, session) {
     
     
     ### table
-    output$fit_data_table <- renderTable({
-        results() %>%
-            filter(sample_name == input$samples_selected) %>%
-            select(replicate, ct_export, p1, p2, p3, p4, ct)
-    })
+    # output$fit_data_table <- renderTable({
+    #     results() %>%
+    #         filter(sample_name == input$samples_selected) %>%
+    #         select(replicate, ct_export, p1, p2, p3, p4, ct)
+    # })
     
     
     output$results <- DT::renderDataTable(
@@ -329,7 +335,17 @@ shinyServer(function(input, output, session) {
         ),
         {
             results() %>%
-                select(sample_name, replicate, well_pos, target, ct_export, p1, p2, p3, p4, ct, ct_mean, interpretation)
+                #select(sample_name, replicate, well_pos, target, ct_export, p1, p2, p3, p4, ct, ct_mean, interpretation)
+                select(sample_name, target, ct_export) %>%
+                mutate(ct_export = round(as.numeric(ct_export), digits = 1)) %>%
+                pivot_wider(names_from = target, values_from = ct_export) %>%
+                arrange(sample_name) %>%
+                rename(GAPDH_ct = GAPDH,
+                       MS2_ct = `MS-2`,
+                       SARS_ct = `CoV Wuhan E`) %>%
+                mutate(valid = if_else(GAPDH_ct < 26 & MS2_ct < 36 & !is.na(GAPDH_ct) & !is.na(MS2_ct), true = "yes", false = "no"),
+                       result = if_else(SARS_ct < 40 & !is.na(SARS_ct), true = "p", false = "n"))
+
         })
 
     # samples_selected <- reactive({
@@ -340,11 +356,22 @@ shinyServer(function(input, output, session) {
     
     ### Export
     molis_out <- reactive({
-        results()[input$results_rows_selected, ] %>%
-            group_by(sample_name, target) %>%
-            mutate(mean = mean(as.numeric(ct))) %>%
-            sample_n(1) %>%
-            select(sample_name, target, mean, interpretation)
+        results() %>%
+            #select(sample_name, replicate, well_pos, target, ct_export, p1, p2, p3, p4, ct, ct_mean, interpretation)
+            select(sample_name, target, ct_export) %>%
+            mutate(ct_export = round(as.numeric(ct_export), digits = 1)) %>%
+            pivot_wider(names_from = target, values_from = ct_export) %>%
+            arrange(sample_name) %>%
+            rename(GAPDH_ct = GAPDH,
+                   MS2_ct = `MS-2`,
+                   SARS_ct = `CoV Wuhan E`) %>%
+            mutate(valid = if_else(GAPDH_ct < 26 & MS2_ct < 36 & !is.na(GAPDH_ct) & !is.na(MS2_ct), true = "yes", false = "no"),
+                   result = if_else(SARS_ct < 40 & !is.na(SARS_ct), true = "p", false = "n"))
+        # results() %>%
+        # group_by(sample_name, target) %>%
+        # mutate(mean = mean(as.numeric(ct))) %>%
+        # sample_n(1) %>%
+        # select(sample_name, target, mean, interpretation)
     })
     
     output$molis_export <- downloadHandler(
