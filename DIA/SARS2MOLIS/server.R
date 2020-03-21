@@ -1,4 +1,4 @@
-# PCR2MOLIS
+# SARS2MOLIS
 
 library(shiny)
 library(tidyverse)
@@ -11,27 +11,27 @@ library(DT)
 # FUNCTIONS #
 # # # # # # #
 
-curve_fit <- function(x,y) {
-    #sigmoidal dose response with variable slope
-    nls(y ~ p1 + (p2-p1)/(1 + 10^((p3-x)*p4)), start = list(p1 = 0, p2 = max(y), p3 = 30, p4 = 0.2))
-    
-    # 7 parameter Knobel
-    # p1 = O? (1)
-    # p2 = Baseline Drift (0)
-    # p3 = Saturation Line (-4.5)
-    # p4 = Exponential Slope (0.04)
-    # p5 = Growth Infliction (30)
-    # p6 = Saturation Slope (-0.4)
-    # p7 = Saturation Infliction (38)
-    
-    #nls(y ~ p1 * (1 + p2*x + (p3 / ((1 + exp(-p4 * (x - p5)))*(1 + exp(-p6 * (x - p7)))))),
-    #start = list(p1 = 0, p2 = 0.5, p3 = -4.5, p4 = 0.04, p5 = 30, p6 = -0.4, p7 = 38),
-    #start = list(p1 = 0.98, p2 = 0.4, p3 = -4.6, p4 = 0.04, p5 = 30, p6 = -0.49, p7 = 38), #works for 405266
-    #start = list(p1 = 0.9, p2 = 0.4, p3 = -4.6, p4 = 0.04, p5 = 30, p6 = -0.49, p7 = 38),
-    #lower = c( 0, -1, -6, 0,  0, -1,  0),
-    #upper = c( 2,  1,  0, 1, 50,  0, 50),
-    #control = list(maxiter = 10000))
-}
+# curve_fit <- function(x,y) {
+#     #sigmoidal dose response with variable slope
+#     nls(y ~ p1 + (p2-p1)/(1 + 10^((p3-x)*p4)), start = list(p1 = 0, p2 = max(y), p3 = 30, p4 = 0.2))
+#     
+#     # 7 parameter Knobel
+#     # p1 = O? (1)
+#     # p2 = Baseline Drift (0)
+#     # p3 = Saturation Line (-4.5)
+#     # p4 = Exponential Slope (0.04)
+#     # p5 = Growth Infliction (30)
+#     # p6 = Saturation Slope (-0.4)
+#     # p7 = Saturation Infliction (38)
+#     
+#     #nls(y ~ p1 * (1 + p2*x + (p3 / ((1 + exp(-p4 * (x - p5)))*(1 + exp(-p6 * (x - p7)))))),
+#     #start = list(p1 = 0, p2 = 0.5, p3 = -4.5, p4 = 0.04, p5 = 30, p6 = -0.4, p7 = 38),
+#     #start = list(p1 = 0.98, p2 = 0.4, p3 = -4.6, p4 = 0.04, p5 = 30, p6 = -0.49, p7 = 38), #works for 405266
+#     #start = list(p1 = 0.9, p2 = 0.4, p3 = -4.6, p4 = 0.04, p5 = 30, p6 = -0.49, p7 = 38),
+#     #lower = c( 0, -1, -6, 0,  0, -1,  0),
+#     #upper = c( 2,  1,  0, 1, 50,  0, 50),
+#     #control = list(maxiter = 10000))
+# }
 
 
 # # # # # # # # #
@@ -161,35 +161,35 @@ shinyServer(function(input, output, session) {
     })
     
     output$min_delta_Rn_selection <- renderUI({
-        numericInput("min_delta_Rn", "Minimal delta Rn", value = 2, step = 0.1)
+     numericInput("min_delta_Rn", "Minimal delta Rn", value = 2, step = 0.1)
     })
-    
+
     
 
     ### curve fit
-    fit_data = reactive({
-        fit_data = data.frame()
-        for (i in available_sample_name_replicates()) {
-            df = target_data() %>%
-                filter(sample_name_replicate == i)
-            try = class(try(curve_fit(df$cycle, df$delta_Rn)))
-            if (try == "nls") { 
-                fit = curve_fit(df$cycle, df$delta_Rn)
-                print(fit)
-                fit_data = rbind(fit_data, data.frame(sample_name_replicate = i,
-                                          p1 = round(summary(fit)$coefficients[1,1],3),
-                                          p2 = round(summary(fit)$coefficients[2,1],3),
-                                          p3 = round(summary(fit)$coefficients[3,1],1),
-                                          p4 = round(summary(fit)$coefficients[4,1],3),
-                                          #p5 = round(summary(fit)$coefficients[5,1],3),
-                                          #p6 = round(summary(fit)$coefficients[6,1],3),
-                                          #p7 = round(summary(fit)$coefficients[7,1],3),
-                                          ct = round(approx(x = fitted.values(fit), y = df$cycle, xout = input$threshold)$y, 1)
-                                          ))
-            } 
-        }
-        return(fit_data)
-    })
+    # fit_data = reactive({
+    #     fit_data = data.frame()
+    #     for (i in available_sample_name_replicates()) {
+    #         df = target_data() %>%
+    #             filter(sample_name_replicate == i)
+    #         try = class(try(curve_fit(df$cycle, df$delta_Rn)))
+    #         if (try == "nls") { 
+    #             fit = curve_fit(df$cycle, df$delta_Rn)
+    #             print(fit)
+    #             fit_data = rbind(fit_data, data.frame(sample_name_replicate = i,
+    #                                       p1 = round(summary(fit)$coefficients[1,1],3),
+    #                                       p2 = round(summary(fit)$coefficients[2,1],3),
+    #                                       p3 = round(summary(fit)$coefficients[3,1],1),
+    #                                       p4 = round(summary(fit)$coefficients[4,1],3),
+    #                                       #p5 = round(summary(fit)$coefficients[5,1],3),
+    #                                       #p6 = round(summary(fit)$coefficients[6,1],3),
+    #                                       #p7 = round(summary(fit)$coefficients[7,1],3),
+    #                                       ct = round(approx(x = fitted.values(fit), y = df$cycle, xout = input$threshold)$y, 1)
+    #                                       ))
+    #         } 
+    #     }
+    #     return(fit_data)
+    # })
     
     
     ### results
@@ -213,66 +213,66 @@ shinyServer(function(input, output, session) {
     
     
     ### plot curve fit
-    output$curve <- renderPlot({
-    
-        dat = target_data() %>%
-            filter(sample_name == input$samples_selected)
-        
-        dat1 = dat %>% filter(replicate == 1)
-        try1 = class(try(curve_fit(dat1$cycle, dat1$delta_Rn)))
-        if (try1 == "nls") {
-            fit = curve_fit(dat1$cycle, dat1$delta_Rn)
-            df_fit_1 = data.frame(delta_Rn_pred = predict(fit, dat), cycle = dat$cycle)
-        }
-    
-        dat2 = dat %>% filter(replicate == 2)
-        try2 = class(try(curve_fit(dat2$cycle, dat2$delta_Rn)))
-        if (try2 == "nls") {
-            fit = curve_fit(dat2$cycle, dat2$delta_Rn)
-            df_fit_2 = data.frame(delta_Rn_pred = predict(fit, dat), cycle = dat$cycle)
-        }
-
-        if (input$lin_log == "lin") {
-            p = ggplot(dat, aes(x = dat$cycle, y = dat$delta_Rn, color = as.factor(replicate))) + 
-                geom_point() +
-                geom_hline(yintercept = input$threshold, size = 0.5, linetype="dashed") +
-                geom_hline(yintercept = input$min_delta_Rn, size = 0.5, linetype="dashed") +
-                geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
-                ylab("delta Rn") +
-                xlab("cycles") +
-                panel_border() +
-                background_grid(major = "xy", minor = "xy") +
-                theme(legend.title=element_blank())
-            if (try1 == "nls") {
-                p = p +
-                    geom_line(color = "red", data = df_fit_1, aes(y = delta_Rn_pred, x = cycle))
-            }
-            if (try2 == "nls") {
-                p = p +
-                    geom_line(color = "red", data = df_fit_2, aes(y = delta_Rn_pred, x = cycle))
-            }
-        } else {
-            p = ggplot(dat, aes(x = dat$cycle, y = log10(dat$delta_Rn), color = as.factor(replicate))) + 
-                geom_point() +
-                geom_hline(yintercept = log10(input$threshold), size = 0.5, linetype="dashed") +
-                geom_hline(yintercept = log10(input$min_delta_Rn), size = 0.5, linetype="dashed") +
-                geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
-                ylab("log10 delta Rn") +
-                xlab("cycles") +
-                panel_border() +
-                background_grid(major = "xy", minor = "xy") +
-                theme(legend.title=element_blank())
-            if (try1 == "nls") {
-                p = p +
-                    geom_line(color = "red", data = df_fit_1, aes(y = log10(delta_Rn_pred), x = cycle))
-            }
-            if (try2 == "nls") {
-                p = p +
-                    geom_line(color = "red", data = df_fit_2, aes(y = log10(delta_Rn_pred), x = cycle))
-            }
-        }
-        p
-    })
+    # output$curve <- renderPlot({
+    # 
+    #     dat = target_data() %>%
+    #         filter(sample_name == input$samples_selected)
+    #     
+    #     dat1 = dat %>% filter(replicate == 1)
+    #     try1 = class(try(curve_fit(dat1$cycle, dat1$delta_Rn)))
+    #     if (try1 == "nls") {
+    #         fit = curve_fit(dat1$cycle, dat1$delta_Rn)
+    #         df_fit_1 = data.frame(delta_Rn_pred = predict(fit, dat), cycle = dat$cycle)
+    #     }
+    # 
+    #     dat2 = dat %>% filter(replicate == 2)
+    #     try2 = class(try(curve_fit(dat2$cycle, dat2$delta_Rn)))
+    #     if (try2 == "nls") {
+    #         fit = curve_fit(dat2$cycle, dat2$delta_Rn)
+    #         df_fit_2 = data.frame(delta_Rn_pred = predict(fit, dat), cycle = dat$cycle)
+    #     }
+    # 
+    #     if (input$lin_log == "lin") {
+    #         p = ggplot(dat, aes(x = dat$cycle, y = dat$delta_Rn, color = as.factor(replicate))) + 
+    #             geom_point() +
+    #             geom_hline(yintercept = input$threshold, size = 0.5, linetype="dashed") +
+    #             geom_hline(yintercept = input$min_delta_Rn, size = 0.5, linetype="dashed") +
+    #             geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
+    #             ylab("delta Rn") +
+    #             xlab("cycles") +
+    #             panel_border() +
+    #             background_grid(major = "xy", minor = "xy") +
+    #             theme(legend.title=element_blank())
+    #         if (try1 == "nls") {
+    #             p = p +
+    #                 geom_line(color = "red", data = df_fit_1, aes(y = delta_Rn_pred, x = cycle))
+    #         }
+    #         if (try2 == "nls") {
+    #             p = p +
+    #                 geom_line(color = "red", data = df_fit_2, aes(y = delta_Rn_pred, x = cycle))
+    #         }
+    #     } else {
+    #         p = ggplot(dat, aes(x = dat$cycle, y = log10(dat$delta_Rn), color = as.factor(replicate))) + 
+    #             geom_point() +
+    #             geom_hline(yintercept = log10(input$threshold), size = 0.5, linetype="dashed") +
+    #             geom_hline(yintercept = log10(input$min_delta_Rn), size = 0.5, linetype="dashed") +
+    #             geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
+    #             ylab("log10 delta Rn") +
+    #             xlab("cycles") +
+    #             panel_border() +
+    #             background_grid(major = "xy", minor = "xy") +
+    #             theme(legend.title=element_blank())
+    #         if (try1 == "nls") {
+    #             p = p +
+    #                 geom_line(color = "red", data = df_fit_1, aes(y = log10(delta_Rn_pred), x = cycle))
+    #         }
+    #         if (try2 == "nls") {
+    #             p = p +
+    #                 geom_line(color = "red", data = df_fit_2, aes(y = log10(delta_Rn_pred), x = cycle))
+    #         }
+    #     }
+    #     p
+    # })
     
     
     ### run plot
@@ -344,7 +344,7 @@ shinyServer(function(input, output, session) {
                        MS2_ct = `MS-2`,
                        SARS_ct = `CoV Wuhan E`) %>%
                 mutate(valid = if_else(GAPDH_ct < 26 & MS2_ct < 36 & !is.na(GAPDH_ct) & !is.na(MS2_ct), true = "yes", false = "no"),
-                       result = if_else(SARS_ct < 40 & !is.na(SARS_ct), true = "p", false = "n"))
+                       result = if_else(SARS_ct < 40 & !is.na(SARS_ct), true = "pos", false = "n"))
 
         })
 
