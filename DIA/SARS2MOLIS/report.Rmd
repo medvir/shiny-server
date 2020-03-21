@@ -1,0 +1,21 @@
+---
+title: "Report"
+output: pdf_document
+params:
+  plot: NA
+  molis_out_table: NA
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+params$plot
+```
+
+
+```{r}
+knitr::kable(params$molis_out_table)
+```
+
