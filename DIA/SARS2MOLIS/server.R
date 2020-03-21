@@ -16,29 +16,29 @@ shinyServer(function(input, output, session) {
     is_valid <- function(sample_name, SARS_ct, GAPDH_ct, MS2_ct) {
         
         SARS_threshold <- 40
-        GAPDH_threshold <- 26
-        MS2_threshold <- 36
+        GAPDH_threshold <- 30
+        MS2_threshold <- 37
         
         case_when(
             
             # for all negative control samples
-            (sample_name == input$neg_control &
-                 is.na(SARS_ct) &
-                 is.na(GAPDH_ct) &
-                 MS2_ct < MS2_threshold) ~ TRUE,
+            (sample_name == input$neg_control
+                 & is.na(SARS_ct)
+                 & is.na(GAPDH_ct)
+                 & MS2_ct < MS2_threshold) ~ TRUE,
             
             # for all positive control samples
-            (sample_name == input$dna_pos_control | sample_name == input$rna_pos_control &
-                SARS_ct < SARS_threshold &
-                is.na(GAPDH_ct) &
-                is.na(MS2_ct)) ~ TRUE,
+            (sample_name == input$dna_pos_control | sample_name == input$rna_pos_control
+                & SARS_ct < SARS_threshold
+                & is.na(GAPDH_ct)
+                & is.na(MS2_ct)) ~ TRUE,
         
             # for all samples with a nr. as samplename
-            (!is.na(as.numeric(sample_name)) &
-                 GAPDH_ct < GAPDH_threshold &
-                 MS2_ct < MS2_threshold &
-                 !is.na(GAPDH_ct) &
-                 !is.na(MS2_ct)) ~ TRUE,
+            (!is.na(as.numeric(sample_name))
+                 & GAPDH_ct < GAPDH_threshold
+                 & MS2_ct < MS2_threshold
+                 & !is.na(GAPDH_ct)
+                 & !is.na(MS2_ct)) ~ TRUE,
         
             # for all other cases return is_valid() = FALSE
             TRUE ~ FALSE
