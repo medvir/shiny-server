@@ -2,6 +2,7 @@
 title: ""
 output: pdf_document
 params:
+  cycler_nr: NA
   plot: NA
   molis_out_table: NA
 ---
@@ -10,13 +11,18 @@ params:
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
 ```
 
-```{r, fig.height = 11, fig.width = 8}
-params$plot
-```
-
-\newpage
+## qPCR Resultate
+Datum (Erstellung Report): `r Sys.Date()`  
+Geräte-nr.: `r params$cycler_nr`
 
 ```{r}
 knitr::kable(params$molis_out_table)
 ```
 
+\newpage
+
+
+
+```{r, fig.height = 11, fig.width = 8}
+params$plot
+```
