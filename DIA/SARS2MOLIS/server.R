@@ -8,24 +8,44 @@ library(cowplot)
 library(DT)
 
 
-is_valid <- function(sample_name, GAPDH_ct, MS2_ct) {
-    
-    GAPDH_threshold <- 26
-    MS2_threshold <- 36
-    
-    valid <- (!is.na(as.numeric(sample_name)) &
-                  GAPDH_ct < GAPDH_threshold &
-                  MS2_ct < MS2_threshold &
-                  !is.na(GAPDH_ct) &
-                  !is.na(MS2_ct))
-    
-    return(valid)
-}
-
-
 
 
 shinyServer(function(input, output, session) {
+    
+    ### function to determine if result is valid or not
+    is_valid <- function(sample_name, SARS_ct, GAPDH_ct, MS2_ct) {
+        
+        SARS_threshold <- 40
+        GAPDH_threshold <- 26
+        MS2_threshold <- 36
+        
+        case_when(
+            
+            # for all negative control samples
+            (sample_name == input$neg_control &
+                 is.na(SARS_ct) &
+                 is.na(GAPDH_ct) &
+                 MS2_ct < MS2_threshold) ~ TRUE,
+            
+            # for all positive control samples
+            (sample_name == input$dna_pos_control | sample_name == input$rna_pos_control &
+                SARS_ct < SARS_threshold &
+                is.na(GAPDH_ct) &
+                is.na(MS2_ct)) ~ TRUE,
+        
+            # for all samples with a nr. as samplename
+            (!is.na(as.numeric(sample_name)) &
+                 GAPDH_ct < GAPDH_threshold &
+                 MS2_ct < MS2_threshold &
+                 !is.na(GAPDH_ct) &
+                 !is.na(MS2_ct)) ~ TRUE,
+        
+            # for all other cases return is_valid() = FALSE
+            TRUE ~ FALSE
+        )
+
+    }
+    
 
     ### read raw data from different cyclers, join amp and res data sheets
     raw_data <- reactive({
@@ -190,7 +210,7 @@ shinyServer(function(input, output, session) {
             rename(GAPDH_ct = GAPDH,
                    MS2_ct = `MS-2`,
                    SARS_ct = `CoV Wuhan E`) %>%
-            mutate(valid = if_else(is_valid(sample_name, GAPDH_ct, MS2_ct), true = "yes", false = "no"),
+            mutate(valid = if_else(is_valid(sample_name, SARS_ct, GAPDH_ct, MS2_ct), true = "yes", false = "no"),
                    result = if_else(SARS_ct < 40 & !is.na(SARS_ct), true = "pos", false = "n"))
     })
     
