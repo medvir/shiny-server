@@ -1,5 +1,5 @@
 ---
-title: "Report"
+title: ""
 output: pdf_document
 params:
   plot: NA
@@ -7,13 +7,14 @@ params:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
 ```
 
 ```{r}
 params$plot
 ```
 
+\newpage
 
 ```{r}
 knitr::kable(params$molis_out_table)
