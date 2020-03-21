@@ -27,7 +27,8 @@ shinyUI(fluidPage(
                    uiOutput("threshold_selection"),
                    uiOutput("max_ct_selection"),
                    uiOutput("min_delta_Rn_selection"),
-                   downloadButton("molis_export", "MOLIS Export")
+                   downloadButton("molis_export", "MOLIS Export"),
+                   downloadButton("pdf_export", "PDF Export")
                )
         ),
         column(8,

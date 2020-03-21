@@ -374,6 +374,44 @@ shinyServer(function(input, output, session) {
         # select(sample_name, target, mean, interpretation)
     })
     
+    plot_out <- reactive({
+        if (input$lin_log == "log") {
+            target_data() %>%
+                ggplot(aes(x = cycle, y = (log10(delta_Rn)), color = sample_name, group = well_pos)) +
+                geom_line(size = .75) +
+                geom_hline(yintercept = log10(input$threshold), size = 0.5, linetype="dashed") +
+                geom_hline(yintercept = log10(input$min_delta_Rn), size = 0.5, linetype="dashed") +
+                geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
+                geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
+                xlim(0, 50) +
+                ylab("log10 delta Rn") +
+                xlab("cycles") +
+                panel_border() +
+                background_grid(major = "xy", minor = "xy") +
+                theme(legend.title=element_blank())
+        } else {
+            target_data() %>%
+                ggplot(aes(x = cycle, y = delta_Rn, color = sample_name, group = well_pos)) +
+                geom_line(size = .75) +
+                geom_hline(yintercept = input$threshold, size = 0.5, linetype="dashed") +
+                geom_hline(yintercept = input$min_delta_Rn, size = 0.5, linetype="dashed") +
+                geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
+                geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
+                ylim(-0.1, NA) +
+                xlim(0, 50) +
+                ylab("delta Rn") +
+                xlab("cycles") +
+                panel_border() +
+                background_grid(major = "xy", minor = "xy") +
+                theme(legend.title=element_blank())
+        }
+    })
+    
+    molis_min <- reactive({
+        molis_out() %>%
+            min(sample_name)
+    })
+    
     output$molis_export <- downloadHandler(
         filename = function() {
             paste0("molis-", Sys.Date(), ".txt")
@@ -387,6 +425,23 @@ shinyServer(function(input, output, session) {
                         eol = "\r\n",
                         append = FALSE)
     })
+    
+    output$pdf_export <- downloadHandler(
+        
+        filename = "test.pdf",
+        
+        content = function(file) {
+            tempReport <- file.path(tempdir(), "report.Rmd")
+            file.copy("report.Rmd", tempReport, overwrite = TRUE)
+            
+            params <- list(plot = plot_out(),
+                           molis_out_table = molis_out())
+            
+            rmarkdown::render(tempReport, output_file = file,
+                             params = params,
+                             envir = new.env(parent = globalenv()))
+        }
+    )
     
     # output$report <- downloadHandler(
     #     filename = function() {
