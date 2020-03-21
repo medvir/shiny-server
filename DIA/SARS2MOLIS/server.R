@@ -56,7 +56,7 @@ shinyServer(function(input, output, session) {
         raw_data() %>%
             pull(target) %>%
             unique()
-        })
+    })
     
     output$target_selection <- renderUI({
         radioButtons("selected_target", "Targets", choices = available_targets(), selected = available_targets()[1])
@@ -183,28 +183,46 @@ shinyServer(function(input, output, session) {
                                         Shiny.onInputChange("hoverIndexJS", hover_index);
                                         });
                         }')
-                       ), {
-                           table()
-                           }
-        )
+         ), {table()}
+    )
 
     
     
     ### Export
     molis_out <- reactive({
         table()
-        })
+    })
     
+    molis_min <- reactive({
+        table() %>%
+            mutate(sample_name_num = as.numeric(sample_name)) %>%
+            pull(sample_name_num)
+            # somehow doesn't work with min,
+            # but giving a vector into past0 below takes the first element
+            #min(sample_name_num, na.rm = TRUE)
+    })
+    
+    molis_max <- reactive({
+        table() %>%
+            mutate(sample_name_num = as.numeric(sample_name)) %>%
+            arrange(desc(sample_name_num)) %>%
+            pull(sample_name_num)
+            # somehow doesn't work with max,
+            # but giving a vector into past0 below takes the first element
+            #max(sample_name_num, na.rm = TRUE)
+    })
+
     plot_out <- reactive({
         plot()
-        })
-    
+    })
     
     ### Download
     output$molis_export <- downloadHandler(
+        
         filename = function() {
             paste0("molis-", Sys.Date(), ".txt")
         },
+        
         content = function(file) {
             write.table(molis_out(),
                         file,
@@ -213,11 +231,13 @@ shinyServer(function(input, output, session) {
                         row.names = FALSE,
                         eol = "\r\n",
                         append = FALSE)
-            })
+        })
     
     output$pdf_export <- downloadHandler(
         
-        filename = "report.pdf",
+        filename = function() {
+            paste0(molis_min(), "_to_", molis_max(), ".pdf")
+        },
         
         content = function(file) {
             tempReport <- file.path(tempdir(), "report.Rmd")
@@ -228,8 +248,6 @@ shinyServer(function(input, output, session) {
             
             rmarkdown::render(tempReport, output_file = file,
                               params = params,
-                              envir = new.env(parent = globalenv())
-                              )
-            })
-
+                              envir = new.env(parent = globalenv()))
+        })
 })
