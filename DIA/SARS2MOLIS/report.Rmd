@@ -18,6 +18,10 @@ Experiment Run End Time: `r params$end_time`
 Geräte-nr.: `r params$cycler_nr`
 
 ```{r}
+
+# leaves cells with NA blank instead of printing NA
+options(knitr.kable.NA = "")
+
 knitr::kable(params$molis_out_table)
 ```
 
