@@ -32,14 +32,14 @@ shinyUI(fluidPage(
                ),
         
         column(8,
-               plotOutput("run_plot")
+               dataTableOutput("results")
                )
         ),
     
     fluidRow(
         hr(),
         column(8,
-               dataTableOutput("results")
+               plotOutput("run_plot")
                )
         )
     ))
