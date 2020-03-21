@@ -2,6 +2,7 @@
 title: ""
 output: pdf_document
 params:
+  end_time: NA
   cycler_nr: NA
   plot: NA
   molis_out_table: NA
@@ -13,6 +14,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
 
 ## qPCR Resultate
 Datum (Erstellung Report): `r Sys.Date()`  
+Experiment Run End Time: `r params$end_time`  
 Geräte-nr.: `r params$cycler_nr`
 
 ```{r}

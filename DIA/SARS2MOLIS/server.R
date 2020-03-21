@@ -65,6 +65,15 @@ shinyServer(function(input, output, session) {
             pull(`...2`)
     })
     
+    end_time_out <- reactive({
+        pcr_file = input$pcr_file$datapath
+        
+        read_excel(pcr_file, col_names = FALSE) %>%
+            select(`...1`, `...2`) %>%
+            filter(`...1` == "Experiment Run End Time") %>%
+            pull(`...2`)
+    })
+    
     
     
     ### target selection and threshold by target
@@ -261,7 +270,8 @@ shinyServer(function(input, output, session) {
             tempReport <- file.path(tempdir(), "report.Rmd")
             file.copy("report.Rmd", tempReport, overwrite = TRUE)
             
-            params <- list(cycler_nr = cycler_nr_out(),
+            params <- list(end_time = end_time_out(),
+                           cycler_nr = cycler_nr_out(),
                            plot = plot_out(),
                            molis_out_table = molis_out())
             
