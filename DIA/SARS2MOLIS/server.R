@@ -366,7 +366,7 @@ shinyServer(function(input, output, session) {
                    MS2_ct = `MS-2`,
                    SARS_ct = `CoV Wuhan E`) %>%
             mutate(valid = if_else(GAPDH_ct < 26 & MS2_ct < 36 & !is.na(GAPDH_ct) & !is.na(MS2_ct), true = "yes", false = "no"),
-                   result = if_else(SARS_ct < 40 & !is.na(SARS_ct), true = "p", false = "n"))
+                   result = if_else(SARS_ct < 40 & !is.na(SARS_ct), true = "pos", false = "n"))
         # results() %>%
         # group_by(sample_name, target) %>%
         # mutate(mean = mean(as.numeric(ct))) %>%
