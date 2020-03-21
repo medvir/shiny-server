@@ -15,7 +15,7 @@ shinyServer(function(input, output, session) {
     ### function to determine if result is valid or not
     is_valid <- function(sample_name, SARS_ct, GAPDH_ct, MS2_ct) {
         
-        SARS_threshold <- 40
+        SARS_threshold <- 39
         GAPDH_threshold <- 30
         MS2_threshold <- 37
         
@@ -28,10 +28,8 @@ shinyServer(function(input, output, session) {
                  & MS2_ct < MS2_threshold) ~ TRUE,
             
             # for all positive control samples
-            (sample_name == input$dna_pos_control | sample_name == input$rna_pos_control
-                & SARS_ct < SARS_threshold
-                & is.na(GAPDH_ct)
-                & is.na(MS2_ct)) ~ TRUE,
+            ((sample_name == input$dna_pos_control | sample_name == input$rna_pos_control)
+                & SARS_ct < SARS_threshold) ~ TRUE,
         
             # for all samples with a nr. as samplename
             (!is.na(as.numeric(sample_name))
@@ -211,7 +209,7 @@ shinyServer(function(input, output, session) {
                    MS2_ct = `MS-2`,
                    SARS_ct = `CoV Wuhan E`) %>%
             mutate(valid = if_else(is_valid(sample_name, SARS_ct, GAPDH_ct, MS2_ct), true = "yes", false = "no"),
-                   result = if_else(SARS_ct < 40 & !is.na(SARS_ct), true = "pos", false = "n"))
+                   result = if_else(SARS_ct < 39 & !is.na(SARS_ct), true = "pos", false = "n"))
     })
     
     
