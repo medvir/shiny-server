@@ -15,36 +15,29 @@ shinyServer(function(input, output, session) {
         pcr_file = input$pcr_file$datapath
 
         print(pcr_file)
-        
-        cycler = as.character(read_excel(pcr_file) %>% unlist)
-        ### QuantStudio
-        if ("278870036" %in% cycler | "272322000" %in% cycler | "278880634" %in% cycler) { 
-            first_row_amp = match("Well", read_excel(pcr_file, sheet = "Amplification Data") %>% pull('Block Type'))
-            amp = read_excel(pcr_file, sheet = "Amplification Data", skip = first_row_amp) %>%
-                rename(well = "Well") %>%
-                rename(cycle = "Cycle") %>%
-                rename(target = "Target Name") %>%
-                rename(delta_Rn = "Delta Rn") %>%
-                select(well, cycle, target, Rn, delta_Rn)
+
+        first_row_amp = match("Well", read_excel(pcr_file, sheet = "Amplification Data") %>% pull('Block Type'))
+        amp = read_excel(pcr_file, sheet = "Amplification Data", skip = first_row_amp) %>%
+            rename(well = "Well") %>%
+            rename(cycle = "Cycle") %>%
+            rename(target = "Target Name") %>%
+            rename(delta_Rn = "Delta Rn") %>%
+            select(well, cycle, target, Rn, delta_Rn)
             
-            first_row_res = match("Well", read_excel(pcr_file, sheet = "Results") %>% pull('Block Type'))
-            res = read_excel(pcr_file, sheet = "Results", skip = first_row_res) %>%
-                rename(well = "Well") %>%
-                rename(well_pos = "Well Position") %>%
-                rename(target = "Target Name") %>%
-                rename(sample_name = "Sample Name") %>%
-                rename(ct_export = "CT") %>%
-                rename(threshold = "Ct Threshold") %>%
-                group_by(sample_name, target) %>%
-                mutate(replicate = row_number()) %>%
-                mutate(sample_name_replicate = paste0(sample_name, "_", replicate)) %>%
-                select(well, well_pos, target, sample_name, ct_export, threshold, replicate, sample_name_replicate) 
-            
-        } else {
-            print("cycler not recognized")
-            quit()
-        }
+        first_row_res = match("Well", read_excel(pcr_file, sheet = "Results") %>% pull('Block Type'))
         
+        res = read_excel(pcr_file, sheet = "Results", skip = first_row_res) %>%
+            rename(well = "Well") %>%
+            rename(well_pos = "Well Position") %>%
+            rename(target = "Target Name") %>%
+            rename(sample_name = "Sample Name") %>%
+            rename(ct_export = "CT") %>%
+            rename(threshold = "Ct Threshold") %>%
+            group_by(sample_name, target) %>%
+            mutate(replicate = row_number()) %>%
+            mutate(sample_name_replicate = paste0(sample_name, "_", replicate)) %>%
+            select(well, well_pos, target, sample_name, ct_export, threshold, replicate, sample_name_replicate) 
+
         left_join(res, amp, by = c("well", "target"))
     })
     
