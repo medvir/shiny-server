@@ -109,16 +109,9 @@ shinyServer(function(input, output, session) {
     })
 
 
-    ### results
-    results <- reactive({
-        raw_data() %>%
-            group_by(sample_name, target) %>%
-            sample_n(1) %>%
-            ungroup()
-    })
-
-    ### run plot
-    output$run_plot <- renderPlot({
+    
+    ### plot
+    plot <- reactive({
         if (input$lin_log == "log") {
             target_data() %>%
                 ggplot(aes(x = cycle, y = (log10(delta_Rn)), color = sample_name, group = well_pos)) +
@@ -151,9 +144,31 @@ shinyServer(function(input, output, session) {
         }
     })
     
-
+    
+    ### show plot
+    output$run_plot <- renderPlot({
+        plot()
+    })
+    
+    ### table
+    table <- reactive({
+        raw_data() %>%
+            group_by(sample_name, target) %>%
+            sample_n(1) %>%
+            ungroup() %>%
+            select(sample_name, target, ct_export) %>%
+            mutate(ct_export = round(as.numeric(ct_export), digits = 1)) %>%
+            pivot_wider(names_from = target, values_from = ct_export) %>%
+            arrange(sample_name) %>%
+            rename(GAPDH_ct = GAPDH,
+                   MS2_ct = `MS-2`,
+                   SARS_ct = `CoV Wuhan E`) %>%
+            mutate(valid = if_else(GAPDH_ct < 26 & MS2_ct < 36 & !is.na(GAPDH_ct) & !is.na(MS2_ct), true = "yes", false = "no"),
+                   result = if_else(SARS_ct < 40 & !is.na(SARS_ct), true = "pos", false = "n"))
+    })
     
     
+    ### show table
     output$results <- DT::renderDataTable(
         filter = "none",
         rownames = FALSE,
@@ -168,72 +183,24 @@ shinyServer(function(input, output, session) {
                                         Shiny.onInputChange("hoverIndexJS", hover_index);
                                         });
                         }')
-        ),
-        {
-            results() %>%
-                #select(sample_name, replicate, well_pos, target, ct_export, p1, p2, p3, p4, ct, ct_mean, interpretation)
-                select(sample_name, target, ct_export) %>%
-                mutate(ct_export = round(as.numeric(ct_export), digits = 1)) %>%
-                pivot_wider(names_from = target, values_from = ct_export) %>%
-                arrange(sample_name) %>%
-                rename(GAPDH_ct = GAPDH,
-                       MS2_ct = `MS-2`,
-                       SARS_ct = `CoV Wuhan E`) %>%
-                mutate(valid = if_else(GAPDH_ct < 26 & MS2_ct < 36 & !is.na(GAPDH_ct) & !is.na(MS2_ct), true = "yes", false = "no"),
-                       result = if_else(SARS_ct < 40 & !is.na(SARS_ct), true = "pos", false = "n"))
-
-        })
+                       ), {
+                           table()
+                           }
+        )
 
     
     
     ### Export
     molis_out <- reactive({
-        results() %>%
-            select(sample_name, target, ct_export) %>%
-            mutate(ct_export = round(as.numeric(ct_export), digits = 1)) %>%
-            pivot_wider(names_from = target, values_from = ct_export) %>%
-            arrange(sample_name) %>%
-            rename(GAPDH_ct = GAPDH,
-                   MS2_ct = `MS-2`,
-                   SARS_ct = `CoV Wuhan E`) %>%
-            mutate(valid = if_else(GAPDH_ct < 26 & MS2_ct < 36 & !is.na(GAPDH_ct) & !is.na(MS2_ct), true = "yes", false = "no"),
-                   result = if_else(SARS_ct < 40 & !is.na(SARS_ct), true = "pos", false = "n"))
-    })
+        table()
+        })
     
     plot_out <- reactive({
-        if (input$lin_log == "log") {
-            target_data() %>%
-                ggplot(aes(x = cycle, y = (log10(delta_Rn)), color = sample_name, group = well_pos)) +
-                geom_line(size = .75) +
-                geom_hline(yintercept = log10(input$threshold), size = 0.5, linetype="dashed") +
-                geom_hline(yintercept = log10(input$min_delta_Rn), size = 0.5, linetype="dashed") +
-                geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
-                geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
-                xlim(0, 50) +
-                ylab("log10 delta Rn") +
-                xlab("cycles") +
-                panel_border() +
-                background_grid(major = "xy", minor = "xy") +
-                theme(legend.title=element_blank())
-        } else {
-            target_data() %>%
-                ggplot(aes(x = cycle, y = delta_Rn, color = sample_name, group = well_pos)) +
-                geom_line(size = .75) +
-                geom_hline(yintercept = input$threshold, size = 0.5, linetype="dashed") +
-                geom_hline(yintercept = input$min_delta_Rn, size = 0.5, linetype="dashed") +
-                geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
-                geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
-                ylim(-0.1, NA) +
-                xlim(0, 50) +
-                ylab("delta Rn") +
-                xlab("cycles") +
-                panel_border() +
-                background_grid(major = "xy", minor = "xy") +
-                theme(legend.title=element_blank())
-        }
-    })
+        plot()
+        })
     
     
+    ### Download
     output$molis_export <- downloadHandler(
         filename = function() {
             paste0("molis-", Sys.Date(), ".txt")
@@ -246,7 +213,7 @@ shinyServer(function(input, output, session) {
                         row.names = FALSE,
                         eol = "\r\n",
                         append = FALSE)
-    })
+            })
     
     output$pdf_export <- downloadHandler(
         
