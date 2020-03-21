@@ -12,13 +12,18 @@ params:
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
 ```
 
-## qPCR Resultate
-Datum (Erstellung Report): `r Sys.Date()`  
+```{r instrument}
+# convert cycler_nr to cycler_type (both vectors have to be in the same order)
+cycler_nr <- c("278870036", "278870051", "278880633", "278880634")
+cycler_type <- c("QS7-rechts", "QS7-links", "ViiA-7-rechts", "ViiA-7-links")
+
+cycler_i <- match(params$cycler_nr, cycler_nr)
+```
+
 Experiment Run End Time: `r params$end_time`  
-Geräte-nr.: `r params$cycler_nr`
+Instrument: `r cycler_type[cycler_i]` (`r params$cycler_nr`)
 
-```{r}
-
+```{r table}
 # leaves cells with NA blank instead of printing NA
 options(knitr.kable.NA = "")
 
@@ -28,7 +33,6 @@ knitr::kable(params$molis_out_table)
 \newpage
 
 
-
-```{r, fig.height = 11, fig.width = 8}
+```{r plot, fig.height = 11, fig.width = 8}
 params$plot
 ```
