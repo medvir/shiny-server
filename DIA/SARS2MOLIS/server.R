@@ -7,69 +7,13 @@ library(readxl)
 library(cowplot)
 library(DT)
 
-# # # # # # #
-# FUNCTIONS #
-# # # # # # #
-
-# curve_fit <- function(x,y) {
-#     #sigmoidal dose response with variable slope
-#     nls(y ~ p1 + (p2-p1)/(1 + 10^((p3-x)*p4)), start = list(p1 = 0, p2 = max(y), p3 = 30, p4 = 0.2))
-#     
-#     # 7 parameter Knobel
-#     # p1 = O? (1)
-#     # p2 = Baseline Drift (0)
-#     # p3 = Saturation Line (-4.5)
-#     # p4 = Exponential Slope (0.04)
-#     # p5 = Growth Infliction (30)
-#     # p6 = Saturation Slope (-0.4)
-#     # p7 = Saturation Infliction (38)
-#     
-#     #nls(y ~ p1 * (1 + p2*x + (p3 / ((1 + exp(-p4 * (x - p5)))*(1 + exp(-p6 * (x - p7)))))),
-#     #start = list(p1 = 0, p2 = 0.5, p3 = -4.5, p4 = 0.04, p5 = 30, p6 = -0.4, p7 = 38),
-#     #start = list(p1 = 0.98, p2 = 0.4, p3 = -4.6, p4 = 0.04, p5 = 30, p6 = -0.49, p7 = 38), #works for 405266
-#     #start = list(p1 = 0.9, p2 = 0.4, p3 = -4.6, p4 = 0.04, p5 = 30, p6 = -0.49, p7 = 38),
-#     #lower = c( 0, -1, -6, 0,  0, -1,  0),
-#     #upper = c( 2,  1,  0, 1, 50,  0, 50),
-#     #control = list(maxiter = 10000))
-# }
-
-
-# # # # # # # # #
-# Shiny Server  #
-# # # # # # # # #
 
 shinyServer(function(input, output, session) {
-    
-    ### file selection
-    
-    # available_folders = c("/Volumes/Home$/Repositories/shiny-server/DIA/PCR2MOLIS/data/",
-    #                       "/Volumes/huber.michael/Repositories/shiny-server/DIA/PCR2MOLIS/data/",
-    #                       "/Volumes/Diagnostic/")
-    # 
-    # output$folder_selection <- renderUI({
-    #     selectInput("folder", "Folder", choices = available_folders, selected = available_folders[1], selectize = FALSE)
-    # })
-    # 
-    # available_files <- reactive({
-    #     list.files(input$folder, pattern = ".xls")
-    # })
-    # 
-    # output$file_selection <- renderUI({
-    #     selectInput("pcr_file", "File", choices = available_files(), selected = available_files()[1], selectize = FALSE)
-    # })
-    
-    
+
     ### read raw data from different cyclers, join amp and res data sheets
     raw_data <- reactive({
-    #     if (is.null( input$pcr_file_upload)) {
-    #         pcr_file = paste0(input$folder, input$pcr_file)
-    #     } else {
-    #         pcr_file = input$pcr_file_upload$datapath
-    #     }
-        
-    
-    pcr_file = input$pcr_file$datapath
-    
+        pcr_file = input$pcr_file$datapath
+
         print(pcr_file)
         
         cycler = as.character(read_excel(pcr_file) %>% unlist)
@@ -101,7 +45,7 @@ shinyServer(function(input, output, session) {
             quit()
         }
         
-        left_join(res, amp, by = c('well', 'target'))
+        left_join(res, amp, by = c("well", "target"))
     })
     
     
@@ -164,117 +108,15 @@ shinyServer(function(input, output, session) {
      numericInput("min_delta_Rn", "Minimal delta Rn", value = 2, step = 0.1)
     })
 
-    
 
-    ### curve fit
-    # fit_data = reactive({
-    #     fit_data = data.frame()
-    #     for (i in available_sample_name_replicates()) {
-    #         df = target_data() %>%
-    #             filter(sample_name_replicate == i)
-    #         try = class(try(curve_fit(df$cycle, df$delta_Rn)))
-    #         if (try == "nls") { 
-    #             fit = curve_fit(df$cycle, df$delta_Rn)
-    #             print(fit)
-    #             fit_data = rbind(fit_data, data.frame(sample_name_replicate = i,
-    #                                       p1 = round(summary(fit)$coefficients[1,1],3),
-    #                                       p2 = round(summary(fit)$coefficients[2,1],3),
-    #                                       p3 = round(summary(fit)$coefficients[3,1],1),
-    #                                       p4 = round(summary(fit)$coefficients[4,1],3),
-    #                                       #p5 = round(summary(fit)$coefficients[5,1],3),
-    #                                       #p6 = round(summary(fit)$coefficients[6,1],3),
-    #                                       #p7 = round(summary(fit)$coefficients[7,1],3),
-    #                                       ct = round(approx(x = fitted.values(fit), y = df$cycle, xout = input$threshold)$y, 1)
-    #                                       ))
-    #         } 
-    #     }
-    #     return(fit_data)
-    # })
-    
-    
     ### results
     results <- reactive({
         raw_data() %>%
             group_by(sample_name, target) %>%
             sample_n(1) %>%
             ungroup()
-        #target_data() %>%
-            #left_join(. , fit_data(), by = "sample_name_replicate") %>%
-            #group_by(sample_name, well_pos) %>%
-            #sample_n(1) %>%
-            #group_by(sample_name) %>%
-            #mutate(ct_mean = mean(ct)) %>%
-            #mutate(interpretation = case_when(
-            #    ct <= input$max_ct & p2 >= input$min_delta_Rn ~ "positive",
-            #    TRUE ~" negative"
-            #    )) %>%
-            #ungroup()
     })
-    
-    
-    ### plot curve fit
-    # output$curve <- renderPlot({
-    # 
-    #     dat = target_data() %>%
-    #         filter(sample_name == input$samples_selected)
-    #     
-    #     dat1 = dat %>% filter(replicate == 1)
-    #     try1 = class(try(curve_fit(dat1$cycle, dat1$delta_Rn)))
-    #     if (try1 == "nls") {
-    #         fit = curve_fit(dat1$cycle, dat1$delta_Rn)
-    #         df_fit_1 = data.frame(delta_Rn_pred = predict(fit, dat), cycle = dat$cycle)
-    #     }
-    # 
-    #     dat2 = dat %>% filter(replicate == 2)
-    #     try2 = class(try(curve_fit(dat2$cycle, dat2$delta_Rn)))
-    #     if (try2 == "nls") {
-    #         fit = curve_fit(dat2$cycle, dat2$delta_Rn)
-    #         df_fit_2 = data.frame(delta_Rn_pred = predict(fit, dat), cycle = dat$cycle)
-    #     }
-    # 
-    #     if (input$lin_log == "lin") {
-    #         p = ggplot(dat, aes(x = dat$cycle, y = dat$delta_Rn, color = as.factor(replicate))) + 
-    #             geom_point() +
-    #             geom_hline(yintercept = input$threshold, size = 0.5, linetype="dashed") +
-    #             geom_hline(yintercept = input$min_delta_Rn, size = 0.5, linetype="dashed") +
-    #             geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
-    #             ylab("delta Rn") +
-    #             xlab("cycles") +
-    #             panel_border() +
-    #             background_grid(major = "xy", minor = "xy") +
-    #             theme(legend.title=element_blank())
-    #         if (try1 == "nls") {
-    #             p = p +
-    #                 geom_line(color = "red", data = df_fit_1, aes(y = delta_Rn_pred, x = cycle))
-    #         }
-    #         if (try2 == "nls") {
-    #             p = p +
-    #                 geom_line(color = "red", data = df_fit_2, aes(y = delta_Rn_pred, x = cycle))
-    #         }
-    #     } else {
-    #         p = ggplot(dat, aes(x = dat$cycle, y = log10(dat$delta_Rn), color = as.factor(replicate))) + 
-    #             geom_point() +
-    #             geom_hline(yintercept = log10(input$threshold), size = 0.5, linetype="dashed") +
-    #             geom_hline(yintercept = log10(input$min_delta_Rn), size = 0.5, linetype="dashed") +
-    #             geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
-    #             ylab("log10 delta Rn") +
-    #             xlab("cycles") +
-    #             panel_border() +
-    #             background_grid(major = "xy", minor = "xy") +
-    #             theme(legend.title=element_blank())
-    #         if (try1 == "nls") {
-    #             p = p +
-    #                 geom_line(color = "red", data = df_fit_1, aes(y = log10(delta_Rn_pred), x = cycle))
-    #         }
-    #         if (try2 == "nls") {
-    #             p = p +
-    #                 geom_line(color = "red", data = df_fit_2, aes(y = log10(delta_Rn_pred), x = cycle))
-    #         }
-    #     }
-    #     p
-    # })
-    
-    
+
     ### run plot
     output$run_plot <- renderPlot({
         if (input$lin_log == "log") {
@@ -309,13 +151,7 @@ shinyServer(function(input, output, session) {
         }
     })
     
-    
-    ### table
-    # output$fit_data_table <- renderTable({
-    #     results() %>%
-    #         filter(sample_name == input$samples_selected) %>%
-    #         select(replicate, ct_export, p1, p2, p3, p4, ct)
-    # })
+
     
     
     output$results <- DT::renderDataTable(
@@ -348,16 +184,11 @@ shinyServer(function(input, output, session) {
 
         })
 
-    # samples_selected <- reactive({
-    #     results()[input$hoverIndexJS + 1, ] %>%
-    #         pull(sample_name) 
-    # }) 
     
     
     ### Export
     molis_out <- reactive({
         results() %>%
-            #select(sample_name, replicate, well_pos, target, ct_export, p1, p2, p3, p4, ct, ct_mean, interpretation)
             select(sample_name, target, ct_export) %>%
             mutate(ct_export = round(as.numeric(ct_export), digits = 1)) %>%
             pivot_wider(names_from = target, values_from = ct_export) %>%
@@ -367,11 +198,6 @@ shinyServer(function(input, output, session) {
                    SARS_ct = `CoV Wuhan E`) %>%
             mutate(valid = if_else(GAPDH_ct < 26 & MS2_ct < 36 & !is.na(GAPDH_ct) & !is.na(MS2_ct), true = "yes", false = "no"),
                    result = if_else(SARS_ct < 40 & !is.na(SARS_ct), true = "pos", false = "n"))
-        # results() %>%
-        # group_by(sample_name, target) %>%
-        # mutate(mean = mean(as.numeric(ct))) %>%
-        # sample_n(1) %>%
-        # select(sample_name, target, mean, interpretation)
     })
     
     plot_out <- reactive({
@@ -407,10 +233,6 @@ shinyServer(function(input, output, session) {
         }
     })
     
-    molis_min <- reactive({
-        molis_out() %>%
-            min(sample_name)
-    })
     
     output$molis_export <- downloadHandler(
         filename = function() {
@@ -428,7 +250,7 @@ shinyServer(function(input, output, session) {
     
     output$pdf_export <- downloadHandler(
         
-        filename = "test.pdf",
+        filename = "report.pdf",
         
         content = function(file) {
             tempReport <- file.path(tempdir(), "report.Rmd")
@@ -438,27 +260,9 @@ shinyServer(function(input, output, session) {
                            molis_out_table = molis_out())
             
             rmarkdown::render(tempReport, output_file = file,
-                             params = params,
-                             envir = new.env(parent = globalenv()))
-        }
-    )
-    
-    # output$report <- downloadHandler(
-    #     filename = function() {
-    #         paste0(substr(input$chosen_sample[1], 1, 13), ".pdf")
-    #     },
-    #     content = function(file) {
-    #         tempReport <- file.path(tempdir(), "report.Rmd")
-    #         file.copy("RunReport.Rmd", tempReport, overwrite = TRUE)
-    #         
-    #         params <- list(orgs_file = input$orgs_file$datapath,
-    #                        reads_file = input$reads_file$datapath,
-    #                        sample_name = input$chosen_sample,
-    #                        rows_selected = input$table_species_rows_selected)
-    #         
-    #         rmarkdown::render(tempReport, output_file = file,
-    #                           params = params,
-    #                           envir = new.env(parent = globalenv()))
-    #     })
+                              params = params,
+                              envir = new.env(parent = globalenv())
+                              )
+            })
 
 })
