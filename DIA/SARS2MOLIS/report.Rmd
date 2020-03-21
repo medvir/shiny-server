@@ -10,7 +10,7 @@ params:
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
 ```
 
-```{r}
+```{r, fig.height = 11, fig.width = 8}
 params$plot
 ```
 
