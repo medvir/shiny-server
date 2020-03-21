@@ -108,7 +108,7 @@ shinyServer(function(input, output, session) {
         if (input$lin_log == "log") {
             target_data() %>%
                 ggplot(aes(x = cycle, y = (log10(delta_Rn)), color = sample_name, group = well_pos)) +
-                geom_line(size = .75) +
+                geom_line(size = .75, show.legend = FALSE) +
                 geom_hline(yintercept = log10(input$threshold), size = 0.5, linetype="dashed") +
                 geom_hline(yintercept = log10(input$min_delta_Rn), size = 0.5, linetype="dashed") +
                 geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
@@ -118,11 +118,12 @@ shinyServer(function(input, output, session) {
                 xlab("cycles") +
                 panel_border() +
                 background_grid(major = "xy", minor = "xy") +
-                theme(legend.title=element_blank())
+                theme_bw() +
+                facet_wrap(~sample_name, ncol = 4)
         } else {
             target_data() %>%
                 ggplot(aes(x = cycle, y = delta_Rn, color = sample_name, group = well_pos)) +
-                geom_line(size = .75) +
+                geom_line(size = .75, show.legend = FALSE) +
                 geom_hline(yintercept = input$threshold, size = 0.5, linetype="dashed") +
                 geom_hline(yintercept = input$min_delta_Rn, size = 0.5, linetype="dashed") +
                 geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
@@ -133,7 +134,8 @@ shinyServer(function(input, output, session) {
                 xlab("cycles") +
                 panel_border() +
                 background_grid(major = "xy", minor = "xy") +
-                theme(legend.title=element_blank())
+                theme_bw() +
+                facet_wrap(~sample_name, ncol = 4)
         }
     })
     
@@ -141,7 +143,7 @@ shinyServer(function(input, output, session) {
     ### show plot
     output$run_plot <- renderPlot({
         plot()
-    })
+    }, height = 1400, width = 1000)
     
     ### table
     table <- reactive({
