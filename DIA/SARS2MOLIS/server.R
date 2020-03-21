@@ -8,14 +8,29 @@ library(cowplot)
 library(DT)
 
 
+is_valid <- function(sample_name, GAPDH_ct, MS2_ct) {
+    
+    GAPDH_threshold <- 26
+    MS2_threshold <- 36
+    
+    valid <- (!is.na(as.numeric(sample_name)) &
+                  GAPDH_ct < GAPDH_threshold &
+                  MS2_ct < MS2_threshold &
+                  !is.na(GAPDH_ct) &
+                  !is.na(MS2_ct))
+    
+    return(valid)
+}
+
+
+
+
 shinyServer(function(input, output, session) {
 
     ### read raw data from different cyclers, join amp and res data sheets
     raw_data <- reactive({
         pcr_file = input$pcr_file$datapath
-
-        print(pcr_file)
-
+        
         first_row_amp = match("Well", read_excel(pcr_file, sheet = "Amplification Data") %>% pull('Block Type'))
         amp = read_excel(pcr_file, sheet = "Amplification Data", skip = first_row_amp) %>%
             rename(well = "Well") %>%
@@ -41,6 +56,14 @@ shinyServer(function(input, output, session) {
         left_join(res, amp, by = c("well", "target"))
     })
     
+    cycler_nr_out <- reactive({
+        pcr_file = input$pcr_file$datapath
+        
+        read_excel(pcr_file, col_names = FALSE) %>%
+            select(`...1`, `...2`) %>%
+            filter(`...1` == "Instrument Serial Number") %>%
+            pull(`...2`)
+    })
     
     
     
@@ -158,7 +181,7 @@ shinyServer(function(input, output, session) {
             rename(GAPDH_ct = GAPDH,
                    MS2_ct = `MS-2`,
                    SARS_ct = `CoV Wuhan E`) %>%
-            mutate(valid = if_else(GAPDH_ct < 26 & MS2_ct < 36 & !is.na(GAPDH_ct) & !is.na(MS2_ct), true = "yes", false = "no"),
+            mutate(valid = if_else(is_valid(sample_name, GAPDH_ct, MS2_ct), true = "yes", false = "no"),
                    result = if_else(SARS_ct < 40 & !is.na(SARS_ct), true = "pos", false = "n"))
     })
     
@@ -238,7 +261,8 @@ shinyServer(function(input, output, session) {
             tempReport <- file.path(tempdir(), "report.Rmd")
             file.copy("report.Rmd", tempReport, overwrite = TRUE)
             
-            params <- list(plot = plot_out(),
+            params <- list(cycler_nr = cycler_nr_out(),
+                           plot = plot_out(),
                            molis_out_table = molis_out())
             
             rmarkdown::render(tempReport, output_file = file,
