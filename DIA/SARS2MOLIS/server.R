@@ -26,7 +26,7 @@ shinyServer(function(input, output, session) {
                  & MS2_ct < MS2_threshold) ~ TRUE,
             
             # for all positive control samples
-            ((sample_name == input$dna_pos_control | sample_name == input$rna_pos_control)
+            ((sample_name == input$dna_pos_control | sample_name == input$rna_pos_control | sample_name == input$run_control)
                 & SARS_ct < SARS_threshold) ~ TRUE,
         
             # for all samples with a nr. as samplename
