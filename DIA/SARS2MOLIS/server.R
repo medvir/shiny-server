@@ -7,18 +7,16 @@ library(readxl)
 library(cowplot)
 library(DT)
 
-
+### Thresholds
+SARS_threshold <- 39
+GAPDH_threshold <- 30
+MS2_threshold <- 37
 
 
 shinyServer(function(input, output, session) {
     
     ### function to determine if result is valid or not
     is_valid <- function(sample_name, SARS_ct, GAPDH_ct, MS2_ct) {
-        
-        SARS_threshold <- 39
-        GAPDH_threshold <- 30
-        MS2_threshold <- 37
-        
         case_when(
             
             # for all negative control samples
@@ -41,7 +39,6 @@ shinyServer(function(input, output, session) {
             # for all other cases return is_valid() = FALSE
             TRUE ~ FALSE
         )
-
     }
     
 
@@ -58,7 +55,6 @@ shinyServer(function(input, output, session) {
             select(well, cycle, target, Rn, delta_Rn)
             
         first_row_res = match("Well", read_excel(pcr_file, sheet = "Results") %>% pull('Block Type'))
-        
         res = read_excel(pcr_file, sheet = "Results", skip = first_row_res) %>%
             rename(well = "Well") %>%
             rename(well_pos = "Well Position") %>%
@@ -102,6 +98,7 @@ shinyServer(function(input, output, session) {
     })
     
     output$target_selection <- renderUI({
+        req(input$pcr_file)
         radioButtons("selected_target", "Targets", choices = available_targets(), selected = available_targets()[1])
     })
     
@@ -109,24 +106,6 @@ shinyServer(function(input, output, session) {
         raw_data() %>%
             filter(target == input$selected_target)
     })
-    
-
-    ### samples
-    available_samples <- reactive({
-        target_data() %>%
-            pull(sample_name) %>%
-            unique()})
-    
-    available_sample_name_replicates <- reactive({
-        target_data() %>%
-            pull(sample_name_replicate) %>%
-            unique()})
-    
-    
-    output$sample_selection <- renderUI({
-        selectInput("samples_selected", "Samples", choices = available_samples(), selected = available_samples()[1], selectize = FALSE)
-    })
-    
     
     ### Parameter selection
     output$lin_log_selection <- renderUI({
@@ -140,27 +119,22 @@ shinyServer(function(input, output, session) {
     })
     
     output$threshold_selection <- renderUI({
+        req(input$pcr_file)
         numericInput("threshold", "Threshold", value = suggested_threshold(), step = 0.01)
     })
     
     output$max_ct_selection <- renderUI({
-        numericInput("max_ct", "Minimal Ct", value = 39, step = 1)
-    })
-    
-    output$min_delta_Rn_selection <- renderUI({
-     numericInput("min_delta_Rn", "Minimal delta Rn", value = 2, step = 0.1)
+        numericInput("max_ct", "Maximal Ct", value = SARS_threshold, step = 1)
     })
 
-
-    
     ### plot
     plot <- reactive({
+        req(input$pcr_file)
         if (input$lin_log == "log") {
             target_data() %>%
                 ggplot(aes(x = cycle, y = (log10(delta_Rn)), color = sample_name, group = well_pos)) +
                 geom_line(size = .75, show.legend = FALSE) +
                 geom_hline(yintercept = log10(input$threshold), size = 0.5, linetype="dashed") +
-                geom_hline(yintercept = log10(input$min_delta_Rn), size = 0.5, linetype="dashed") +
                 geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
                 geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
                 xlim(0, 50) +
@@ -168,14 +142,13 @@ shinyServer(function(input, output, session) {
                 xlab("cycles") +
                 panel_border() +
                 background_grid(major = "xy", minor = "xy") +
-                theme_bw() +
-                facet_wrap(~sample_name, ncol = 4)
+                theme_bw() #+
+                #facet_wrap(~sample_name, ncol = 4)
         } else {
             target_data() %>%
                 ggplot(aes(x = cycle, y = delta_Rn, color = sample_name, group = well_pos)) +
                 geom_line(size = .75, show.legend = FALSE) +
                 geom_hline(yintercept = input$threshold, size = 0.5, linetype="dashed") +
-                geom_hline(yintercept = input$min_delta_Rn, size = 0.5, linetype="dashed") +
                 geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
                 geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
                 ylim(-0.1, NA) +
@@ -184,8 +157,8 @@ shinyServer(function(input, output, session) {
                 xlab("cycles") +
                 panel_border() +
                 background_grid(major = "xy", minor = "xy") +
-                theme_bw() +
-                facet_wrap(~sample_name, ncol = 4)
+                theme_bw() #+
+                #facet_wrap(~sample_name, ncol = 4)
         }
     })
     
@@ -193,10 +166,13 @@ shinyServer(function(input, output, session) {
     ### show plot
     output$run_plot <- renderPlot({
         plot()
-    }, height = 1400, width = 1000)
+    }
+    #, height = 1400, width = 1000
+    )
     
     ### table
     table <- reactive({
+        req(input$pcr_file)
         raw_data() %>%
             group_by(sample_name, target) %>%
             sample_n(1) %>%
@@ -209,7 +185,8 @@ shinyServer(function(input, output, session) {
                    MS2_ct = `MS-2`,
                    SARS_ct = `CoV Wuhan E`) %>%
             mutate(valid = if_else(is_valid(sample_name, SARS_ct, GAPDH_ct, MS2_ct), true = "yes", false = "no"),
-                   result = if_else(SARS_ct < 39 & !is.na(SARS_ct), true = "pos", false = "n"))
+                   result = if_else(SARS_ct < 39 & !is.na(SARS_ct), true = "pos", false = "n")) %>%
+            mutate(result = if_else(valid == "yes", result, ""))
     })
     
     
@@ -258,7 +235,7 @@ shinyServer(function(input, output, session) {
     })
 
     plot_out <- reactive({
-        plot()
+        plot() + facet_wrap(~sample_name, ncol = 4)
     })
     
     ### Download
