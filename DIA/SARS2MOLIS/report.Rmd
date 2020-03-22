@@ -21,9 +21,7 @@ cycler_i <- match(params$cycler_nr, cycler_nr)
 ```
 
 Experiment Run End Time: `r params$end_time`  
-Instrument: `r cycler_type[cycler_i]` (`r params$cycler_nr`)  
-Eingabe:  
-Kontrolle:  
+Instrument: `r cycler_type[cycler_i]` (`r params$cycler_nr`)
 
 ```{r table}
 # leaves cells with NA blank instead of printing NA

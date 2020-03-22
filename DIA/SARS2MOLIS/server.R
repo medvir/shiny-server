@@ -7,12 +7,12 @@ library(readxl)
 library(cowplot)
 library(DT)
 
-### Thresholds
+### SETTINGS
 SARS_threshold <- 39
 GAPDH_threshold <- 30
 MS2_threshold <- 37
 
-
+###
 shinyServer(function(input, output, session) {
     
     ### function to determine if result is valid or not
@@ -20,14 +20,14 @@ shinyServer(function(input, output, session) {
         case_when(
             
             # for all negative control samples
-            (sample_name == input$neg_control
+            (sample_name %in% input$neg_control
                  & is.na(SARS_ct)
                  & is.na(GAPDH_ct)
                  & MS2_ct < MS2_threshold) ~ TRUE,
             
             # for all positive control samples
-            ((sample_name == input$dna_pos_control | sample_name == input$rna_pos_control | sample_name == input$run_control)
-                & SARS_ct < SARS_threshold) ~ TRUE,
+            (sample_name %in% input$pos_control
+                & SARS_ct < input$max_ct_SARS) ~ TRUE,
         
             # for all samples with a nr. as samplename
             (!is.na(as.numeric(sample_name))
@@ -109,22 +109,15 @@ shinyServer(function(input, output, session) {
     
     ### Parameter selection
     output$lin_log_selection <- renderUI({
-        radioButtons("lin_log", "Lin/Log", choiceNames = c("logarithmic", "linear"), choiceValues = c("log", "lin"), selected = "log")
+        radioButtons("lin_log", "Log/Lin", choiceNames = c("logarithmic", "linear"), choiceValues = c("log", "lin"), selected = "log")
     })
     
-    suggested_threshold <- reactive({
-        target_data() %>%
-            pull(threshold) %>%
-            unique()
-    })
-    
-    output$threshold_selection <- renderUI({
-        req(input$pcr_file)
-        numericInput("threshold", "Threshold", value = suggested_threshold(), step = 0.01)
+    target_threshold <- reactive({
+        target_data() %>% pull(threshold) %>% unique()
     })
     
     output$max_ct_selection <- renderUI({
-        numericInput("max_ct", "Maximal Ct", value = SARS_threshold, step = 1)
+        numericInput("max_ct_SARS", "Maximal Ct SARS", value = SARS_threshold, step = 1, min = 30, max = 45)
     })
 
     ### plot
@@ -134,22 +127,21 @@ shinyServer(function(input, output, session) {
             target_data() %>%
                 ggplot(aes(x = cycle, y = (log10(delta_Rn)), color = sample_name, group = well_pos)) +
                 geom_line(size = .75, show.legend = FALSE) +
-                geom_hline(yintercept = log10(input$threshold), size = 0.5, linetype="dashed") +
-                geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
+                geom_hline(yintercept = log10(target_threshold()), size = 0.5, linetype="dashed") +
+                geom_vline(xintercept = input$max_ct_SARS, size = 0.5, linetype="dashed") +
                 geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
                 xlim(0, 50) +
                 ylab("log10 delta Rn") +
                 xlab("cycles") +
                 panel_border() +
                 background_grid(major = "xy", minor = "xy") +
-                theme_bw() #+
-                #facet_wrap(~sample_name, ncol = 4)
+                theme_bw() #+ facet_wrap(~sample_name, ncol = 4)
         } else {
             target_data() %>%
                 ggplot(aes(x = cycle, y = delta_Rn, color = sample_name, group = well_pos)) +
                 geom_line(size = .75, show.legend = FALSE) +
-                geom_hline(yintercept = input$threshold, size = 0.5, linetype="dashed") +
-                geom_vline(xintercept = input$max_ct, size = 0.5, linetype="dashed") +
+                geom_hline(yintercept = target_threshold(), size = 0.5, linetype="dashed") +
+                geom_vline(xintercept = input$max_ct_SARS, size = 0.5, linetype="dashed") +
                 geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
                 ylim(-0.1, NA) +
                 xlim(0, 50) +
@@ -157,8 +149,7 @@ shinyServer(function(input, output, session) {
                 xlab("cycles") +
                 panel_border() +
                 background_grid(major = "xy", minor = "xy") +
-                theme_bw() #+
-                #facet_wrap(~sample_name, ncol = 4)
+                theme_bw() #+ facet_wrap(~sample_name, ncol = 4)
         }
     })
     
@@ -169,6 +160,7 @@ shinyServer(function(input, output, session) {
     }
     #, height = 1400, width = 1000
     )
+    
     
     ### table
     table <- reactive({
@@ -186,9 +178,17 @@ shinyServer(function(input, output, session) {
                    SARS_ct = `CoV Wuhan E`) %>%
             mutate(valid = if_else(is_valid(sample_name, SARS_ct, GAPDH_ct, MS2_ct), true = "yes", false = "no")) %>%
             mutate(result = case_when(
-                SARS_ct < 39 & !is.na(SARS_ct) & valid == "yes" ~ "pos",
-                SARS_ct >= 39 & !is.na(SARS_ct) & valid == "yes" ~ "gw",
+                
+                # valid samples ct < input$max_ct_SARS
+                SARS_ct < input$max_ct_SARS & !is.na(SARS_ct) & valid == "yes" ~ "pos",
+                
+                # valid samples ct >= input$max_ct_SARS
+                SARS_ct >= input$max_ct_SARS & !is.na(SARS_ct) & valid == "yes" ~ "gw",
+                
+                # valid samples ct undetermined
                 is.na(SARS_ct) & valid == "yes" ~ "n",
+                
+                # invalid samples
                 TRUE ~ ""))
     })
     
@@ -199,7 +199,7 @@ shinyServer(function(input, output, session) {
         rownames = FALSE,
         options = list(pageLength = 100,
                        ordering = FALSE,
-                       autoWidth = FALSE,
+                       autoWidth = TRUE,
                        dom = 't',
                        rowCallback = JS('function(row, data) {
                                         $(row).mouseenter(function(){
@@ -211,7 +211,6 @@ shinyServer(function(input, output, session) {
          ), {table()}
     )
 
-    
     
     ### Export
     molis_out <- reactive({
