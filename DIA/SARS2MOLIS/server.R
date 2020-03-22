@@ -184,9 +184,12 @@ shinyServer(function(input, output, session) {
             rename(GAPDH_ct = GAPDH,
                    MS2_ct = `MS-2`,
                    SARS_ct = `CoV Wuhan E`) %>%
-            mutate(valid = if_else(is_valid(sample_name, SARS_ct, GAPDH_ct, MS2_ct), true = "yes", false = "no"),
-                   result = if_else(SARS_ct < 39 & !is.na(SARS_ct), true = "pos", false = "n")) %>%
-            mutate(result = if_else(valid == "yes", result, ""))
+            mutate(valid = if_else(is_valid(sample_name, SARS_ct, GAPDH_ct, MS2_ct), true = "yes", false = "no")) %>%
+            mutate(result = case_when(
+                SARS_ct < 39 & !is.na(SARS_ct) & valid == "yes" ~ "pos",
+                SARS_ct >= 39 & !is.na(SARS_ct) & valid == "yes" ~ "gw",
+                is.na(SARS_ct) & valid == "yes" ~ "n",
+                TRUE ~ ""))
     })
     
     
