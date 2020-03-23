@@ -270,6 +270,7 @@ shinyServer(function(input, output, session) {
             params <- list(end_time = end_time_out(),
                            cycler_nr = cycler_nr_out(),
                            plot = plot_out(),
+                           raw_data = raw_data(),
                            molis_out_table = molis_out())
             
             rmarkdown::render(tempReport, output_file = file,
