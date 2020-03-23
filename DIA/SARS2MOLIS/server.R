@@ -10,7 +10,7 @@ library(DT)
 ### SETTINGS
 SARS_threshold <- 39
 GAPDH_threshold <- 30
-MS2_threshold <- 37
+MS2_threshold <- 40
 
 ###
 shinyServer(function(input, output, session) {
