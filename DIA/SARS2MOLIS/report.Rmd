@@ -55,7 +55,7 @@ params$raw_data %>%
   ggplot(aes(x = row, y = column, label = sample_name, color = target)) +
   geom_text() +
   coord_flip() +
-  scale_color_manual(values = c("#E69F00", "#009E73")) +
+  #scale_color_manual(values = c("#E69F00", "#009E73")) +
   scale_y_continuous(limits = c(1, 12), breaks = c(1:12), minor_breaks = NULL) +
   theme_light() +
   theme(legend.position = "top",
@@ -64,3 +64,25 @@ params$raw_data %>%
 
 ```
 
+------
+
+```{r plate_ct, fig.width = 8}
+params$raw_data %>%
+  group_by(sample_name, target) %>%
+  sample_n(1) %>%
+  ungroup() %>%
+  mutate(row = str_sub(well_pos, 1, 1),
+         row = fct_relevel(row, c("H", "G", "F", "E", "D", "C", "B", "A")),
+         column = as.numeric(str_sub(well_pos, 2))) %>%
+  ggplot(aes(x = row, y = column, shape = target)) +
+  geom_point(aes(fill = as.numeric(ct_export)), size = 4) +
+  coord_flip() +
+  scale_y_continuous(limits = c(1, 12), breaks = c(1:12), minor_breaks = NULL) +
+  scale_shape_manual(values = c(21, 24, 25)) +
+  scale_fill_gradient(low = "brown3", high = "white", na.value = "grey", limits = c(NA, 45)) +
+  theme_light() +
+  theme(legend.position = "top",
+        legend.title = element_blank()) +
+  labs(x = NULL, y = NULL)
+
+```
