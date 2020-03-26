@@ -267,7 +267,8 @@ shinyServer(function(input, output, session) {
             tempReport <- file.path(tempdir(), "report.Rmd")
             file.copy("report.Rmd", tempReport, overwrite = TRUE)
             
-            params <- list(end_time = end_time_out(),
+            params <- list(filename = input$pcr_file$name,
+                           end_time = end_time_out(),
                            cycler_nr = cycler_nr_out(),
                            plot = plot_out(),
                            raw_data = raw_data(),
