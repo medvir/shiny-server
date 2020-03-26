@@ -268,7 +268,10 @@ shinyServer(function(input, output, session) {
     output$pdf_export <- downloadHandler(
         
         filename = function() {
-            paste0(molis_min(), "_to_", molis_max(), ".pdf")
+            from_molis <- if_else(molis_min() < 1000000000, true = molis_min()+1000000000, false = molis_min())
+            to_molis <- if_else(molis_max() < 1000000000, true = molis_max()+1000000000, false = molis_max())
+            
+            paste0(from_molis, "_to_", to_molis, ".pdf")
         },
         
         content = function(file) {
