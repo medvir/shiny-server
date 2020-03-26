@@ -10,27 +10,35 @@ library(DT)
 ### SETTINGS
 SARS_threshold <- 39
 GAPDH_threshold <- 30
-MS2_threshold <- 40
+
+# MS2 range will now be defined by +/- 2s of mean
+#MS2_threshold <- 40
 
 ###
 shinyServer(function(input, output, session) {
     
     ### function to determine if result is valid or not
-    is_valid <- function(sample_name, SARS_ct, MS2_ct) {
+    is_valid <- function(sample_name, SARS_ct, MS2_ct, MS2_mean, MS2_sd) {
+        # define lower and upper threshold of MS2_ct
+        MS2_lower <- MS2_mean - (2*MS2_sd)
+        MS2_upper <- MS2_mean + (2*MS2_sd)
+        
         case_when(
             
             # for all negative control samples
             (sample_name %in% input$neg_control
              & is.na(SARS_ct)
-             & MS2_ct < MS2_threshold) ~ TRUE,
+             & MS2_ct > MS2_lower
+             & MS2_ct < MS2_upper) ~ TRUE,
             
             # for all positive control samples
             (sample_name %in% input$pos_control
              & SARS_ct < input$max_ct_SARS) ~ TRUE,
         
             # for all other samples
-             (MS2_ct < MS2_threshold
-             & !is.na(MS2_ct)) ~ TRUE,
+             (MS2_ct > MS2_lower
+              & MS2_ct < MS2_upper
+              & !is.na(MS2_ct)) ~ TRUE,
         
             # for all other cases return is_valid() = FALSE
             TRUE ~ FALSE
@@ -183,7 +191,7 @@ shinyServer(function(input, output, session) {
             rename(GAPDH_ct = GAPDH,
                    MS2_ct = `MS-2`,
                    SARS_ct = `CoV Wuhan E`) %>%
-            mutate(valid = if_else(is_valid(sample_name, SARS_ct, MS2_ct), true = "yes", false = "no")) %>%
+            mutate(valid = if_else(is_valid(sample_name, SARS_ct, MS2_ct, mean(MS2_ct, na.rm = TRUE), sd(MS2_ct, na.rm = TRUE)), true = "yes", false = "no")) %>%
             mutate(result = case_when(
                 
                 # valid samples ct < input$max_ct_SARS
@@ -283,7 +291,9 @@ shinyServer(function(input, output, session) {
                            cycler_nr = cycler_nr_out(),
                            plot = plot_out(),
                            raw_data = raw_data(),
-                           molis_out_table = molis_out())
+                           molis_out_table = molis_out(),
+                           MS2_mean = round(mean(table()$MS2_ct, na.rm = TRUE), digits = 1),
+                           MS2_sd = round(sd(table()$MS2_ct, na.rm = TRUE), digits = 3))
             
             rmarkdown::render(tempReport, output_file = file,
                               params = params,

@@ -8,9 +8,12 @@ params:
   plot: NA
   raw_data: NA
   molis_out_table: NA
+  MS2_mean: NA
+  MS2_sd: NA
 header-includes:
   - \usepackage{lastpage}
   - \usepackage{fancyhdr}
+  - \usepackage{booktabs}
   - \pagestyle{fancy}
 ---
 
@@ -18,6 +21,8 @@ header-includes:
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
 
 library(tidyverse)
+library(knitr)
+library(kableExtra)
 ```
 
 ```{r prepare_filename}
@@ -27,7 +32,7 @@ library(tidyverse)
 filename_header <- str_replace_all(params$filename, "_", "\\\\_")
 ```
 
-\fancyhead[CO,CE]{`r filename_header`}
+\fancyhead[CO,C]{`r filename_header`}
 \cfoot{\thepage\ of \pageref{LastPage}}
 
 ```{r instrument}
@@ -45,8 +50,22 @@ Instrument: `r cycler_type[cycler_i]` (`r params$cycler_nr`)
 # leaves cells with NA blank instead of printing NA
 options(knitr.kable.NA = "")
 
-knitr::kable(params$molis_out_table)
+molis_out_table <- params$molis_out_table
+
+# column names can't contain underscores when working with footnotes
+names(molis_out_table) <- str_replace_all(names(molis_out_table), "_", "-")
+names(molis_out_table)[4] <- paste0(names(molis_out_table)[4],
+                                    footnote_marker_symbol(1))
+
+pos_res <- which(molis_out_table$result == "pos" | molis_out_table$result == "gw")
+
+molis_out_table %>%
+  kable(booktabs = TRUE, linesep = "", escape = FALSE) %>%
+  kable_styling(full_width = FALSE, latex_options = "hold_position") %>%
+  row_spec(pos_res, bold = TRUE) %>%
+  footnote(symbol = paste0("mean = ", params$MS2_mean, ", sd = ", params$MS2_sd))
 ```
+
 
 \newpage
 
