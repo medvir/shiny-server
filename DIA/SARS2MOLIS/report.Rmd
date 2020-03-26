@@ -2,16 +2,32 @@
 title: ""
 output: pdf_document
 params:
+  filename: NA
   end_time: NA
   cycler_nr: NA
   plot: NA
   raw_data: NA
   molis_out_table: NA
+header-includes:
+  - \usepackage{lastpage}
+  - \usepackage{fancyhdr}
+  - \pagestyle{fancy}
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
+
+library(tidyverse)
 ```
+
+```{r prepare_filename}
+# replace _ of filename with \_ to prevent latex from entering the math mode
+# see https://xkcd.com/1638/ and https://github.com/STAT545-UBC/Discussion/issues/394
+filename_header <- str_replace_all(params$filename, "_", "\\\\_")
+```
+
+\fancyhead[CO,CE]{`r filename_header`}
+\cfoot{\thepage\ of \pageref{LastPage}}
 
 ```{r instrument}
 # convert cycler_nr to cycler_type (both vectors have to be in the same order)
