@@ -16,28 +16,35 @@ MS2_threshold <- 40
 shinyServer(function(input, output, session) {
     
     ### function to determine if result is valid or not
-    is_valid <- function(sample_name, SARS_ct, GAPDH_ct, MS2_ct) {
+    is_valid <- function(sample_name, SARS_ct, MS2_ct) {
         case_when(
             
             # for all negative control samples
             (sample_name %in% input$neg_control
-                 & is.na(SARS_ct)
-                 & is.na(GAPDH_ct)
-                 & MS2_ct < MS2_threshold) ~ TRUE,
+             & is.na(SARS_ct)
+             & MS2_ct < MS2_threshold) ~ TRUE,
             
             # for all positive control samples
             (sample_name %in% input$pos_control
-                & SARS_ct < input$max_ct_SARS) ~ TRUE,
+             & SARS_ct < input$max_ct_SARS) ~ TRUE,
         
-            # for all samples with a nr. as samplename
-            (!is.na(as.numeric(sample_name))
-                 & GAPDH_ct < GAPDH_threshold
-                 & MS2_ct < MS2_threshold
-                 & !is.na(GAPDH_ct)
-                 & !is.na(MS2_ct)) ~ TRUE,
+            # for all other samples
+             (MS2_ct < MS2_threshold
+             & !is.na(MS2_ct)) ~ TRUE,
         
             # for all other cases return is_valid() = FALSE
             TRUE ~ FALSE
+        )
+    }
+    
+    ### function to determine if GAPDH FLAG or not
+    GAPDH_flag <- function(sample_name, GAPDH_ct) {
+        case_when(
+            (!(sample_name %in% input$neg_control)
+             & !(sample_name %in% input$pos_control)
+             & (GAPDH_ct > GAPDH_threshold | is.na(GAPDH_ct))) ~ "GAPDH flag",
+            
+            TRUE ~ NA_character_
         )
     }
     
@@ -176,7 +183,7 @@ shinyServer(function(input, output, session) {
             rename(GAPDH_ct = GAPDH,
                    MS2_ct = `MS-2`,
                    SARS_ct = `CoV Wuhan E`) %>%
-            mutate(valid = if_else(is_valid(sample_name, SARS_ct, GAPDH_ct, MS2_ct), true = "yes", false = "no")) %>%
+            mutate(valid = if_else(is_valid(sample_name, SARS_ct, MS2_ct), true = "yes", false = "no")) %>%
             mutate(result = case_when(
                 
                 # valid samples ct < input$max_ct_SARS
@@ -189,7 +196,8 @@ shinyServer(function(input, output, session) {
                 is.na(SARS_ct) & valid == "yes" ~ "n",
                 
                 # invalid samples
-                TRUE ~ ""))
+                TRUE ~ "")) %>%
+            mutate(flag = GAPDH_flag(sample_name, GAPDH_ct))
     })
     
     
