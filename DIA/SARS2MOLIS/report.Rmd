@@ -23,6 +23,7 @@ library(tidyverse)
 ```{r prepare_filename}
 # replace _ of filename with \_ to prevent latex from entering the math mode
 # see https://xkcd.com/1638/ and https://github.com/STAT545-UBC/Discussion/issues/394
+# CAUTION some symbols (e.g "--") might still be formatted differently
 filename_header <- str_replace_all(params$filename, "_", "\\\\_")
 ```
 
