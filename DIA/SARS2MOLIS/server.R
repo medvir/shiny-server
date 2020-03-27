@@ -16,46 +16,30 @@ GAPDH_threshold <- 30
 
 ###
 shinyServer(function(input, output, session) {
-    
-    ### function to determine if result is valid or not
-    is_valid <- function(sample_name, SARS_ct, MS2_ct, MS2_mean, MS2_sd) {
-        # define lower and upper threshold of MS2_ct
+
+
+    ### function to determine if flag or not, output doesn't differentiate between GAPDH and MS2 flag
+    flag <- function(sample_name, MS2_ct, MS2_mean, MS2_sd, GAPDH_ct) {
+        
         MS2_lower <- MS2_mean - (2*MS2_sd)
         MS2_upper <- MS2_mean + (2*MS2_sd)
         
         case_when(
             
-            # for all negative control samples
-            (sample_name %in% input$neg_control
-             & is.na(SARS_ct)
-             & MS2_ct > MS2_lower
-             & MS2_ct < MS2_upper) ~ TRUE,
-            
-            # for all positive control samples
-            (sample_name %in% input$pos_control
-             & SARS_ct < input$max_ct_SARS) ~ TRUE,
-        
-            # for all other samples
-             (MS2_ct > MS2_lower
-              & MS2_ct < MS2_upper
-              & !is.na(MS2_ct)) ~ TRUE,
-        
-            # for all other cases return is_valid() = FALSE
-            TRUE ~ FALSE
-        )
-    }
-    
-    ### function to determine if GAPDH FLAG or not
-    GAPDH_flag <- function(sample_name, GAPDH_ct) {
-        case_when(
+            # GAPDH flag
             (!(sample_name %in% input$neg_control)
              & !(sample_name %in% input$pos_control)
-             & (GAPDH_ct > GAPDH_threshold | is.na(GAPDH_ct))) ~ "GAPDH flag",
+             & (GAPDH_ct > GAPDH_threshold | is.na(GAPDH_ct))) ~ "flag",
+            
+            # MS2 flag
+            (!(sample_name %in% input$neg_control)
+             & !(sample_name %in% input$pos_control)
+             & (MS2_ct < MS2_lower | MS2_ct > MS2_upper | is.na(MS2_ct))) ~ "flag",
             
             TRUE ~ NA_character_
         )
     }
-    
+
 
     ### read raw data from different cyclers, join amp and res data sheets
     raw_data <- reactive({
@@ -191,21 +175,21 @@ shinyServer(function(input, output, session) {
             rename(GAPDH_ct = GAPDH,
                    MS2_ct = `MS-2`,
                    SARS_ct = `CoV Wuhan E`) %>%
-            mutate(valid = if_else(is_valid(sample_name, SARS_ct, MS2_ct, mean(MS2_ct, na.rm = TRUE), sd(MS2_ct, na.rm = TRUE)), true = "yes", false = "no")) %>%
             mutate(result = case_when(
                 
-                # valid samples ct < input$max_ct_SARS
-                SARS_ct < input$max_ct_SARS & !is.na(SARS_ct) & valid == "yes" ~ "pos",
+                # samples ct < input$max_ct_SARS
+                SARS_ct < input$max_ct_SARS & !is.na(SARS_ct) == TRUE ~ "pos",
                 
-                # valid samples ct >= input$max_ct_SARS
-                SARS_ct >= input$max_ct_SARS & !is.na(SARS_ct) & valid == "yes" ~ "gw",
+                # samples ct >= input$max_ct_SARS
+                SARS_ct >= input$max_ct_SARS & !is.na(SARS_ct) == TRUE ~ "gw",
                 
-                # valid samples ct undetermined
-                is.na(SARS_ct) & valid == "yes" ~ "n",
+                # samples ct undetermined
+                is.na(SARS_ct) == TRUE ~ "n",
                 
                 # invalid samples
                 TRUE ~ "")) %>%
-            mutate(flag = GAPDH_flag(sample_name, GAPDH_ct))
+            
+            mutate(flag = flag(sample_name, MS2_ct, mean(MS2_ct, na.rm = TRUE), sd(MS2_ct, na.rm = TRUE), GAPDH_ct))
     })
     
     
