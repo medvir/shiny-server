@@ -6,8 +6,6 @@ library(stringr)
 library(readxl)
 library(cowplot)
 library(DT)
-library(tinytex)
-library(kableExtra)
 
 ### SETTINGS
 SARS_threshold <- 39
