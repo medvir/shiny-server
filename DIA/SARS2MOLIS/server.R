@@ -26,15 +26,21 @@ shinyServer(function(input, output, session) {
         
         case_when(
             
+            # GAPDH and MS2 flag
+            (!(sample_name %in% input$neg_control)
+             & !(sample_name %in% input$pos_control)
+             & (GAPDH_ct > GAPDH_threshold | is.na(GAPDH_ct))
+             & (MS2_ct > MS2_upper | is.na(MS2_ct))) ~ "GAPDH and MS2 ct high", # only warning for ct higher mean + 2s
+            
             # GAPDH flag
             (!(sample_name %in% input$neg_control)
              & !(sample_name %in% input$pos_control)
-             & (GAPDH_ct > GAPDH_threshold | is.na(GAPDH_ct))) ~ "flag",
+             & (GAPDH_ct > GAPDH_threshold | is.na(GAPDH_ct))) ~ "GAPDH ct high",
             
             # MS2 flag
             (!(sample_name %in% input$neg_control)
              & !(sample_name %in% input$pos_control)
-             & (MS2_ct < MS2_lower | MS2_ct > MS2_upper | is.na(MS2_ct))) ~ "flag",
+             & (MS2_ct > MS2_upper | is.na(MS2_ct))) ~ "MS2 ct high", # only warning for ct higher mean + 2s
             
             TRUE ~ NA_character_
         )
@@ -88,7 +94,6 @@ shinyServer(function(input, output, session) {
     })
     
     
-    
     ### target selection and threshold by target
     available_targets <- reactive({
         raw_data() %>%
@@ -130,6 +135,7 @@ shinyServer(function(input, output, session) {
                 geom_vline(xintercept = input$max_ct_SARS, size = 0.5, linetype="dashed") +
                 geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
                 xlim(0, 50) +
+                ylim(3, NA) +
                 ylab("log10 delta Rn") +
                 xlab("cycles") +
                 panel_border() +
@@ -211,7 +217,6 @@ shinyServer(function(input, output, session) {
          ), {table()}
     )
 
-    
     ### Export
     molis_out <- reactive({
         table()
