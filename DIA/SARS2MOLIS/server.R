@@ -134,7 +134,7 @@ shinyServer(function(input, output, session) {
                 geom_hline(yintercept = log10(target_threshold()), size = 0.5, linetype="dashed") +
                 geom_vline(xintercept = input$max_ct_SARS, size = 0.5, linetype="dashed") +
                 geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
-                xlim(0, 50) +
+                xlim(0, 45) +
                 ylim(3, NA) +
                 ylab("log10 delta Rn") +
                 xlab("cycles") +
@@ -149,7 +149,7 @@ shinyServer(function(input, output, session) {
                 geom_vline(xintercept = input$max_ct_SARS, size = 0.5, linetype="dashed") +
                 geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
                 ylim(-0.1, NA) +
-                xlim(0, 50) +
+                xlim(0, 45) +
                 ylab("delta Rn") +
                 xlab("cycles") +
                 panel_border() +
