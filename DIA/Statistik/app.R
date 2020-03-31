@@ -1,3 +1,5 @@
+# Statistik
+
 library(shiny)
 library(tidyverse)
 library(readxl)
@@ -13,7 +15,7 @@ ui <- fluidPage(
         titlePanel("Diagnostik Statistik"),
         sidebarLayout(
                 sidebarPanel(
-                        fileInput("molis_file", "MOLIS Export", accept = c(".xls", ".xlsx", ".csv")),
+                        fileInput("molis_file", "MOLIS Export [xls, xlsx oder csv]", accept = c(".xls", ".xlsx", ".csv")),
                         h1(),
                         plotOutput(outputId = "Summary"),
                         h5(),
@@ -75,7 +77,8 @@ server <- function(input, output) {
                         mutate(Total = n()) %>%
                         sample_n(1) %>%
                         ungroup() %>%
-                        select(-Einsender, -Code, -Arbeitsbereich, -Unterbereich, -Weitere_Unterteilung)
+                        arrange(Pathogen) %>%
+                        select(Pathogen, Analyse, Total)
         })
         
         

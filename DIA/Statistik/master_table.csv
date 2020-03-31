@@ -14,7 +14,7 @@ CMV,IgG quant. (ELISA) (Vidas),Serologie,Antikoerpernachweis,ELISA/CMIA,C19PSD
 CMV,IgG qual. (Liquor) / quant. (Se/Li-Index) (ELISA) (DSX),Serologie,Antikoerpernachweis,ELISA/CMIA,C19OSE
 CMV,IgG Aviditaet (ELISA) (Vidas),Serologie,Antikoerpernachweis,ELISA/CMIA,C19QS
 CMV,IgM qual. (ELISA) (Vidas),Serologie,Antikoerpernachweis,ELISA/CMIA,C19RS
-CMV,IgM-Bestaetigung qual. (µ-capture ELISA) (Evolis),Serologie,Antikoerpernachweis,ELISA/CMIA,C19RT
+CMV,IgM-Bestaetigung qual. (Âµ-capture ELISA) (Evolis),Serologie,Antikoerpernachweis,ELISA/CMIA,C19RT
 Dengueviren,Antigennachweis (ELISA) (DSX),Serologie,Antigennachweis,ELISA/CMIA,D01BQ
 Dengueviren,IgG qual. (ELISA) (DSX),Serologie,Antikoerpernachweis,ELISA/CMIA,D01PS
 Dengueviren,IgG-Bestaetigung qual. (IF),Serologie,Antikoerpernachweis,Immunfluoreszenz (IF),D01OR
@@ -94,7 +94,7 @@ HSV-1/2,Antigennachweis HSV-1 (IF),Virologie,Antigennachweis,Immunfluoreszenz (I
 HSV-1/2,Antigennachweis HSV-2 (IF),Virologie,Antigennachweis,Immunfluoreszenz (IF),H05BDA
 HSV-1/2,HSV-1 DNA Genomnachweis qual. (PCR),PCR-basierte Analytik,Genomnachweis mittels (RT-)PCR,,H04DK
 HSV-1/2,HSV-2 DNA Genomnachweis qual. (PCR),PCR-basierte Analytik,Genomnachweis mittels (RT-)PCR,,H05DK
-HSV-1/2,IgG HSV-1&2 qual. (ELISA) (DSX),Serologie,Antikoerpernachweis,ELISA/CMIA,H03PS
+HSV-1/2,IgG HSV-1&2 quant. (ELISA) (DSX),Serologie,Antikoerpernachweis,ELISA/CMIA,H03PS
 HSV-1/2,IgG HSV-1&2 qual. (Liquor) / quant. (S/L-Index) (DSX),Serologie,Antikoerpernachweis,ELISA/CMIA,H03OS
 HSV-1/2,IgG HSV-1 quant. (ELISA) (DSX),Serologie,Antikoerpernachweis,ELISA/CMIA,H04PS
 HSV-1/2,IgG HSV-2 quant. (ELISA) (DSX),Serologie,Antikoerpernachweis,ELISA/CMIA,H05PS
@@ -121,7 +121,7 @@ Mumps,Virusisolierung mittels Kurzkultur,Virologie,Virusisolierung in Kurzkultur
 Mumps,Antigennachweis (IF),Virologie,Antigennachweis,Immunfluoreszenz (IF),M02BDA
 Mumps,IgG qual. (ELISA) (Vidas),Serologie,Antikoerpernachweis,ELISA/CMIA,M02OS
 Mumps,IgG qual. (Liquor) / quant. (S/L-Index) (ELISA) (DSX),Serologie,Antikoerpernachweis,ELISA/CMIA,M02OSE
-Mumps,"IgM qual (ELISA), Bestaetigung (Handtest)",Serologie,Antikoerpernachweis,ELISA/CMIA,M02RR
+Mumps,IgM qual (ELISA), Bestaetigung (Handtest),Serologie,Antikoerpernachweis,ELISA/CMIA,M02RR
 Mumps,IgM qual. (ELISA),Serologie,Antikoerpernachweis,ELISA/CMIA,M02RS
 Noroviren,RNA-Nachweis qual. (RT-PCR),PCR-basierte Analytik,Genomnachweis mittels (RT-)PCR,,N01FK
 Parainfluenza,Virusisolierung auf Zellkulturen,Virologie,Virusisolierung in Langkultur,,P01AA
@@ -131,7 +131,7 @@ Parainfluenza,Antigennachweis Parainfluenza 2 (IF),Virologie,Antigennachweis,Imm
 Parainfluenza,Antigennachweis Parainfluenza 3 (IF),Virologie,Antigennachweis,Immunfluoreszenz (IF),P04BDA
 Parvovirus B19,DNA-Nachweis qual. (PCR),PCR-basierte Analytik,Genomnachweis mittels (RT-)PCR,,P08DK
 Parvovirus B19,IgG qual. (ELISA) (Handtest),Serologie,Antikoerpernachweis,ELISA/CMIA,P08OS
-Parvovirus B20,IgM qual. (ELISA) (Handtest),Serologie,Antikoerpernachweis,ELISA/CMIA,P08RS
+Parvovirus B19,IgM qual. (ELISA) (Handtest),Serologie,Antikoerpernachweis,ELISA/CMIA,P08RS
 Polioviren,Virusisolierung auf Zellkulturen,Virologie,Virusisolierung in Langkultur,,P09AA
 Polioviren,Antigennachweis (IF),Virologie,Antigennachweis,Immunfluoreszenz (IF),P10BDA
 Polioviren,Neutralisierende Antikoerper Polio 1/3,Serologie,Antikoerpernachweis,Neutralisationstest (NT),P11BDA
@@ -158,19 +158,19 @@ Roeteln,IgG quant. (ELISA) (Vidas),Serologie,Antikoerpernachweis,ELISA/CMIA,R08P
 Roeteln,IgG quant. (CMIA) (Architect),Serologie,Antikoerpernachweis,ELISA/CMIA,R08PST
 Roeteln,IgG Aviditaet (ELISA) (Vidas),Serologie,Antikoerpernachweis,ELISA/CMIA,R08QS
 Roeteln,IgM qual. (ELISA) (Architect),Serologie,Antikoerpernachweis,ELISA/CMIA,R08RST
-Roeteln,IgM Bestaetigung qual. (µ-capture ELISA),Serologie,Antikoerpernachweis,ELISA/CMIA,R08RSD
+Roeteln,IgM Bestaetigung qual. (Âµ-capture ELISA),Serologie,Antikoerpernachweis,ELISA/CMIA,R08RSD
 Toxoplasma gondii,IgG quant. (CMIA) (Architect),Serologie,Antikoerpernachweis,ELISA/CMIA,T01PST
 Toxoplasma gondii,IgG quant. (ELISA) (Vidas),Serologie,Antikoerpernachweis,ELISA/CMIA,T01PSD
 Toxoplasma gondii,IgG Aviditaet quant. (ELISA) (Vidas),Serologie,Antikoerpernachweis,ELISA/CMIA,T01QS
 Toxoplasma gondii,IgM qual. (CMIA) (Architect),Serologie,Antikoerpernachweis,ELISA/CMIA,T01RST
-Toxoplasma gondii,IgM Bestaetigung (µ-capture ELISA),Serologie,Antikoerpernachweis,ELISA/CMIA,T01RT
+Toxoplasma gondii,IgM Bestaetigung (Âµ-capture ELISA),Serologie,Antikoerpernachweis,ELISA/CMIA,T01RT
 Toxoplasma gondii,IgA qual. (ELISA) (Handtest),Serologie,Antikoerpernachweis,ELISA/CMIA,T01SS
 VZV,Virusisolierung auf Zellkulturen,Virologie,Virusisolierung in Langkultur,,V01AA
 VZV,Virusisolierung mittels Kurzkultur,Virologie,Virusisolierung in Kurzkultur (shell vial culture),,V01AB
 VZV,Antigennachweis (IF),Virologie,Antigennachweis,Immunfluoreszenz (IF),V01BDA
 VZV,DNA-Nachweis qual. (PCR),PCR-basierte Analytik,Genomnachweis mittels (RT-)PCR,,V01DK
 VZV,DNA-Nachweis quan. (PCR),PCR-basierte Analytik,Genomnachweis mittels (RT-)PCR,,V01EK
-VZV,IgG qual. (ELISA) (DSX),Serologie,Antikoerpernachweis,ELISA/CMIA,V01OSE
+VZV,IgG quant. (ELISA) (DSX),Serologie,Antikoerpernachweis,ELISA/CMIA,V01OSE
 VZV,IgG qual. (Liquor) / quant. (S/L-Index) (ELISA) (DSX),Serologie,Antikoerpernachweis,ELISA/CMIA,V01OSL
 VZV,IgG qual. (IF) (Handtest),Serologie,Antikoerpernachweis,Immunfluoreszenz (IF),V01RO
 VZV,IgM qual. (ELISA) (Evolis),Serologie,Antikoerpernachweis,ELISA/CMIA,V01RS
@@ -179,3 +179,12 @@ Zikavirus,IgG Bestaetigung (IF),Serologie,Antikoerpernachweis,Immunfluoreszenz (
 Zikavirus,IgM qual. (ELISA),Serologie,Antikoerpernachweis,ELISA/CMIA,Z01RS
 Zikavirus,IgM Bestaetigung (IF),Serologie,Antikoerpernachweis,Immunfluoreszenz (IF),Z01RR
 Zikavirus,RNA Nachweis qual. (RT-PCR),PCR-basierte Analytik,Genomnachweis mittels (RT-)PCR,,Z01FK
+Diverse Viren,Metagenomische Sequenzierung,Sequenzbasierte Analytik,Metagenomische Sequenzierung,,VIRMET
+CMV,T-Zell-Immunitaet (ELISPOT),Virologie,ELISPOT,,C19WY1
+Chikungunya,RNA-Nachweis qual. (RT-PCR),PCR-basierte Analytik,Genomnachweis mittels (RT-)PCR,,C01FK
+Chikungunya,IgG qual. (ELISA) (DSX),Serologie,Antikoerpernachweis,ELISA/CMIA,C01OS
+Chikungunya,IgM qual. (ELISA) (DSX),Serologie,Antikoerpernachweis,ELISA/CMIA,C01RS
+FSME,RNA-Nachweis qual. (RT-PCR),PCR-basierte Analytik,Genomnachweis mittels (RT-)PCR,,F01FK
+MERS Coronavirus,RNA-Nachweis qual. (RT-PCR),PCR-basierte Analytik,Genomnachweis mittels (RT-)PCR,,C21FK
+Metapneumovirus,RNA-Nachweis qual. (RT-PCR),PCR-basierte Analytik,Genomnachweis mittels (RT-)PCR,,M03FK
+Noroviren,RNA-Nachweis qual. (RT-PCR) (GeneXpert),PCR-basierte Analytik,Genomnachweis mittels (RT-)PCR,,N01FKP
