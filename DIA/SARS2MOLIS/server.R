@@ -19,12 +19,16 @@ shinyServer(function(input, output, session) {
 
 
     ### function to determine if flag or not, output doesn't differentiate between GAPDH and MS2 flag
-    flag <- function(sample_name, MS2_ct_dbl, MS2_mean, MS2_sd, GAPDH_ct_dbl) {
+    flag <- function(sample_name, MS2_ct_dbl, MS2_mean, MS2_sd, GAPDH_ct_dbl, MS2_ct, GAPDH_ct, SARS_ct) {
         
         MS2_lower <- MS2_mean - (2*MS2_sd)
         MS2_upper <- MS2_mean + (2*MS2_sd)
         
         case_when(
+            # flag if not all targets are present/tested
+            (!(sample_name %in% input$neg_control)
+             & !(sample_name %in% input$pos_control)
+             & (is.na(MS2_ct) | is.na(GAPDH_ct) | is.na(SARS_ct))) ~ "not all targets!",
             
             # GAPDH and MS2 flag
             (!(sample_name %in% input$neg_control)
@@ -199,7 +203,7 @@ shinyServer(function(input, output, session) {
                 # invalid samples
                 TRUE ~ "")) %>%
             
-            mutate(flag = flag(sample_name, MS2_ct_dbl, mean(MS2_ct_dbl, na.rm = TRUE), sd(MS2_ct_dbl, na.rm = TRUE), GAPDH_ct_dbl))
+            mutate(flag = flag(sample_name, MS2_ct_dbl, mean(MS2_ct_dbl, na.rm = TRUE), sd(MS2_ct_dbl, na.rm = TRUE), GAPDH_ct_dbl, MS2_ct, GAPDH_ct, SARS_ct))
     })
     
     
