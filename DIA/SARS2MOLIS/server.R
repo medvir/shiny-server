@@ -175,7 +175,8 @@ shinyServer(function(input, output, session) {
             sample_n(1) %>%
             ungroup() %>%
             select(sample_name, target, ct_export) %>%
-            mutate(ct_export = round(as.numeric(ct_export), digits = 1)) %>%
+            mutate(ct_export = round(as.numeric(ct_export), digits = 1),
+                   ct_export = replace_na(ct_export, "undet.")) %>%
             pivot_wider(names_from = target, values_from = ct_export) %>%
             arrange(sample_name) %>%
             rename(GAPDH_ct = GAPDH,
