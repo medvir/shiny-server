@@ -19,7 +19,7 @@ shinyServer(function(input, output, session) {
 
 
     ### function to determine if flag or not, output doesn't differentiate between GAPDH and MS2 flag
-    flag <- function(sample_name, MS2_ct, MS2_mean, MS2_sd, GAPDH_ct) {
+    flag <- function(sample_name, MS2_ct_dbl, MS2_mean, MS2_sd, GAPDH_ct_dbl) {
         
         MS2_lower <- MS2_mean - (2*MS2_sd)
         MS2_upper <- MS2_mean + (2*MS2_sd)
@@ -29,18 +29,18 @@ shinyServer(function(input, output, session) {
             # GAPDH and MS2 flag
             (!(sample_name %in% input$neg_control)
              & !(sample_name %in% input$pos_control)
-             & (GAPDH_ct > GAPDH_threshold | is.na(GAPDH_ct))
-             & (MS2_ct > MS2_upper | is.na(MS2_ct))) ~ "GAPDH and MS2 ct high", # only warning for ct higher mean + 2s
+             & (GAPDH_ct_dbl > GAPDH_threshold | is.na(GAPDH_ct_dbl))
+             & (MS2_ct_dbl > MS2_upper | is.na(MS2_ct_dbl))) ~ "GAPDH and MS2 ct high", # only warning for ct higher mean + 2s
             
             # GAPDH flag
             (!(sample_name %in% input$neg_control)
              & !(sample_name %in% input$pos_control)
-             & (GAPDH_ct > GAPDH_threshold | is.na(GAPDH_ct))) ~ "GAPDH ct high",
+             & (GAPDH_ct_dbl > GAPDH_threshold | is.na(GAPDH_ct_dbl))) ~ "GAPDH ct high",
             
             # MS2 flag
             (!(sample_name %in% input$neg_control)
              & !(sample_name %in% input$pos_control)
-             & (MS2_ct > MS2_upper | is.na(MS2_ct))) ~ "MS2 ct high", # only warning for ct higher mean + 2s
+             & (MS2_ct_dbl > MS2_upper | is.na(MS2_ct_dbl))) ~ "MS2 ct high", # only warning for ct higher mean + 2s
             
             TRUE ~ NA_character_
         )
@@ -182,21 +182,24 @@ shinyServer(function(input, output, session) {
             rename(GAPDH_ct = GAPDH,
                    MS2_ct = `MS-2`,
                    SARS_ct = `CoV Wuhan E`) %>%
+            mutate(GAPDH_ct_dbl = as.numeric(GAPDH_ct),
+                   MS2_ct_dbl = as.numeric(MS2_ct),
+                   SARS_ct_dbl = as.numeric(SARS_ct)) %>%
             mutate(result = case_when(
                 
                 # samples ct < input$max_ct_SARS
-                SARS_ct < input$max_ct_SARS & !is.na(SARS_ct) == TRUE ~ "pos",
+                SARS_ct_dbl < input$max_ct_SARS & !is.na(SARS_ct_dbl) == TRUE ~ "pos",
                 
                 # samples ct >= input$max_ct_SARS
-                SARS_ct >= input$max_ct_SARS & !is.na(SARS_ct) == TRUE ~ "gw",
+                SARS_ct_dbl >= input$max_ct_SARS & !is.na(SARS_ct_dbl) == TRUE ~ "gw",
                 
                 # samples ct undetermined
-                is.na(SARS_ct) == TRUE ~ "n",
+                is.na(SARS_ct_dbl) == TRUE ~ "n",
                 
                 # invalid samples
                 TRUE ~ "")) %>%
             
-            mutate(flag = flag(sample_name, MS2_ct, mean(MS2_ct, na.rm = TRUE), sd(MS2_ct, na.rm = TRUE), GAPDH_ct))
+            mutate(flag = flag(sample_name, MS2_ct_dbl, mean(MS2_ct_dbl, na.rm = TRUE), sd(MS2_ct_dbl, na.rm = TRUE), GAPDH_ct_dbl))
     })
     
     
@@ -215,12 +218,12 @@ shinyServer(function(input, output, session) {
                                         Shiny.onInputChange("hoverIndexJS", hover_index);
                                         });
                         }')
-         ), {table()}
+         ), {table() %>% select(!ends_with("_dbl"))}
     )
 
     ### Export
     molis_out <- reactive({
-        table()
+        table() %>% select(!ends_with("_dbl"))
     })
     
     molis_min <- reactive({
@@ -282,8 +285,8 @@ shinyServer(function(input, output, session) {
                            plot = plot_out(),
                            raw_data = raw_data(),
                            molis_out_table = molis_out(),
-                           MS2_mean = round(mean(table()$MS2_ct, na.rm = TRUE), digits = 1),
-                           MS2_sd = round(sd(table()$MS2_ct, na.rm = TRUE), digits = 3))
+                           MS2_mean = round(mean(table()$MS2_ct_dbl, na.rm = TRUE), digits = 1),
+                           MS2_sd = round(sd(table()$MS2_ct_dbl, na.rm = TRUE), digits = 3))
             
             rmarkdown::render(tempReport, output_file = file,
                               params = params,
