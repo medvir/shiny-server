@@ -203,7 +203,21 @@ shinyServer(function(input, output, session) {
                 # invalid samples
                 TRUE ~ "")) %>%
             
-            mutate(flag = flag(sample_name, MS2_ct_dbl, mean(MS2_ct_dbl, na.rm = TRUE), sd(MS2_ct_dbl, na.rm = TRUE), GAPDH_ct_dbl, MS2_ct, GAPDH_ct, SARS_ct))
+            mutate(flag = flag(sample_name, MS2_ct_dbl, mean(MS2_ct_dbl, na.rm = TRUE), sd(MS2_ct_dbl, na.rm = TRUE), GAPDH_ct_dbl, MS2_ct, GAPDH_ct, SARS_ct),
+                   
+                   # based on the flag we change the result column
+                   result = case_when(
+                       
+                       # put result in brackets if MS2 and/or GAPDH ct value is too high
+                       str_detect(flag, "ct high") ~ paste0("(", result, ")"),
+                       
+                       # remove result if not all targets are present
+                       str_detect(flag, "not all targets!") ~ "",
+                       
+                       # if no flag is present leave the result as is
+                       is.na(flag) ~ result
+                       )
+                   )
     })
     
     
