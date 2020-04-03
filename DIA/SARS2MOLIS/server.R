@@ -222,12 +222,12 @@ shinyServer(function(input, output, session) {
                                         Shiny.onInputChange("hoverIndexJS", hover_index);
                                         });
                         }')
-         ), {table() %>% select(!ends_with("_dbl"))}
+         ), {table() %>% select(c("sample_name", "SARS_ct", "GAPDH_ct", "MS2_ct", "result", "flag"))}
     )
 
     ### Export
     molis_out <- reactive({
-        table() %>% select(!ends_with("_dbl"))
+        table() %>% select(c("sample_name", "SARS_ct", "GAPDH_ct", "MS2_ct", "result", "flag"))
     })
     
     molis_min <- reactive({
