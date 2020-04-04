@@ -23,8 +23,8 @@ library(knitr)
 
 ```{r instrument}
 # convert cycler_nr to cycler_type (both vectors have to be in the same order)
-cycler_nr <- c("278870036", "278870051", "278880633", "278880634")
-cycler_type <- c("QS7-rechts", "QS7-links", "ViiA-7-rechts", "ViiA-7-links")
+cycler_nr <- c("278870036", "278870051", "278880633", "278880634", "2778720020214")
+cycler_type <- c("QS7-rechts", "QS7-links", "ViiA-7-rechts", "ViiA-7-links", "QS7Pro")
 
 cycler_i <- match(params$cycler_nr, cycler_nr)
 ```
@@ -56,8 +56,8 @@ params$raw_data %>%
   group_by(sample_name, target) %>%
   sample_n(1) %>%
   ungroup() %>%
-  filter(target != "MS-2") %>%
-  mutate(target = ifelse(target == "GAPDH", paste0(target, " / MS-2"), target),
+  filter(target != "MS-2" & target != "MS2") %>%
+  mutate(target = ifelse(target == "GAPDH" | target == "GAP", paste0(target, " / MS-2"), target),
          # if the full molis nr. was entered, only the 6 last letters are extracted
          sample_name = if_else(str_detect(sample_name, "1000"), str_sub(sample_name, -6), sample_name),
          row = str_sub(well_pos, 1, 1),

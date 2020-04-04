@@ -55,22 +55,21 @@ shinyServer(function(input, output, session) {
     raw_data <- reactive({
         pcr_file = input$pcr_file$datapath
         
-        first_row_amp = match("Well", read_excel(pcr_file, sheet = "Amplification Data") %>% pull('Block Type'))
+        first_row_amp = match("Well", read_excel(pcr_file, sheet = "Amplification Data") %>% pull(1))
         amp = read_excel(pcr_file, sheet = "Amplification Data", skip = first_row_amp) %>%
-            rename(well = "Well") %>%
-            rename(cycle = "Cycle") %>%
-            rename(target = "Target Name") %>%
-            rename(delta_Rn = "Delta Rn") %>%
-            select(well, cycle, target, Rn, delta_Rn)
+            select(well = "Well",
+                   cycle = any_of(c("Cycle", "Cycle Number")),
+                   target = any_of(c("Target Name", "Target")),
+                   delta_Rn = any_of(c("Delta Rn", "dRn")))
             
-        first_row_res = match("Well", read_excel(pcr_file, sheet = "Results") %>% pull('Block Type'))
+        first_row_res = match("Well", read_excel(pcr_file, sheet = "Results") %>% pull(1))
         res = read_excel(pcr_file, sheet = "Results", skip = first_row_res) %>%
-            rename(well = "Well") %>%
-            rename(well_pos = "Well Position") %>%
-            rename(target = "Target Name") %>%
-            rename(sample_name = "Sample Name") %>%
-            rename(ct_export = "CT") %>%
-            rename(threshold = "Ct Threshold") %>%
+            rename(well = "Well",
+                   well_pos = "Well Position",
+                   target = any_of(c("Target Name", "Target")),
+                   sample_name = any_of(c("Sample Name", "Sample")),
+                   ct_export = any_of(c("CT", "Cq")),
+                   threshold = any_of(c("Ct Threshold", "Threshold"))) %>% # Not the same values!
             group_by(sample_name, target) %>%
             mutate(replicate = row_number()) %>%
             mutate(sample_name_replicate = paste0(sample_name, "_", replicate)) %>%
@@ -93,7 +92,7 @@ shinyServer(function(input, output, session) {
         
         read_excel(pcr_file, col_names = FALSE) %>%
             select(`...1`, `...2`) %>%
-            filter(`...1` == "Experiment Run End Time") %>%
+            filter(`...1` == "Experiment Run End Time" | `...1` == "Plate Run End Date/Time") %>%
             pull(`...2`)
     })
     
@@ -139,7 +138,7 @@ shinyServer(function(input, output, session) {
                 geom_vline(xintercept = input$max_ct_SARS, size = 0.5, linetype="dashed") +
                 geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
                 xlim(0, 45) +
-                ylim(3, NA) +
+                #ylim(3, NA) +
                 ylab("log10 delta Rn") +
                 xlab("cycles") +
                 panel_border() +
@@ -152,7 +151,7 @@ shinyServer(function(input, output, session) {
                 geom_hline(yintercept = target_threshold(), size = 0.5, linetype="dashed") +
                 geom_vline(xintercept = input$max_ct_SARS, size = 0.5, linetype="dashed") +
                 geom_text(aes(label = ifelse(cycle == 50, as.character(sample_name), "")), hjust = -.1, vjust = -.1, size = 3, show.legend = FALSE) +
-                ylim(-0.1, NA) +
+                #ylim(-0.1, NA) +
                 xlim(0, 45) +
                 ylab("delta Rn") +
                 xlab("cycles") +
@@ -183,9 +182,9 @@ shinyServer(function(input, output, session) {
                    ct_export = replace_na(ct_export, "undet.")) %>%
             pivot_wider(names_from = target, values_from = ct_export) %>%
             arrange(sample_name) %>%
-            rename(GAPDH_ct = GAPDH,
-                   MS2_ct = `MS-2`,
-                   SARS_ct = `CoV Wuhan E`) %>%
+            rename(GAPDH_ct = any_of(c("GAPDH", "GAP")),
+                   MS2_ct = any_of(c("MS-2", "MS2")),
+                   SARS_ct = any_of(c("CoV Wuhan E", "Cov-19 Wuhan"))) %>%
             mutate(GAPDH_ct_dbl = as.numeric(GAPDH_ct),
                    MS2_ct_dbl = as.numeric(MS2_ct),
                    SARS_ct_dbl = as.numeric(SARS_ct)) %>%
