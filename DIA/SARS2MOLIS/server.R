@@ -6,6 +6,7 @@ library(stringr)
 library(readxl)
 library(cowplot)
 library(DT)
+library(tidyselect)
 
 ### SETTINGS
 SARS_threshold <- 39
