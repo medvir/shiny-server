@@ -5,6 +5,7 @@ library(tidyverse)
 library(readxl)
 library(cowplot)
 library(shinythemes)
+library(lubridate)
 
 master = read.csv("master_table.csv")
 options(shiny.maxRequestSize = 100*1024^2)
@@ -16,6 +17,7 @@ ui <- fluidPage(
         sidebarLayout(
                 sidebarPanel(
                         fileInput("molis_file", "MOLIS Export [xls, xlsx oder csv]", accept = c(".xls", ".xlsx", ".csv")),
+                        dateRangeInput("date", label = "Date range", start = floor_date(Sys.Date(), 'year'), end = Sys.Date(), max = Sys.Date(), weekstart = 1),
                         h1(),
                         plotOutput(outputId = "Summary"),
                         h5(),
@@ -47,18 +49,33 @@ server <- function(input, output) {
                 
                 #try(raw_data %>% select(Einsender, MC))
                 raw_data %>%
-                        select(Einsender, MC) %>%
+                        select(Einsender, MC, Eingangsdatum) %>%
+                        mutate(Eingangsdatum = as.Date(Eingangsdatum, "%d.%m.%Y")) %>%
                         rename(Code = MC) %>%
                         left_join(. , master) %>%
                         filter(!(is.na(Analyse))) %>%
                         
                         ### assign new code to anonymous HIV tests
                         mutate(Code = ifelse(Einsender == "HIVANO" & Code == "H06USD", "XXX", Code)) %>%
-                        mutate(Code = ifelse(Einsender == "HIVANO" & Code == "H06UST", "XXX", Code))
+                        mutate(Code = ifelse(Einsender == "HIVANO" & Code == "H06UST", "XXX", Code)) %>%
+                
+                        ### assign new code to SARS PCR C23F*
+                        mutate(Code = ifelse(Code == "C23FKP", "C23FK", Code)) %>%
+                        mutate(Code = ifelse(Code == "C23FPU", "C23FK", Code)) #%>%
+                        
+                        ### filter out SARS
+                        #filter(!Code %in% c("C23FK", "C23RS", "C23PS"))
         })
         
-        Bereich = reactive({
+        data_filter = reactive({
                 data() %>%
+                        filter(Eingangsdatum >= input$date[1] & Eingangsdatum <= input$date[2]) %>%
+                        select(-Eingangsdatum)
+        })
+       
+        
+        Bereich = reactive({
+                data_filter() %>%
                         mutate(type = paste(Arbeitsbereich, Unterbereich, Weitere_Unterteilung)) %>%
                         group_by(type) %>%
                         mutate(Subtotal = n()) %>%
@@ -72,7 +89,7 @@ server <- function(input, output) {
         })
         
         Verfahren = reactive({
-                data() %>%
+                data_filter() %>%
                         group_by(Code) %>%
                         mutate(Total = n()) %>%
                         sample_n(1) %>%
