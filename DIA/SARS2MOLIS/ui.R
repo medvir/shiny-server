@@ -9,7 +9,7 @@ library(DT)
 
 ### SETTINGS
 Negativkontrollen <- c("NC")
-Positivkontrollen <- c("pos DNA", "pos RNA", "pos. DNA", "pos. RNA", "runC+")
+Positivkontrollen <- c("pos DNA", "pos RNA", "pos. DNA", "pos. RNA", "runC+", "C+")
 
 ###
 shinyUI(fluidPage(
