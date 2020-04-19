@@ -77,15 +77,13 @@ params$plot
 
 \newpage
 
-```{r plate_layout, fig.width = 8}
+```{r plate_layout, fig.width = 12}
 params$raw_data %>%
   group_by(sample_name, target) %>%
   sample_n(1) %>%
   ungroup() %>%
   filter(target != "MS-2" & target != "MS2") %>%
   mutate(target = ifelse(target == "GAPDH" | target == "GAP", paste0(target, " / MS-2"), target),
-         # if the full molis nr. was entered, only the 6 last letters are extracted
-         sample_name = if_else(str_detect(sample_name, "1000"), str_sub(sample_name, -6), sample_name),
          row = str_sub(well_pos, 1, 1),
          row = fct_relevel(row, c("H", "G", "F", "E", "D", "C", "B", "A")),
          column = as.numeric(str_sub(well_pos, 2))) %>%
