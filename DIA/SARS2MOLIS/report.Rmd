@@ -8,7 +8,7 @@ params:
   plot: NA
   raw_data: NA
   molis_out_table: NA
-  MS2_mean: NA
+  MS2_median: NA
   MS2_sd: NA
 header-includes:
   - \usepackage{lastpage}
@@ -64,7 +64,7 @@ molis_out_table %>%
   kable(booktabs = TRUE, linesep = "", escape = FALSE) %>%
   kable_styling(full_width = FALSE, latex_options = "hold_position") %>%
   row_spec(pos_res, bold = TRUE) %>%
-  footnote(symbol = paste0("mean = ", params$MS2_mean, ", sd = ", params$MS2_sd))
+  footnote(symbol = paste0("median = ", params$MS2_median, ", sd = ", params$MS2_sd))
 ```
 
 
@@ -77,7 +77,7 @@ params$plot
 
 \newpage
 
-```{r plate_layout, fig.width = 12}
+```{r plate_layout, fig.width = 8}
 params$raw_data %>%
   group_by(sample_name, target) %>%
   sample_n(1) %>%
@@ -88,7 +88,7 @@ params$raw_data %>%
          row = fct_relevel(row, c("H", "G", "F", "E", "D", "C", "B", "A")),
          column = as.numeric(str_sub(well_pos, 2))) %>%
   ggplot(aes(x = row, y = column, label = sample_name, color = target)) +
-  geom_text() +
+  geom_text(size = 2.5) +
   coord_flip() +
   #scale_color_manual(values = c("#E69F00", "#009E73")) +
   scale_y_continuous(limits = c(1, 12), breaks = c(1:12), minor_breaks = NULL) +
