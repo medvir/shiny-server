@@ -12,7 +12,7 @@ library(tidyselect)
 SARS_threshold <- 39
 GAPDH_threshold <- 30
 
-# MS2 range will now be defined by +/- 2s of mean
+# MS2 range will now be defined by +/- 2s of median
 #MS2_threshold <- 40
 
 ###
@@ -20,10 +20,10 @@ shinyServer(function(input, output, session) {
 
 
     ### function to determine if flag or not, output doesn't differentiate between GAPDH and MS2 flag
-    flag <- function(sample_name, MS2_ct_dbl, MS2_mean, MS2_sd, GAPDH_ct_dbl, MS2_ct, GAPDH_ct, SARS_ct) {
+    flag <- function(sample_name, MS2_ct_dbl, MS2_median, MS2_sd, GAPDH_ct_dbl, MS2_ct, GAPDH_ct, SARS_ct) {
         
-        MS2_lower <- MS2_mean - (2*MS2_sd)
-        MS2_upper <- MS2_mean + (2*MS2_sd)
+        MS2_lower <- MS2_median - (2*MS2_sd)
+        MS2_upper <- MS2_median + (2*MS2_sd)
         
         case_when(
             # flag if not all targets are present/tested
@@ -35,7 +35,7 @@ shinyServer(function(input, output, session) {
             (!(sample_name %in% input$neg_control)
              & !(sample_name %in% input$pos_control)
              & (GAPDH_ct_dbl > GAPDH_threshold | is.na(GAPDH_ct_dbl))
-             & (MS2_ct_dbl > MS2_upper | is.na(MS2_ct_dbl))) ~ "GAPDH and MS2 ct high", # only warning for ct higher mean + 2s
+             & (MS2_ct_dbl > MS2_upper | is.na(MS2_ct_dbl))) ~ "GAPDH and MS2 ct high", # only warning for ct higher median + 2s
             
             # GAPDH flag
             (!(sample_name %in% input$neg_control)
@@ -45,7 +45,7 @@ shinyServer(function(input, output, session) {
             # MS2 flag
             (!(sample_name %in% input$neg_control)
              & !(sample_name %in% input$pos_control)
-             & (MS2_ct_dbl > MS2_upper | is.na(MS2_ct_dbl))) ~ "MS2 ct high", # only warning for ct higher mean + 2s
+             & (MS2_ct_dbl > MS2_upper | is.na(MS2_ct_dbl))) ~ "MS2 ct high", # only warning for ct higher median + 2s
             
             TRUE ~ NA_character_
         )
@@ -203,7 +203,7 @@ shinyServer(function(input, output, session) {
                 # invalid samples
                 TRUE ~ "")) %>%
             
-            mutate(flag = flag(sample_name, MS2_ct_dbl, mean(MS2_ct_dbl, na.rm = TRUE), sd(MS2_ct_dbl, na.rm = TRUE), GAPDH_ct_dbl, MS2_ct, GAPDH_ct, SARS_ct),
+            mutate(flag = flag(sample_name, MS2_ct_dbl, median(MS2_ct_dbl, na.rm = TRUE), sd(MS2_ct_dbl, na.rm = TRUE), GAPDH_ct_dbl, MS2_ct, GAPDH_ct, SARS_ct),
                    
                    # based on the flag we change the result column
                    result = case_when(
@@ -303,7 +303,7 @@ shinyServer(function(input, output, session) {
                            plot = plot_out(),
                            raw_data = raw_data(),
                            molis_out_table = molis_out(),
-                           MS2_mean = round(mean(table()$MS2_ct_dbl, na.rm = TRUE), digits = 1),
+                           MS2_median = round(median(table()$MS2_ct_dbl, na.rm = TRUE), digits = 1),
                            MS2_sd = round(sd(table()$MS2_ct_dbl, na.rm = TRUE), digits = 3))
             
             rmarkdown::render(tempReport, output_file = file,
