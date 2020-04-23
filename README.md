@@ -20,6 +20,10 @@ R packages can be installed with the following commands:
 `sudo su - -c "R -e \"install.packages('ape', repos='https://cran.rstudio.com/')\""`  
 `sudo su - -c "R -e \"install.packages('plotly', repos='https://cran.rstudio.com/')\""`  
 `sudo su - -c "R -e \"install.packages('readxl', repos='https://cran.rstudio.com/')\""`   
+`sudo su - -c "R -e \"install.packages('gt', repos='https://cran.rstudio.com/')\""`  
+`sudo su - -c "R -e \"install.packages('webshot', repos='https://cran.rstudio.com/')\""`
+
+To be able to save a gt table, install phantomJS according following [installation description](https://gist.github.com/telbiyski/ec56a92d7114b8631c906c18064ce620#file-install-phantomjs-2-1-1-ubuntu).
 
 I also installed latex
 `wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz` and/or (?) `sudo apt-get install texlive-full`
@@ -32,5 +36,5 @@ In case the shiny server has to be re-started:
 Shiny apps can be put into in a new directory in this repository and synchronized with `/srv/shiny-server/` on the ScienceCloud shiny server.  
 `ssh ubuntu@172.23.175.116`
 
-## Web adress 
+## Web adress
 http://172.23.175.116:3838 or http://172.23.175.116:3838/folder_name/app_name
