@@ -426,6 +426,5 @@ server <- function(input, output, session) {
 
 
 
-if (interactive()) {
-    shinyApp(ui, server)
-}
+# Run the application 
+shinyApp(ui = ui, server = server)
