@@ -288,6 +288,18 @@ server <- function(input, output, session) {
             tab_style(
                 style = cell_fill(color = "#538dd5"),
                 locations = cells_body(
+                    columns = vars(IgG_empty),
+                    rows = IgG_empty >= 10)
+            ) %>%
+            tab_style(
+                style = cell_fill(color = "#c5d9f1"),
+                locations = cells_body(
+                    columns = vars(IgA_NP),
+                    rows = IgA_NP >= 3)
+            ) %>%
+            tab_style(
+                style = cell_fill(color = "#538dd5"),
+                locations = cells_body(
                     columns = vars(IgA_NP),
                     rows = IgA_NP >= 10)
             ) %>%
