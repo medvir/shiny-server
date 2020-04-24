@@ -15,7 +15,7 @@ ui <- fluidPage(
                    fileInput("igg_file", "Luminex IgG output [.csv]:", accept = c(".csv")),
                    fileInput("iga_file", "Luminex IgA output [.csv]:", accept = c(".csv")),
                    fileInput("igm_file", "Luminex IgM output [.csv]:", accept = c(".csv")),
-                   downloadButton("export", "Save Table")
+                   downloadButton("export_png", "Save Table (png)")
                )),
         column(10,
                gt_output(outputId = "table"))
@@ -114,9 +114,9 @@ server <- function(input, output, session) {
             pivot_longer(-Sample, names_to = "target", values_to = "igg_net_mfi") %>%
             left_join(igg_net_mfi_neg, by = c("target")) %>%
             mutate(target = paste0("IgG_", target),
-                   net_mfi_fob = as.numeric(igg_net_mfi)/as.numeric(igg_net_mfi_neg)) %>%
-            select(Sample, target, net_mfi_fob) %>%
-            pivot_wider(names_from = target, values_from = net_mfi_fob)
+                   net_mfi_foc = as.numeric(igg_net_mfi)/(3*as.numeric(igg_net_mfi_neg))) %>%
+            select(Sample, target, net_mfi_foc) %>%
+            pivot_wider(names_from = target, values_from = net_mfi_foc)
         
         
         # IgA
@@ -150,9 +150,9 @@ server <- function(input, output, session) {
             pivot_longer(-Sample, names_to = "target", values_to = "iga_net_mfi") %>%
             left_join(iga_net_mfi_neg, by = c("target")) %>%
             mutate(target = paste0("IgA_", target),
-                   net_mfi_fob = as.numeric(iga_net_mfi)/as.numeric(iga_net_mfi_neg)) %>%
-            select(Sample, target, net_mfi_fob) %>%
-            pivot_wider(names_from = target, values_from = net_mfi_fob)
+                   net_mfi_foc = as.numeric(iga_net_mfi)/(3*as.numeric(iga_net_mfi_neg))) %>%
+            select(Sample, target, net_mfi_foc) %>%
+            pivot_wider(names_from = target, values_from = net_mfi_foc)
         
         
         # IgM
@@ -186,9 +186,9 @@ server <- function(input, output, session) {
             pivot_longer(-Sample, names_to = "target", values_to = "igm_net_mfi") %>%
             left_join(igm_net_mfi_neg, by = c("target")) %>%
             mutate(target = paste0("IgM_", target),
-                   net_mfi_fob = as.numeric(igm_net_mfi)/as.numeric(igm_net_mfi_neg)) %>%
-            select(Sample, target, net_mfi_fob) %>%
-            pivot_wider(names_from = target, values_from = net_mfi_fob)
+                   net_mfi_foc = as.numeric(igm_net_mfi)/(3*as.numeric(igm_net_mfi_neg))) %>%
+            select(Sample, target, net_mfi_foc) %>%
+            pivot_wider(names_from = target, values_from = net_mfi_foc)
         
         
         
@@ -201,221 +201,232 @@ server <- function(input, output, session) {
             left_join(igm_count, by = c("Location")) %>%
             select(-Location)
         
-        net_mfi_fob <-
+        net_mfi_foc <-
             igg_net_mfi %>%
             left_join(iga_net_mfi, by = c("Sample")) %>%
-            left_join(igm_net_mfi, by = c("Sample"))
+            left_join(igm_net_mfi, by = c("Sample")) %>%
+            left_join(count, by = c("Sample"), suffix = c("", "_count"))
+        
+        
+        
+        # set flag ----------------------------------------------------------------
+        
+        # minimal count for each measurment has to be following value, everything below gets flagged
+        min_count <- 20
+        
+        # empty FOC (fold over cutoff) max. following value, everything above gets flagged
+        above_cutoff <- 1
+        
+        net_mfi_foc <-
+            net_mfi_foc %>%
+            mutate(IgG_NP_count_flag = if_else(as.numeric(IgG_NP_count) < min_count, "IgG NP", NULL),
+                   IgG_S2_count_flag = if_else(as.numeric(IgG_S2_count) < min_count, "IgG S2", NULL),
+                   IgG_S1_count_flag = if_else(as.numeric(IgG_S1_count) < min_count, "IgG S1", NULL),
+                   IgA_NP_count_flag = if_else(as.numeric(IgA_NP_count) < min_count, "IgA NP", NULL),
+                   IgA_S2_count_flag = if_else(as.numeric(IgA_S2_count) < min_count, "IgA S2", NULL),
+                   IgA_S1_count_flag = if_else(as.numeric(IgA_S1_count) < min_count, "IgA S1", NULL),
+                   IgM_NP_count_flag = if_else(as.numeric(IgM_NP_count) < min_count, "IgM NP", NULL),
+                   IgM_S2_count_flag = if_else(as.numeric(IgM_S2_count) < min_count, "IgM S2", NULL),
+                   IgM_S1_count_flag = if_else(as.numeric(IgM_S1_count) < min_count, "IgM S1", NULL)) %>%
+            unite(Fehler_count, ends_with("count_flag"), na.rm=TRUE, sep = ", ") %>%
+            mutate(IgG_empty_flag = if_else(IgG_empty > above_cutoff, "IgG", NULL),
+                   IgA_empty_flag = if_else(IgA_empty > above_cutoff, "IgA", NULL),
+                   IgM_empty_flag = if_else(IgM_empty > above_cutoff, "IgM", NULL)) %>%
+            unite(Fehler_empty, ends_with("empty_flag"), na.rm=TRUE, sep = ", ")
         
         
         # Test Resultat -------------------------------------------------------------
         
-        net_mfi_fob <-
-            net_mfi_fob %>%
-            mutate(Resultat_IgG_S1 = IgG_S1 > 3,
-                   Resultat_IgA_S1 = IgA_S1 > 3,
-                   Resultat_IgM_S1 = IgM_S1 > 3) %>%
-            mutate(Resultat_IgG_S2 = IgG_S2 > 3 & (Resultat_IgG_S1 + Resultat_IgA_S1 + Resultat_IgM_S1 > 0),
-                   Resultat_IgA_S2 = IgA_S2 > 3 & (Resultat_IgG_S1 + Resultat_IgA_S1 + Resultat_IgM_S1 > 0),
-                   Resultat_IgM_S2 = IgM_S2 > 3 & (Resultat_IgG_S1 + Resultat_IgA_S1 + Resultat_IgM_S1 > 0)) %>%
-            mutate(Resultat_IgG_NP = IgG_NP > 3 & (Resultat_IgG_S1 + Resultat_IgA_S1 + Resultat_IgM_S1 > 0),
-                   Resultat_IgA_NP = IgA_NP > 3 & (Resultat_IgG_S1 + Resultat_IgA_S1 + Resultat_IgM_S1 > 0),
-                   Resultat_IgM_NP = IgM_NP > 3 & (Resultat_IgG_S1 + Resultat_IgA_S1 + Resultat_IgM_S1 > 0)) %>%
-            mutate(Resultat_IgG = Resultat_IgG_S1 | Resultat_IgG_S2 | Resultat_IgG_NP,
-                   Resultat_IgA = Resultat_IgA_S1 | Resultat_IgA_S2 | Resultat_IgA_NP,
-                   Resultat_IgM = Resultat_IgM_S1 | Resultat_IgM_S2 | Resultat_IgM_NP) %>%
+        net_mfi_foc <-
+            net_mfi_foc %>%
+            mutate(IgG_Resultat_S1 = IgG_S1 > 1,
+                   IgA_Resultat_S1 = IgA_S1 > 1,
+                   IgM_Resultat_S1 = IgM_S1 > 1) %>%
+            mutate(IgG_Resultat_S2 = IgG_S2 > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
+                   IgA_Resultat_S2 = IgA_S2 > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
+                   IgM_Resultat_S2 = IgM_S2 > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0)) %>%
+            mutate(IgG_Resultat_NP = IgG_NP > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
+                   IgA_Resultat_NP = IgA_NP > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
+                   IgM_Resultat_NP = IgM_NP > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0)) %>%
+            mutate(IgG_Resultat = IgG_Resultat_S1 | IgG_Resultat_S2 | IgG_Resultat_NP,
+                   IgA_Resultat = IgA_Resultat_S1 | IgA_Resultat_S2 | IgA_Resultat_NP,
+                   IgM_Resultat = IgM_Resultat_S1 | IgM_Resultat_S2 | IgM_Resultat_NP) %>%
             mutate(Interpretation = case_when(
-                Resultat_IgG_S1 == 1 ~ "Serokonversion fortgeschritten",
-                Resultat_IgA_S1 + Resultat_IgM_S1 > 0 ~ "Serokonversion partiell",
-                Resultat_IgG_S1 + Resultat_IgA_S1 + Resultat_IgM_S1 < 3 ~ "keine SARS-CoV-2 Serokonversion"
+                IgG_Resultat_S1 == 1 ~ "Serokonversion fortgeschritten",
+                IgA_Resultat_S1 + IgM_Resultat_S1 > 0 ~ "Serokonversion partiell",
+                IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 < 3 ~ "keine SARS-CoV-2 Serokonversion"
+            )) %>%
+            mutate(Kommentar = case_when(
+                (Interpretation == "keine SARS-CoV-2 Serokonversion") & (IgG_S1 > 1 | IgA_S1 > 1 | IgM_S1 > 1 |
+                                                                             IgG_S2 > 1 | IgG_S2 > 1 | IgM_S2 > 1 |
+                                                                             IgG_NP > 1 | IgA_NP > 1 | IgM_NP > 1) ~ "Kreuzreaktivität mit anderem Coronavirus wahrscheinlich",
+                (Interpretation == "keine SARS-CoV-2 Serokonversion") & (IgG_S1 >= 0.9 | IgA_S1 >= 0.9 | IgM_S1 >= 0.9) ~ "S1 Reaktivität grenzwertig, bitte Verlaufsprobe einsenden",
+                TRUE ~ ""
             ))
         
-        net_mfi_fob_clean <-
-            net_mfi_fob %>%
-            select(-Resultat_IgG_S1, -Resultat_IgA_S1, -Resultat_IgM_S1,
-                   -Resultat_IgG_S2, -Resultat_IgA_S2, -Resultat_IgM_S2,
-                   -Resultat_IgG_NP, -Resultat_IgA_NP, -Resultat_IgM_NP,) %>%
-            mutate(Resultat_IgG = if_else(Resultat_IgG, "pos", "neg"),
-                   Resultat_IgA = if_else(Resultat_IgA, "pos", "neg"),
-                   Resultat_IgM = if_else(Resultat_IgM, "pos", "neg"))
+        net_mfi_foc_clean <-
+            net_mfi_foc %>%
+            select(Sample,
+                   Interpretation,
+                   IgG_Resultat, IgG_NP, IgG_S2, IgG_S1,
+                   IgA_Resultat, IgA_NP, IgA_S2, IgA_S1,
+                   IgM_Resultat, IgM_NP, IgM_S2, IgM_S1,
+                   Kommentar,
+                   Fehler_count, Fehler_empty) %>%
+            mutate(IgG_Resultat = if_else(IgG_Resultat, "pos", "neg"),
+                   IgA_Resultat = if_else(IgA_Resultat, "pos", "neg"),
+                   IgM_Resultat = if_else(IgM_Resultat, "pos", "neg"))
         
-        net_mfi_fob_clean_gt <-
-            net_mfi_fob_clean %>%
+        
+        
+        # export csv --------------------------------------------------------------
+        
+        #write_csv(net_mfi_foc_clean, "data/200420_plate_1_example_output.csv")
+        
+        
+        # gt ----------------------------------------------------------------------
+        
+        net_mfi_foc_clean_gt <-
+            net_mfi_foc_clean %>%
             gt(rowname_col = "Sample") %>%
             tab_spanner_delim(delim = "_") %>%
             
             tab_style(
-                style = cell_fill(color = "#c5d9f1"),
+                style = cell_fill(color = "#FFE74C"),
                 locations = cells_body(
                     columns = vars(IgG_NP),
-                    rows = IgG_NP >= 3)
+                    rows = IgG_NP >= 0.9)
             ) %>%
             tab_style(
-                style = cell_fill(color = "#538dd5"),
+                style = cell_fill(color = "#06AED5"),
                 locations = cells_body(
                     columns = vars(IgG_NP),
-                    rows = IgG_NP >= 10)
+                    rows = IgG_NP > 1)
             ) %>%
             tab_style(
-                style = cell_fill(color = "#c5d9f1"),
+                style = cell_fill(color = "#FFE74C"),
                 locations = cells_body(
                     columns = vars(IgG_S2),
-                    rows = IgG_S2 >= 3)
+                    rows = IgG_S2 >= 0.9)
             ) %>%
             tab_style(
-                style = cell_fill(color = "#538dd5"),
+                style = cell_fill(color = "#06AED5"),
                 locations = cells_body(
                     columns = vars(IgG_S2),
-                    rows = IgG_S2 >= 10)
+                    rows = IgG_S2 > 1)
             ) %>%
             tab_style(
-                style = cell_fill(color = "#c5d9f1"),
+                style = cell_fill(color = "#FFE74C"),
                 locations = cells_body(
                     columns = vars(IgG_S1),
-                    rows = IgG_S1 >= 3)
+                    rows = IgG_S1 >= 0.9)
             ) %>%
             tab_style(
-                style = cell_fill(color = "#538dd5"),
+                style = cell_fill(color = "#06AED5"),
                 locations = cells_body(
                     columns = vars(IgG_S1),
-                    rows = IgG_S1 >= 10)
+                    rows = IgG_S1 > 1)
             ) %>%
             tab_style(
-                style = cell_fill(color = "#c5d9f1"),
-                locations = cells_body(
-                    columns = vars(IgG_empty),
-                    rows = IgG_empty >= 3)
-            ) %>%
-            tab_style(
-                style = cell_fill(color = "#538dd5"),
-                locations = cells_body(
-                    columns = vars(IgG_empty),
-                    rows = IgG_empty >= 10)
-            ) %>%
-            tab_style(
-                style = cell_fill(color = "#c5d9f1"),
+                style = cell_fill(color = "#FFE74C"),
                 locations = cells_body(
                     columns = vars(IgA_NP),
-                    rows = IgA_NP >= 3)
+                    rows = IgA_NP >= 0.9)
             ) %>%
             tab_style(
-                style = cell_fill(color = "#538dd5"),
+                style = cell_fill(color = "#06AED5"),
                 locations = cells_body(
                     columns = vars(IgA_NP),
-                    rows = IgA_NP >= 10)
+                    rows = IgA_NP > 1)
             ) %>%
             tab_style(
-                style = cell_fill(color = "#c5d9f1"),
+                style = cell_fill(color = "#FFE74C"),
                 locations = cells_body(
                     columns = vars(IgA_S2),
-                    rows = IgA_S2 >= 3)
+                    rows = IgA_S2 >= 0.9)
             ) %>%
             tab_style(
-                style = cell_fill(color = "#538dd5"),
+                style = cell_fill(color = "#06AED5"),
                 locations = cells_body(
                     columns = vars(IgA_S2),
-                    rows = IgA_S2 >= 10)
+                    rows = IgA_S2 > 1)
             ) %>%
             tab_style(
-                style = cell_fill(color = "#c5d9f1"),
+                style = cell_fill(color = "#FFE74C"),
                 locations = cells_body(
                     columns = vars(IgA_S1),
-                    rows = IgA_S1 >= 3)
+                    rows = IgA_S1 >= 0.9)
             ) %>%
             tab_style(
-                style = cell_fill(color = "#538dd5"),
+                style = cell_fill(color = "#06AED5"),
                 locations = cells_body(
                     columns = vars(IgA_S1),
-                    rows = IgA_S1 >= 10)
+                    rows = IgA_S1 > 1)
             ) %>%
             tab_style(
-                style = cell_fill(color = "#c5d9f1"),
-                locations = cells_body(
-                    columns = vars(IgA_empty),
-                    rows = IgA_empty >= 3)
-            ) %>%
-            tab_style(
-                style = cell_fill(color = "#538dd5"),
-                locations = cells_body(
-                    columns = vars(IgA_empty),
-                    rows = IgA_empty >= 10)
-            ) %>%
-            tab_style(
-                style = cell_fill(color = "#c5d9f1"),
+                style = cell_fill(color = "#FFE74C"),
                 locations = cells_body(
                     columns = vars(IgM_NP),
-                    rows = IgM_NP >= 3)
+                    rows = IgM_NP >= 0.9)
             ) %>%
             tab_style(
-                style = cell_fill(color = "#538dd5"),
+                style = cell_fill(color = "#06AED5"),
                 locations = cells_body(
                     columns = vars(IgM_NP),
-                    rows = IgM_NP >= 10)
+                    rows = IgM_NP > 1)
             ) %>%
             tab_style(
-                style = cell_fill(color = "#c5d9f1"),
+                style = cell_fill(color = "#FFE74C"),
                 locations = cells_body(
                     columns = vars(IgM_S2),
-                    rows = IgM_S2 >= 3)
+                    rows = IgM_S2 >= 0.9)
             ) %>%
             tab_style(
-                style = cell_fill(color = "#538dd5"),
+                style = cell_fill(color = "#06AED5"),
                 locations = cells_body(
                     columns = vars(IgM_S2),
-                    rows = IgM_S2 >= 10)
+                    rows = IgM_S2 > 1)
             ) %>%
             tab_style(
-                style = cell_fill(color = "#c5d9f1"),
+                style = cell_fill(color = "#FFE74C"),
                 locations = cells_body(
                     columns = vars(IgM_S1),
-                    rows = IgM_S1 >= 3)
+                    rows = IgM_S1 >= 0.9)
             ) %>%
             tab_style(
-                style = cell_fill(color = "#538dd5"),
+                style = cell_fill(color = "#06AED5"),
                 locations = cells_body(
                     columns = vars(IgM_S1),
-                    rows = IgM_S1 >= 10)
-            ) %>%
-            tab_style(
-                style = cell_fill(color = "#c5d9f1"),
-                locations = cells_body(
-                    columns = vars(IgM_empty),
-                    rows = IgM_empty >= 3)
-            ) %>%
-            tab_style(
-                style = cell_fill(color = "#538dd5"),
-                locations = cells_body(
-                    columns = vars(IgM_empty),
-                    rows = IgM_empty >= 10)
+                    rows = IgM_S1 > 1)
             ) %>%
             
             tab_style(
                 style = cell_fill(color = "#bfbfbf"),
                 locations = cells_body(
-                    columns = vars(Resultat_IgG),
-                    rows = Resultat_IgG == "pos")
+                    columns = vars(IgG_Resultat),
+                    rows = IgG_Resultat == "pos")
             ) %>%
             tab_style(
                 style = cell_fill(color = "#bfbfbf"),
                 locations = cells_body(
-                    columns = vars(Resultat_IgA),
-                    rows = Resultat_IgA == "pos")
+                    columns = vars(IgA_Resultat),
+                    rows = IgA_Resultat == "pos")
             ) %>%
             tab_style(
                 style = cell_fill(color = "#bfbfbf"),
                 locations = cells_body(
-                    columns = vars(Resultat_IgM),
-                    rows = Resultat_IgM == "pos")
+                    columns = vars(IgM_Resultat),
+                    rows = IgM_Resultat == "pos")
             ) %>%
             
             fmt_number(
                 columns = c(ends_with("NP"),
                             ends_with("S2"),
-                            ends_with("S1"),
-                            ends_with("empty")),
+                            ends_with("S1")),
                 decimals = 1
             )
         
-        net_mfi_fob_clean_gt
+        net_mfi_foc_clean_gt
         
     })
 
@@ -423,12 +434,12 @@ server <- function(input, output, session) {
         expr = table()
     )
     
-    output$export <- downloadHandler(
+    output$export_png <- downloadHandler(
         filename = function() {
             "output.png"
         },
         content = function(file) {
-            gtsave(table(), file)
+            gtsave(table(), file, vwidth = 1500)
             
         }
     )
