@@ -15,7 +15,8 @@ ui <- fluidPage(
                    fileInput("igg_file", "Luminex IgG output [.csv]:", accept = c(".csv")),
                    fileInput("iga_file", "Luminex IgA output [.csv]:", accept = c(".csv")),
                    fileInput("igm_file", "Luminex IgM output [.csv]:", accept = c(".csv")),
-                   downloadButton("export_png", "Save Table (png)")
+                   downloadButton("export_png", "Save Table (png)"),
+                   downloadButton("export_csv", "Save Table (csv)")
                )),
         column(10,
                gt_output(outputId = "table"))
@@ -277,17 +278,18 @@ server <- function(input, output, session) {
                    IgA_Resultat = if_else(IgA_Resultat, "pos", "neg"),
                    IgM_Resultat = if_else(IgM_Resultat, "pos", "neg"))
         
+        net_mfi_foc_clean
         
+
+    })
+    
+    
         
-        # export csv --------------------------------------------------------------
-        
-        #write_csv(net_mfi_foc_clean, "data/200420_plate_1_example_output.csv")
-        
-        
+        table_gt <- reactive({
         # gt ----------------------------------------------------------------------
         
         net_mfi_foc_clean_gt <-
-            net_mfi_foc_clean %>%
+            table() %>%
             gt(rowname_col = "Sample") %>%
             tab_spanner_delim(delim = "_") %>%
             
@@ -431,7 +433,7 @@ server <- function(input, output, session) {
     })
 
     output$table <- render_gt(
-        expr = table()
+        expr = table_gt()
     )
     
     output$export_png <- downloadHandler(
@@ -439,7 +441,17 @@ server <- function(input, output, session) {
             "output.png"
         },
         content = function(file) {
-            gtsave(table(), file, vwidth = 1500)
+            gtsave(table_gt(), file, vwidth = 1500)
+            
+        }
+    )
+    
+    output$export_csv <- downloadHandler(
+        filename = function() {
+            "output.csv"
+        },
+        content = function(file) {
+            write_csv(table(), file)
             
         }
     )
