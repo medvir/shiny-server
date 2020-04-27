@@ -22,11 +22,16 @@ R packages can be installed with the following commands:
 `sudo su - -c "R -e \"install.packages('readxl', repos='https://cran.rstudio.com/')\""`   
 `sudo su - -c "R -e \"install.packages('gt', repos='https://cran.rstudio.com/')\""`  
 `sudo su - -c "R -e \"install.packages('webshot', repos='https://cran.rstudio.com/')\""`
+`sudo su - -c "R -e \"install.packages('tinytex', repos='https://cran.rstudio.com/')\""`
 
 To be able to save a gt table, install phantomJS according following [installation description](https://gist.github.com/telbiyski/ec56a92d7114b8631c906c18064ce620#file-install-phantomjs-2-1-1-ubuntu).
 
-I also installed latex
-`wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz` and/or (?) `sudo apt-get install texlive-full`
+I also installed TinyTeX as shiny user (the tinytex R package has to be installed):  
+```
+sudo su - shiny
+R -e 'tinytex::install_tinytex()'
+```
+
 
 In case the shiny server has to be re-started:  
 `sudo systemctl start shiny-server`  
