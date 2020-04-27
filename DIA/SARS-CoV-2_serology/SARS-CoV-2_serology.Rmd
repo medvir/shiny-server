@@ -5,20 +5,9 @@ output: pdf_document
 params:
   table: NA
 header-includes:
-  - \usepackage{lastpage}
   - \usepackage{booktabs}
-  - \usepackage{longtable}
-  - \usepackage{array}
-  - \usepackage{multirow}
-  - \usepackage{wrapfig}
   - \usepackage{float}
   - \usepackage{colortbl}
-  - \usepackage{pdflscape}
-  - \usepackage{tabu}
-  - \usepackage{threeparttable}
-  - \usepackage{threeparttablex}
-  - \usepackage[normalem]{ulem}
-  - \usepackage{makecell}
   - \usepackage{xcolor}
   
 ---
