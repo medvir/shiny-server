@@ -16,6 +16,7 @@ ui <- fluidPage(
                    fileInput("iga_file", "Luminex IgA output [.csv]:", accept = c(".csv")),
                    fileInput("igm_file", "Luminex IgM output [.csv]:", accept = c(".csv")),
                    downloadButton("export_png", "Save Table (png)"),
+                   downloadButton("export_pdf", "Save Table (pdf)"),
                    downloadButton("export_csv", "Save Table (csv)")
                )),
         column(10,
@@ -443,6 +444,22 @@ server <- function(input, output, session) {
         content = function(file) {
             gtsave(table_gt(), file, vwidth = 1500)
             
+        }
+    )
+    
+    output$export_pdf <- downloadHandler(
+        filename = function() {
+            "output.pdf"
+        },
+        content = function(file) {
+            tempReport <- file.path(tempdir(), "SARS-CoV-2_serology.Rmd")
+            file.copy("SARS-CoV-2_serology.Rmd", tempReport, overwrite = TRUE)
+            
+            params <- list(table = table())
+            
+            rmarkdown::render(tempReport, output_file = file,
+                              params = params,
+                              envir = new.env(parent = globalenv()))
         }
     )
     
