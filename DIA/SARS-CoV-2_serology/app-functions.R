@@ -94,6 +94,50 @@ join_barcodes_isotypes <- function(barcodes, isotypes){
 # barcodes_isotypes2 <- join_barcodes_isotypes(barcodes2, isotypes2)
 
 
+# how many rows to skip ---------------------------------------------------
+
+skip_rows <- function(filepath, match){
+  count_row <-
+    read_csv(filepath, skip = 46, skip_empty_rows = FALSE) %>%
+    pull(2) %>%
+    match(match, .)
+    
+  return(count_row+46-1)
+}
+
+
+# get count data ----------------------------------------------------------
+
+get_count <- function(filepath, barcodes_isotypes, isotype_given=NA){
+  
+  barcodes_isotypes <-
+    barcodes_isotypes %>%
+    mutate(isotype = replace_na(isotype, isotype_given))
+  
+  n_samples <- length(barcodes_isotypes$Sample)
+
+  count <-
+    read_csv(filepath, skip = skip_rows(filepath, "Count"), skip_empty_rows = FALSE) %>%
+    janitor::clean_names(case = "title", abbreviations = "NP") %>%
+    head(n_samples) %>%
+    select(-Sample, -`Total Events`) %>%
+    mutate(NP = as.numeric(NP),
+           S2 = as.numeric(S2),
+           S1 = as.numeric(S1),
+           Empty = as.numeric(Empty)) %>%
+    pivot_longer(-Location, names_to = "target", values_to = "count") %>%
+    left_join(barcodes_isotypes, by = "Location") %>%
+    mutate(isotype_target = paste0(isotype, "_", target)) %>%
+    select(-Location, -target, -isotype) %>%
+    pivot_wider(names_from = isotype_target, values_from = count)
+  
+  return(count)
+}
+
+# igg_count1 <- get_count("data/200420_plate_1_IgG_20200420_121133.csv", barcodes_isotypes1, "IgG")
+# count2 <- get_count("data/200423_plate_2_20200423_142012.csv", barcodes_isotypes2)
+
+
 # create gt table ---------------------------------------------------------
 
 create_gt <- function(table){

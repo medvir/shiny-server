@@ -6,7 +6,6 @@ library(gt)
 source("app-functions.R", local = TRUE)
 
 
-
 # shiny ui ----------------------------------------------------------------
 
 ui <- fluidPage(
@@ -21,12 +20,14 @@ ui <- fluidPage(
                    downloadButton("export_png", "Save Table (png)"),
                    downloadButton("export_pdf", "Save Table (pdf)"),
                    downloadButton("export_csv", "Save Table (csv)")
-               )),
+                   )
+               ),
+
         column(10,
-               gt_output(outputId = "table"))
+               gt_output(outputId = "table")
+               )
     )
 )
-
 
 
 # shiny server ------------------------------------------------------------
@@ -57,29 +58,13 @@ server <- function(input, output, session) {
         isotypes <- read_isotypes(barcodes_path)
         barcodes_isotypes <- join_barcodes_isotypes(barcodes, isotypes)
         
-        # Prepare Luminex output --------------------------------------------------
         
-        skip_rows <-
-            function(filepath, match){
-                count_row <-
-                    read_csv(filepath, skip = 46, skip_empty_rows = FALSE) %>%
-                    pull(2) %>%
-                    match(match, .)
-                
-                return(count_row+46-1)
-            }
+        # Prepare Luminex output --------------------------------------------------
         
         # IgG
         ## count
-        igg_count <-
-            read_csv(igg_path, skip = skip_rows(igg_path, "Count"), skip_empty_rows = FALSE) %>%
-            head(length(barcodes$Sample)) %>%
-            rename(IgG_NP = NP,
-                   IgG_S2 = S2,
-                   IgG_S1 = S1,
-                   IgG_empty = empty,
-                   Total_Events_IgG = `Total Events`) %>%
-            select(-Sample)
+        
+        igg_count <- get_count(igg_path, barcodes_isotypes, "IgG")
         
         ## net_mfi
         igg_net_mfi <-
@@ -107,15 +92,8 @@ server <- function(input, output, session) {
         
         # IgA
         ## count
-        iga_count <-
-            read_csv(iga_path, skip = skip_rows(iga_path, "Count"), skip_empty_rows = FALSE) %>%
-            head(length(barcodes$Sample)) %>%
-            rename(IgA_NP = NP,
-                   IgA_S2 = S2,
-                   IgA_S1 = S1,
-                   IgA_empty = empty,
-                   Total_Events_IgA = `Total Events`) %>%
-            select(-Sample)
+        
+        iga_count <- get_count(iga_path, barcodes_isotypes, "IgA")
         
         ## net_mfi
         iga_net_mfi <-
@@ -143,15 +121,8 @@ server <- function(input, output, session) {
         
         # IgM
         ## count
-        igm_count <-
-            read_csv(igm_path, skip = skip_rows(igm_path, "Count"), skip_empty_rows = FALSE) %>%
-            head(length(barcodes$Sample)) %>%
-            rename(IgM_NP = NP,
-                   IgM_S2 = S2,
-                   IgM_S1 = S1,
-                   IgM_empty = empty,
-                   Total_Events_IgM = `Total Events`) %>%
-            select(-Sample)
+        
+        igm_count <- get_count(igm_path, barcodes_isotypes, "IgM")
         
         ## net_mfi
         igm_net_mfi <-
@@ -182,10 +153,9 @@ server <- function(input, output, session) {
         
         count <-
             barcodes %>%
-            left_join(igg_count, by = c("Location")) %>%
-            left_join(iga_count, by = c("Location")) %>%
-            left_join(igm_count, by = c("Location")) %>%
-            select(-Location)
+            left_join(igg_count, by = c("Sample")) %>%
+            left_join(iga_count, by = c("Sample")) %>%
+            left_join(igm_count, by = c("Sample"))
         
         net_mfi_foc <-
             igg_net_mfi %>%
