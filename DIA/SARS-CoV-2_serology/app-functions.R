@@ -248,7 +248,7 @@ test_result <- function(net_mfi_foc){
   return(net_mfi_foc_result)
 }
 
-net_mfi2_flagged_result <- test_result(net_mfi2_flagged)
+# net_mfi2_flagged_result <- test_result(net_mfi2_flagged)
 
 # create gt table ---------------------------------------------------------
 

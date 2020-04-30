@@ -10,13 +10,18 @@ source("app-functions.R", local = TRUE)
 
 ui <- fluidPage(
     titlePanel("SARS-CoV-2 serology"),
+    tags$head(tags$style(HTML("hr {border-top: 1px solid #949998;}"))),
     fluidRow(
         column(2,
                wellPanel(
-                   fileInput("barcodes_file", "Barcodes file [.xlsx]:", accept = c(".xlsx")),
+                   fileInput("all_in_one_file", "Luminex (all-in-one) output [.csv]:", accept = c(".csv")),
+                   hr(),
                    fileInput("igg_file", "Luminex IgG output [.csv]:", accept = c(".csv")),
                    fileInput("iga_file", "Luminex IgA output [.csv]:", accept = c(".csv")),
                    fileInput("igm_file", "Luminex IgM output [.csv]:", accept = c(".csv")),
+                   hr(),
+                   fileInput("barcodes_file", "Barcodes file [.xlsx]:", accept = c(".xlsx")),
+                   br(),
                    downloadButton("export_png", "Save Table (png)"),
                    downloadButton("export_pdf", "Save Table (pdf)"),
                    downloadButton("export_csv", "Save Table (csv)")
@@ -36,12 +41,15 @@ server <- function(input, output, session) {
     
     table <- reactive({
         
-        barcodes_path = input$barcodes_file$datapath
+        all_in_one_path = input$all_in_one_file$datapath
+
         igg_path = input$igg_file$datapath
         iga_path = input$iga_file$datapath
         igm_path = input$igm_file$datapath
 
-        req(input$barcodes_file, input$igg_file, input$iga_file, input$igm_file)
+        barcodes_path = input$barcodes_file$datapath
+
+        req(input$barcodes_file)
         
         # Use fixed path for debugging, uncomment following lines and comment "req"
         # barcodes_path <- "data/200420_BARCODES.xlsx"
@@ -61,44 +69,27 @@ server <- function(input, output, session) {
         
         # Prepare Luminex output --------------------------------------------------
         
-        # IgG
-        ## count
-        igg_count <- get_count(igg_path, barcodes_isotypes, "IgG")
-        
-        ## net_mfi
-        igg_net_mfi <- get_net_mfi(igg_path, barcodes_isotypes, "IgG")
-        
-        
-        # IgA
-        ## count
-        iga_count <- get_count(iga_path, barcodes_isotypes, "IgA")
-        
-        ## net_mfi
-        iga_net_mfi <- get_net_mfi(iga_path, barcodes_isotypes, "IgA")
-        
-        
-        # IgM
-        ## count
-        igm_count <- get_count(igm_path, barcodes_isotypes, "IgM")
-        
-        ## net_mfi
-        igm_net_mfi <- get_net_mfi(igm_path, barcodes_isotypes, "IgM")
-        
-        
-        # Join Luminex output -----------------------------------------------------
-        
-        count <-
-            barcodes %>%
-            left_join(igg_count, by = c("Sample")) %>%
-            left_join(iga_count, by = c("Sample")) %>%
-            left_join(igm_count, by = c("Sample"))
-        
-        net_mfi_foc <-
-            igg_net_mfi %>%
-            left_join(iga_net_mfi, by = c("Sample")) %>%
-            left_join(igm_net_mfi, by = c("Sample")) %>%
-            left_join(count, by = c("Sample"), suffix = c("", "_count"))
-        
+        if (!is.null(input$all_in_one_file$datapath)) {
+            count <- get_count(all_in_one_path, barcodes_isotypes)
+            
+            net_mfi_foc <-
+                get_net_mfi(all_in_one_path, barcodes_isotypes) %>%
+                left_join(count, by = c("Sample"), suffix = c("", "_count"))
+
+        } else {
+            count <-
+                get_count(igg_path, barcodes_isotypes, "IgG") %>%
+                left_join(get_count(iga_path, barcodes_isotypes, "IgA"), by = c("Sample")) %>%
+                left_join(get_count(igm_path, barcodes_isotypes, "IgM"), by = c("Sample"))
+            
+            net_mfi_foc <-
+                get_net_mfi(igg_path, barcodes_isotypes, "IgG") %>%
+                left_join(get_net_mfi(iga_path, barcodes_isotypes, "IgA"), by = c("Sample")) %>%
+                left_join(get_net_mfi(igm_path, barcodes_isotypes, "IgM"), by = c("Sample")) %>%
+                left_join(count, by = c("Sample"), suffix = c("", "_count"))
+        }
+
+
         
         
         # set flag ----------------------------------------------------------------
