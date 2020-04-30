@@ -20,6 +20,7 @@ R packages can be installed with the following commands:
 `sudo su - -c "R -e \"install.packages('ape', repos='https://cran.rstudio.com/')\""`  
 `sudo su - -c "R -e \"install.packages('plotly', repos='https://cran.rstudio.com/')\""`  
 `sudo su - -c "R -e \"install.packages('readxl', repos='https://cran.rstudio.com/')\""`   
+`sudo su - -c "R -e \"install.packages('janitor', repos='https://cran.rstudio.com/')\""`  
 `sudo su - -c "R -e \"install.packages('gt', repos='https://cran.rstudio.com/')\""`  
 `sudo su - -c "R -e \"install.packages('webshot', repos='https://cran.rstudio.com/')\""`  
 `sudo su - -c "R -e \"install.packages('tinytex', repos='https://cran.rstudio.com/')\""`
