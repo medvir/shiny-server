@@ -233,8 +233,10 @@ server <- function(input, output, session) {
             paste0(assay_date(), "_", plate_number(), ".csv")
         },
         content = function(file) {
-            write_csv(table(), file)
-            
+            table() %>%
+                mutate(assay_date = assay_date(),
+                       plate_number = plate_number()) %>%
+                write_csv(file)
         }
     )
     
