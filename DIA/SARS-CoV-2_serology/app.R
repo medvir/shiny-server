@@ -178,17 +178,17 @@ server <- function(input, output, session) {
     
     assay_date <- reactive({
         if (!is.null(input$all_in_one_file$datapath)) {
-            strsplit(all_in_one_name, "_")[[1]][1]
+            strsplit(input$all_in_one_file$name, "_")[[1]][1]
         } else {
-            strsplit(igg_name, "_")[[1]][1]
+            strsplit(input$igg_file$name, "_")[[1]][1]
         }
     })
     
     plate_number <- reactive({
         if (!is.null(input$all_in_one_file$datapath)) {
-            paste0(strsplit(all_in_one_name, "_")[[1]][2:3], collapse = "_")
+            paste0(strsplit(input$all_in_one_file$name, "_")[[1]][2:3], collapse = "_")
         } else {
-            paste0(strsplit(igg_name, "_")[[1]][2:3], collapse = "_")
+            paste0(strsplit(input$igg_file$name, "_")[[1]][2:3], collapse = "_")
         }
     })
     
@@ -203,7 +203,7 @@ server <- function(input, output, session) {
     
     output$export_png <- downloadHandler(
         filename = function() {
-            "output.png"
+            paste0(assay_date(), "_", plate_number(), ".png")
         },
         content = function(file) {
             gtsave(table_gt(), file, vwidth = 1500)
@@ -212,13 +212,15 @@ server <- function(input, output, session) {
     
     output$export_pdf <- downloadHandler(
         filename = function() {
-            "output.pdf"
+            paste0(assay_date(), "_", plate_number(), ".pdf")
         },
         content = function(file) {
             tempReport <- file.path(tempdir(), "SARS-CoV-2_serology.Rmd")
             file.copy("SARS-CoV-2_serology.Rmd", tempReport, overwrite = TRUE)
             
-            params <- list(table = table())
+            params <- list(table = table(),
+                           assay_date = assay_date(),
+                           plate_number = plate_number())
             
             rmarkdown::render(tempReport, output_file = file,
                               params = params,
@@ -228,7 +230,7 @@ server <- function(input, output, session) {
     
     output$export_csv <- downloadHandler(
         filename = function() {
-            "output.csv"
+            paste0(assay_date(), "_", plate_number(), ".csv")
         },
         content = function(file) {
             write_csv(table(), file)
