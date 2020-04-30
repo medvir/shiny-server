@@ -138,7 +138,6 @@ get_count <- function(filepath, barcodes_isotypes, isotype_given=NA){
 # count2 <- get_count("data/200423_plate_2_20200423_142012.csv", barcodes_isotypes2)
 
 
-
 # get net mfi data --------------------------------------------------------
 
 get_net_mfi <- function(filepath, barcodes_isotypes, isotype_given=NA){
@@ -181,12 +180,75 @@ get_net_mfi <- function(filepath, barcodes_isotypes, isotype_given=NA){
     pivot_wider(names_from = target, values_from = net_mfi_foc)
   
   return(net_mfi)
-  
 }
 
 # igg_net_mfi1 <- get_net_mfi("data/200420_plate_1_IgG_20200420_121133.csv", barcodes_isotypes1, "IgG")
 # net_mfi2 <- get_net_mfi("data/200423_plate_2_20200423_142012.csv", barcodes_isotypes2)
 
+
+# set flag ----------------------------------------------------------------
+
+set_flag <- function(net_mfi_foc, min_count, above_cutoff){
+  
+  net_mfi_foc_flagged <-
+    net_mfi_foc %>%
+    mutate(IgG_NP_count_flag = if_else(as.numeric(IgG_NP_count) < min_count, "IgG NP", NULL),
+           IgG_S2_count_flag = if_else(as.numeric(IgG_S2_count) < min_count, "IgG S2", NULL),
+           IgG_S1_count_flag = if_else(as.numeric(IgG_S1_count) < min_count, "IgG S1", NULL),
+           IgA_NP_count_flag = if_else(as.numeric(IgA_NP_count) < min_count, "IgA NP", NULL),
+           IgA_S2_count_flag = if_else(as.numeric(IgA_S2_count) < min_count, "IgA S2", NULL),
+           IgA_S1_count_flag = if_else(as.numeric(IgA_S1_count) < min_count, "IgA S1", NULL),
+           IgM_NP_count_flag = if_else(as.numeric(IgM_NP_count) < min_count, "IgM NP", NULL),
+           IgM_S2_count_flag = if_else(as.numeric(IgM_S2_count) < min_count, "IgM S2", NULL),
+           IgM_S1_count_flag = if_else(as.numeric(IgM_S1_count) < min_count, "IgM S1", NULL)) %>%
+    unite(Fehler_count, ends_with("count_flag"), na.rm=TRUE, sep = ", ") %>%
+    mutate(IgG_Empty_flag = if_else(IgG_Empty > above_cutoff, "IgG", NULL),
+           IgA_Empty_flag = if_else(IgA_Empty > above_cutoff, "IgA", NULL),
+           IgM_Empty_flag = if_else(IgM_Empty > above_cutoff, "IgM", NULL)) %>%
+    unite(Fehler_empty, ends_with("empty_flag"), na.rm=TRUE, sep = ", ")
+  
+  return(net_mfi_foc_flagged)
+}
+
+# net_mfi2 <- left_join(net_mfi2, count2, by = c("Sample"), suffix = c("", "_count"))
+# net_mfi2_flagged <- set_flag(net_mfi2, 20, 1)
+
+
+# test result -------------------------------------------------------------
+
+test_result <- function(net_mfi_foc){
+  
+  net_mfi_foc_result <-
+    net_mfi_foc %>%
+    mutate(IgG_Resultat_S1 = IgG_S1 > 1,
+           IgA_Resultat_S1 = IgA_S1 > 1,
+           IgM_Resultat_S1 = IgM_S1 > 1) %>%
+    mutate(IgG_Resultat_S2 = IgG_S2 > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
+           IgA_Resultat_S2 = IgA_S2 > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
+           IgM_Resultat_S2 = IgM_S2 > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0)) %>%
+    mutate(IgG_Resultat_NP = IgG_NP > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
+           IgA_Resultat_NP = IgA_NP > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
+           IgM_Resultat_NP = IgM_NP > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0)) %>%
+    mutate(IgG_Resultat = IgG_Resultat_S1 | IgG_Resultat_S2 | IgG_Resultat_NP,
+           IgA_Resultat = IgA_Resultat_S1 | IgA_Resultat_S2 | IgA_Resultat_NP,
+           IgM_Resultat = IgM_Resultat_S1 | IgM_Resultat_S2 | IgM_Resultat_NP) %>%
+    mutate(Interpretation = case_when(
+      IgG_Resultat_S1 == 1 ~ "Serokonversion fortgeschritten",
+      IgA_Resultat_S1 + IgM_Resultat_S1 > 0 ~ "Serokonversion partiell",
+      IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 < 3 ~ "keine SARS-CoV-2 Serokonversion"
+    )) %>%
+    mutate(Kommentar = case_when(
+      (Interpretation == "keine SARS-CoV-2 Serokonversion") & (IgG_S1 > 1 | IgA_S1 > 1 | IgM_S1 > 1 |
+                                                                 IgG_S2 > 1 | IgG_S2 > 1 | IgM_S2 > 1 |
+                                                                 IgG_NP > 1 | IgA_NP > 1 | IgM_NP > 1) ~ "Kreuzreaktivität mit anderem Coronavirus wahrscheinlich",
+      (Interpretation == "keine SARS-CoV-2 Serokonversion") & (IgG_S1 >= 0.9 | IgA_S1 >= 0.9 | IgM_S1 >= 0.9) ~ "S1 Reaktivität grenzwertig, bitte Verlaufsprobe einsenden",
+      TRUE ~ ""
+    ))
+  
+  return(net_mfi_foc_result)
+}
+
+net_mfi2_flagged_result <- test_result(net_mfi2_flagged)
 
 # create gt table ---------------------------------------------------------
 
