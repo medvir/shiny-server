@@ -138,6 +138,56 @@ get_count <- function(filepath, barcodes_isotypes, isotype_given=NA){
 # count2 <- get_count("data/200423_plate_2_20200423_142012.csv", barcodes_isotypes2)
 
 
+
+# get net mfi data --------------------------------------------------------
+
+get_net_mfi <- function(filepath, barcodes_isotypes, isotype_given=NA){
+  barcodes_isotypes <-
+    barcodes_isotypes %>%
+    mutate(isotype = replace_na(isotype, isotype_given))
+  
+  n_samples <- length(barcodes_isotypes$Sample)
+  
+  net_mfi <-
+    read_csv(filepath, skip = skip_rows(filepath, "Net MFI")+1, skip_empty_rows = FALSE) %>%
+    janitor::clean_names(case = "title", abbreviations = "NP") %>%
+    head(n_samples) %>%
+    select(-Sample, -`Total Events`) %>%
+    mutate(NP = as.numeric(NP),
+           S2 = as.numeric(S2),
+           S1 = as.numeric(S1),
+           Empty = as.numeric(Empty)) %>%
+    pivot_longer(-Location, names_to = "target", values_to = "count") %>%
+    left_join(barcodes_isotypes, by = "Location") %>%
+    mutate(isotype_target = paste0(isotype, "_", target)) %>%
+    select(-Location, -target, -isotype) %>%
+    pivot_wider(names_from = isotype_target, values_from = count)
+  
+  net_mfi_neg <-
+    net_mfi %>%
+    filter(str_detect(Sample, pattern = regex("neg", ignore_case = TRUE))) %>%
+    pivot_longer(-Sample, names_to = "target", values_to = "net_mfi_neg") %>%
+    select(-Sample)
+  
+  # foc = fold over cutoff
+  cutoff <- 3
+  
+  net_mfi <-
+    net_mfi %>%  
+    pivot_longer(-Sample, names_to = "target", values_to = "net_mfi") %>%
+    left_join(net_mfi_neg, by = c("target")) %>%
+    mutate(net_mfi_foc = net_mfi/(cutoff*net_mfi_neg)) %>%
+    select(Sample, target, net_mfi_foc) %>%
+    pivot_wider(names_from = target, values_from = net_mfi_foc)
+  
+  return(net_mfi)
+  
+}
+
+# igg_net_mfi1 <- get_net_mfi("data/200420_plate_1_IgG_20200420_121133.csv", barcodes_isotypes1, "IgG")
+# net_mfi2 <- get_net_mfi("data/200423_plate_2_20200423_142012.csv", barcodes_isotypes2)
+
+
 # create gt table ---------------------------------------------------------
 
 create_gt <- function(table){

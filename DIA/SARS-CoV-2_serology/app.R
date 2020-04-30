@@ -63,90 +63,26 @@ server <- function(input, output, session) {
         
         # IgG
         ## count
-        
         igg_count <- get_count(igg_path, barcodes_isotypes, "IgG")
         
         ## net_mfi
-        igg_net_mfi <-
-            read_csv(igg_path, skip = skip_rows(igg_path, "Net MFI")+1, skip_empty_rows = FALSE) %>%
-            head(length(barcodes$Sample)) %>%
-            select(-Sample, -`Total Events`) %>%
-            left_join(barcodes, by = c("Location")) %>%
-            select(-Location) 
-        
-        igg_net_mfi_neg <-
-            igg_net_mfi %>%
-            filter(Sample == "neg control") %>%
-            pivot_longer(-Sample, names_to = "target", values_to = "igg_net_mfi_neg") %>%
-            select(-Sample)
-        
-        igg_net_mfi <-
-            igg_net_mfi %>%  
-            pivot_longer(-Sample, names_to = "target", values_to = "igg_net_mfi") %>%
-            left_join(igg_net_mfi_neg, by = c("target")) %>%
-            mutate(target = paste0("IgG_", target),
-                   net_mfi_foc = as.numeric(igg_net_mfi)/(3*as.numeric(igg_net_mfi_neg))) %>%
-            select(Sample, target, net_mfi_foc) %>%
-            pivot_wider(names_from = target, values_from = net_mfi_foc)
+        igg_net_mfi <- get_net_mfi(igg_path, barcodes_isotypes, "IgG")
         
         
         # IgA
         ## count
-        
         iga_count <- get_count(iga_path, barcodes_isotypes, "IgA")
         
         ## net_mfi
-        iga_net_mfi <-
-            read_csv(iga_path, skip = skip_rows(iga_path, "Net MFI")+1, skip_empty_rows = FALSE) %>%
-            head(length(barcodes$Sample)) %>%
-            select(-Sample, -`Total Events`) %>%
-            left_join(barcodes, by = c("Location")) %>%
-            select(-Location) 
-        
-        iga_net_mfi_neg <-
-            iga_net_mfi %>%
-            filter(Sample == "neg control") %>%
-            pivot_longer(-Sample, names_to = "target", values_to = "iga_net_mfi_neg") %>%
-            select(-Sample)
-        
-        iga_net_mfi <-
-            iga_net_mfi %>%  
-            pivot_longer(-Sample, names_to = "target", values_to = "iga_net_mfi") %>%
-            left_join(iga_net_mfi_neg, by = c("target")) %>%
-            mutate(target = paste0("IgA_", target),
-                   net_mfi_foc = as.numeric(iga_net_mfi)/(3*as.numeric(iga_net_mfi_neg))) %>%
-            select(Sample, target, net_mfi_foc) %>%
-            pivot_wider(names_from = target, values_from = net_mfi_foc)
+        iga_net_mfi <- get_net_mfi(iga_path, barcodes_isotypes, "IgA")
         
         
         # IgM
         ## count
-        
         igm_count <- get_count(igm_path, barcodes_isotypes, "IgM")
         
         ## net_mfi
-        igm_net_mfi <-
-            read_csv(igm_path, skip = skip_rows(igm_path, "Net MFI")+1, skip_empty_rows = FALSE) %>%
-            head(length(barcodes$Sample)) %>%
-            select(-Sample, -`Total Events`) %>%
-            left_join(barcodes, by = c("Location")) %>%
-            select(-Location) 
-        
-        igm_net_mfi_neg <-
-            igm_net_mfi %>%
-            filter(Sample == "neg control") %>%
-            pivot_longer(-Sample, names_to = "target", values_to = "igm_net_mfi_neg") %>%
-            select(-Sample)
-        
-        igm_net_mfi <-
-            igm_net_mfi %>%  
-            pivot_longer(-Sample, names_to = "target", values_to = "igm_net_mfi") %>%
-            left_join(igm_net_mfi_neg, by = c("target")) %>%
-            mutate(target = paste0("IgM_", target),
-                   net_mfi_foc = as.numeric(igm_net_mfi)/(3*as.numeric(igm_net_mfi_neg))) %>%
-            select(Sample, target, net_mfi_foc) %>%
-            pivot_wider(names_from = target, values_from = net_mfi_foc)
-        
+        igm_net_mfi <- get_net_mfi(igm_path, barcodes_isotypes, "IgM")
         
         
         # Join Luminex output -----------------------------------------------------
@@ -185,9 +121,9 @@ server <- function(input, output, session) {
                    IgM_S2_count_flag = if_else(as.numeric(IgM_S2_count) < min_count, "IgM S2", NULL),
                    IgM_S1_count_flag = if_else(as.numeric(IgM_S1_count) < min_count, "IgM S1", NULL)) %>%
             unite(Fehler_count, ends_with("count_flag"), na.rm=TRUE, sep = ", ") %>%
-            mutate(IgG_empty_flag = if_else(IgG_empty > above_cutoff, "IgG", NULL),
-                   IgA_empty_flag = if_else(IgA_empty > above_cutoff, "IgA", NULL),
-                   IgM_empty_flag = if_else(IgM_empty > above_cutoff, "IgM", NULL)) %>%
+            mutate(IgG_Empty_flag = if_else(IgG_Empty > above_cutoff, "IgG", NULL),
+                   IgA_Empty_flag = if_else(IgA_Empty > above_cutoff, "IgA", NULL),
+                   IgM_Empty_flag = if_else(IgM_Empty > above_cutoff, "IgM", NULL)) %>%
             unite(Fehler_empty, ends_with("empty_flag"), na.rm=TRUE, sep = ", ")
         
         
