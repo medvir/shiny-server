@@ -39,10 +39,10 @@ server <- function(input, output, session) {
         igg_path = input$igg_file$datapath
         iga_path = input$iga_file$datapath
         igm_path = input$igm_file$datapath
-        
+
         req(input$barcodes_file, input$igg_file, input$iga_file, input$igm_file)
         
-        #Use fixed path for debugging, uncomment following lines and comment "req"
+        # Use fixed path for debugging, uncomment following lines and comment "req"
         # barcodes_path <- "data/200420_BARCODES.xlsx"
         # igg_path <- "data/200420_plate_1_IgG_20200420_121133.csv"
         # iga_path <- "data/200420_plate_1_IgA_20200420_122957.csv"
@@ -51,30 +51,11 @@ server <- function(input, output, session) {
         
         # Prepare Barcodes --------------------------------------------------------
         
-        barcodes_sheets <- excel_sheets(barcodes_path)
+        barcodes <- read_barcodes(barcodes_path)
         
-        # Replace with INPUT from shiny app
-        barcodes_sheets_selected <- barcodes_sheets[1]
-        
-        barcodes <-
-            read_excel(barcodes_path,
-                       sheet = barcodes_sheets_selected,
-                       skip = 3,
-                       col_names = FALSE)
-        
-        colnames(barcodes) <- c("row", 1:12)
-        
-        barcodes <-
-            barcodes %>%
-            pivot_longer(-row, names_to = "column", values_to = "Sample") %>%
-            filter(!is.na(Sample)) %>%
-            arrange(column) %>%
-            mutate(sample_nr = 1,
-                   sample_nr = cumsum(sample_nr),
-                   Location = paste0(sample_nr, "(1,", row, column, ")")) %>%
-            select(Location, Sample)
-        
-        
+        # if isotypes are specified in barcodes document (e.g. multiple isotypes on one plate)
+        isotypes <- read_isotypes(barcodes_path)
+        barcodes_isotypes <- join_barcodes_isotypes(barcodes, isotypes)
         
         # Prepare Luminex output --------------------------------------------------
         
