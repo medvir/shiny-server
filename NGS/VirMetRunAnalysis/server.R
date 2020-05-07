@@ -5,6 +5,7 @@ library(dplyr)
 library(ggplot2)
 library(readr)
 library(DT)
+library(stringr)
 
 shinyServer(function(input, output) {
     
@@ -68,7 +69,7 @@ shinyServer(function(input, output) {
             filter(sample %in% input$chosen_sample) %>%
             filter(!(category == "raw_reads" | category == "passing_filter" | category == "reads_to_blast")) %>%
             mutate(domain = case_when(
-                category %in% c("matching_bact1", "matching_bact2", "matching_bact3") ~ "bacterial",
+                str_detect(category, "matching_bact") ~ "bacterial",
                 category %in% c("viral_reads") ~ "viral",
                 category %in% c("matching_humanGRCh38") ~ "human",
                 category %in% c("undetermined_reads") ~ "unknown",
