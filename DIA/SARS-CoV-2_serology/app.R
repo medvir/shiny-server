@@ -39,7 +39,7 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
     
-    table <- reactive({
+    table_raw <- reactive({
         
         all_in_one_path = input$all_in_one_file$datapath
         all_in_one_name = input$all_in_one_file$name
@@ -129,7 +129,7 @@ server <- function(input, output, session) {
             
             net_mfi_foc <-
                 get_net_mfi(all_in_one_path, barcodes_isotypes) %>%
-                left_join(count, by = c("Sample"), suffix = c("", "_count"))
+                left_join(count, by = c("Sample"))
 
         } else {
             count <-
@@ -141,7 +141,7 @@ server <- function(input, output, session) {
                 get_net_mfi(igg_path, barcodes_isotypes, "IgG") %>%
                 left_join(get_net_mfi(iga_path, barcodes_isotypes, "IgA"), by = c("Sample")) %>%
                 left_join(get_net_mfi(igm_path, barcodes_isotypes, "IgM"), by = c("Sample")) %>%
-                left_join(count, by = c("Sample"), suffix = c("", "_count"))
+                left_join(count, by = c("Sample"))
         }
 
 
@@ -158,21 +158,33 @@ server <- function(input, output, session) {
 
         # Test Resultat -------------------------------------------------------------
         
-        net_mfi_foc <- test_result(net_mfi_foc)
+        net_mfi_foc <-
+            test_result(net_mfi_foc) %>%
+            mutate(IgG_Resultat = if_else(IgG_Resultat, "pos", "neg"),
+                   IgM_Resultat = if_else(IgM_Resultat, "pos", "neg"),
+                   IgA_Resultat = if_else(IgA_Resultat, "pos", "neg")) %>%
+            arrange(Sample)
         
+        net_mfi_foc
+    })
+        
+
+    # Clean table -------------------------------------------------------------
+    table <- reactive({
+        
+        # only rename and select columns, no transformation/calculations should be done here
         net_mfi_foc_clean <-
-            net_mfi_foc %>%
+            table_raw() %>%
+            rename(IgG_NP = IgG_NP_net_mfi_foc, IgG_S2 = IgG_S2_net_mfi_foc, IgG_S1 = IgG_S1_net_mfi_foc,
+                   IgM_NP = IgM_NP_net_mfi_foc, IgM_S2 = IgM_S2_net_mfi_foc, IgM_S1 = IgM_S1_net_mfi_foc,
+                   IgA_NP = IgA_NP_net_mfi_foc, IgA_S2 = IgA_S2_net_mfi_foc, IgA_S1 = IgA_S1_net_mfi_foc) %>%
             select(Sample,
                    Serokonversion,
                    IgG_Resultat, IgG_NP, IgG_S2, IgG_S1,
                    IgM_Resultat, IgM_NP, IgM_S2, IgM_S1,
                    IgA_Resultat, IgA_NP, IgA_S2, IgA_S1,
                    Kommentar,
-                   Fehler_count, Fehler_empty) %>%
-            mutate(IgG_Resultat = if_else(IgG_Resultat, "pos", "neg"),
-                   IgM_Resultat = if_else(IgM_Resultat, "pos", "neg"),
-                   IgA_Resultat = if_else(IgA_Resultat, "pos", "neg")) %>%
-            arrange(Sample)
+                   Fehler_count, Fehler_empty)
         
         net_mfi_foc_clean
     })
@@ -234,7 +246,10 @@ server <- function(input, output, session) {
             paste0(assay_date(), "_", plate_number(), ".csv")
         },
         content = function(file) {
-            table() %>%
+            table_raw() %>%
+                select(-starts_with("IgG_Resultat_"),
+                       -starts_with("IgM_Resultat_"),
+                       -starts_with("IgA_Resultat_")) %>%
                 mutate(assay_date = assay_date(),
                        plate_number = plate_number()) %>%
                 write_csv(file)

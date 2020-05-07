@@ -80,8 +80,8 @@ read_isotypes <- function(barcodes_path){
   
 }
 
-# isotypes1 <- read_isotypes("data/200420_BARCODES.xlsx")
-# isotypes2 <- read_isotypes("data/200423_plate_2_BARCODES.xlsx")
+isotypes1 <- read_isotypes("data/200420_BARCODES.xlsx")
+isotypes2 <- read_isotypes("data/200423_plate_2_BARCODES.xlsx")
 
 
 # join barcodes and isotypes ----------------------------------------------
@@ -127,7 +127,7 @@ get_count <- function(filepath, barcodes_isotypes, isotype_given=NA){
            Empty = as.numeric(Empty)) %>%
     pivot_longer(-Location, names_to = "target", values_to = "count") %>%
     left_join(barcodes_isotypes, by = "Location") %>%
-    mutate(isotype_target = paste0(isotype, "_", target)) %>%
+    mutate(isotype_target = paste0(isotype, "_", target, "_count")) %>%
     select(-Location, -target, -isotype) %>%
     pivot_wider(names_from = isotype_target, values_from = count)
   
@@ -169,9 +169,9 @@ get_net_mfi <- function(filepath, barcodes_isotypes, isotype_given=NA){
     select(-Sample)
   
   # foc = fold over cutoff
-  cutoff <- 3
+  cutoff = 3
   
-  net_mfi <-
+  net_mfi_foc <-
     net_mfi %>%  
     pivot_longer(-Sample, names_to = "target", values_to = "net_mfi") %>%
     left_join(net_mfi_neg, by = c("target")) %>%
@@ -179,7 +179,11 @@ get_net_mfi <- function(filepath, barcodes_isotypes, isotype_given=NA){
     select(Sample, target, net_mfi_foc) %>%
     pivot_wider(names_from = target, values_from = net_mfi_foc)
   
-  return(net_mfi)
+  net_mfi_full <- 
+    net_mfi %>%
+    left_join(net_mfi_foc, by = c("Sample"), suffix = c("_net_mfi", "_net_mfi_foc"))
+  
+  return(net_mfi_full)
 }
 
 # igg_net_mfi1 <- get_net_mfi("data/200420_plate_1_IgG_20200420_121133.csv", barcodes_isotypes1, "IgG")
@@ -202,15 +206,15 @@ set_flag <- function(net_mfi_foc, min_count, above_cutoff){
            IgM_S2_count_flag = if_else(as.numeric(IgM_S2_count) < min_count, "IgM S2", NULL),
            IgM_S1_count_flag = if_else(as.numeric(IgM_S1_count) < min_count, "IgM S1", NULL)) %>%
     unite(Fehler_count, ends_with("count_flag"), na.rm=TRUE, sep = ", ") %>%
-    mutate(IgG_Empty_flag = if_else(IgG_Empty > above_cutoff, "IgG", NULL),
-           IgA_Empty_flag = if_else(IgA_Empty > above_cutoff, "IgA", NULL),
-           IgM_Empty_flag = if_else(IgM_Empty > above_cutoff, "IgM", NULL)) %>%
+    mutate(IgG_Empty_flag = if_else(IgG_Empty_net_mfi_foc > above_cutoff, "IgG", NULL),
+           IgA_Empty_flag = if_else(IgA_Empty_net_mfi_foc > above_cutoff, "IgA", NULL),
+           IgM_Empty_flag = if_else(IgM_Empty_net_mfi_foc > above_cutoff, "IgM", NULL)) %>%
     unite(Fehler_empty, ends_with("empty_flag"), na.rm=TRUE, sep = ", ")
   
   return(net_mfi_foc_flagged)
 }
 
-# net_mfi2 <- left_join(net_mfi2, count2, by = c("Sample"), suffix = c("", "_count"))
+# net_mfi2 <- left_join(net_mfi2, count2, by = c("Sample"))
 # net_mfi2_flagged <- set_flag(net_mfi2, 20, 1)
 
 
@@ -220,15 +224,15 @@ test_result <- function(net_mfi_foc){
   
   net_mfi_foc_result <-
     net_mfi_foc %>%
-    mutate(IgG_Resultat_S1 = IgG_S1 > 1,
-           IgA_Resultat_S1 = IgA_S1 > 1,
-           IgM_Resultat_S1 = IgM_S1 > 1) %>%
-    mutate(IgG_Resultat_S2 = IgG_S2 > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
-           IgA_Resultat_S2 = IgA_S2 > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
-           IgM_Resultat_S2 = IgM_S2 > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0)) %>%
-    mutate(IgG_Resultat_NP = IgG_NP > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
-           IgA_Resultat_NP = IgA_NP > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
-           IgM_Resultat_NP = IgM_NP > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0)) %>%
+    mutate(IgG_Resultat_S1 = IgG_S1_net_mfi_foc > 1,
+           IgA_Resultat_S1 = IgA_S1_net_mfi_foc > 1,
+           IgM_Resultat_S1 = IgM_S1_net_mfi_foc > 1) %>%
+    mutate(IgG_Resultat_S2 = IgG_S2_net_mfi_foc > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
+           IgA_Resultat_S2 = IgA_S2_net_mfi_foc > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
+           IgM_Resultat_S2 = IgM_S2_net_mfi_foc > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0)) %>%
+    mutate(IgG_Resultat_NP = IgG_NP_net_mfi_foc > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
+           IgA_Resultat_NP = IgA_NP_net_mfi_foc > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
+           IgM_Resultat_NP = IgM_NP_net_mfi_foc > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0)) %>%
     mutate(IgG_Resultat = IgG_Resultat_S1 | IgG_Resultat_S2 | IgG_Resultat_NP,
            IgA_Resultat = IgA_Resultat_S1 | IgA_Resultat_S2 | IgA_Resultat_NP,
            IgM_Resultat = IgM_Resultat_S1 | IgM_Resultat_S2 | IgM_Resultat_NP) %>%
@@ -238,10 +242,10 @@ test_result <- function(net_mfi_foc){
       IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 < 3 ~ "ks (keine)"
     )) %>%
     mutate(Kommentar = case_when(
-      (Serokonversion == "ks (keine)") & (IgG_S1 > 1 | IgA_S1 > 1 | IgM_S1 > 1 |
-                                                                 IgG_S2 > 1 | IgG_S2 > 1 | IgM_S2 > 1 |
-                                                                 IgG_NP > 1 | IgA_NP > 1 | IgM_NP > 1) ~ "*sarsk (Kreuzrkt whs)",
-      (Serokonversion == "ks (keine)") & (IgG_S1 >= 0.9 | IgA_S1 >= 0.9 | IgM_S1 >= 0.9) ~ "S1 Reaktivität grenzwertig, bitte Verlaufsprobe einsenden",
+      (Serokonversion == "ks (keine)") & (IgG_S1_net_mfi_foc > 1 | IgA_S1_net_mfi_foc > 1 | IgM_S1_net_mfi_foc > 1 |
+                                          IgG_S2_net_mfi_foc > 1 | IgG_S2_net_mfi_foc > 1 | IgM_S2_net_mfi_foc > 1 |
+                                          IgG_NP_net_mfi_foc > 1 | IgA_NP_net_mfi_foc > 1 | IgM_NP_net_mfi_foc > 1) ~ "*sarsk (Kreuzrkt whs)",
+      (Serokonversion == "ks (keine)") & (IgG_S1_net_mfi_foc >= 0.9 | IgA_S1_net_mfi_foc >= 0.9 | IgM_S1_net_mfi_foc >= 0.9) ~ "S1 Reaktivität grenzwertig, bitte Verlaufsprobe einsenden",
       TRUE ~ ""
     ))
   
