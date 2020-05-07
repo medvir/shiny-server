@@ -243,7 +243,7 @@ test_result <- function(net_mfi_foc){
     )) %>%
     mutate(Kommentar = case_when(
       (Serokonversion == "ks (keine)") & (IgG_S1_net_mfi_foc > 1 | IgA_S1_net_mfi_foc > 1 | IgM_S1_net_mfi_foc > 1 |
-                                          IgG_S2_net_mfi_foc > 1 | IgG_S2_net_mfi_foc > 1 | IgM_S2_net_mfi_foc > 1 |
+                                          IgG_S2_net_mfi_foc > 1 | IgA_S2_net_mfi_foc > 1 | IgM_S2_net_mfi_foc > 1 |
                                           IgG_NP_net_mfi_foc > 1 | IgA_NP_net_mfi_foc > 1 | IgM_NP_net_mfi_foc > 1) ~ "*sarsk (Kreuzrkt whs)",
       (Serokonversion == "ks (keine)") & (IgG_S1_net_mfi_foc >= 0.9 | IgA_S1_net_mfi_foc >= 0.9 | IgM_S1_net_mfi_foc >= 0.9) ~ "S1 Reaktivität grenzwertig, bitte Verlaufsprobe einsenden",
       TRUE ~ ""
