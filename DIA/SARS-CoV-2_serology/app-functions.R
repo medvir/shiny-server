@@ -232,16 +232,16 @@ test_result <- function(net_mfi_foc){
     mutate(IgG_Resultat = IgG_Resultat_S1 | IgG_Resultat_S2 | IgG_Resultat_NP,
            IgA_Resultat = IgA_Resultat_S1 | IgA_Resultat_S2 | IgA_Resultat_NP,
            IgM_Resultat = IgM_Resultat_S1 | IgM_Resultat_S2 | IgM_Resultat_NP) %>%
-    mutate(Interpretation = case_when(
-      IgG_Resultat_S1 == 1 ~ "Serokonversion fortgeschritten",
-      IgA_Resultat_S1 + IgM_Resultat_S1 > 0 ~ "Serokonversion partiell",
-      IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 < 3 ~ "keine SARS-CoV-2 Serokonversion"
+    mutate(Serokonversion = case_when(
+      IgG_Resultat_S1 == 1 ~ "fs (fortgeschritten)",
+      IgA_Resultat_S1 + IgM_Resultat_S1 > 0 ~ "ps (partiell)",
+      IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 < 3 ~ "ks (keine)"
     )) %>%
     mutate(Kommentar = case_when(
-      (Interpretation == "keine SARS-CoV-2 Serokonversion") & (IgG_S1 > 1 | IgA_S1 > 1 | IgM_S1 > 1 |
+      (Serokonversion == "ks (keine)") & (IgG_S1 > 1 | IgA_S1 > 1 | IgM_S1 > 1 |
                                                                  IgG_S2 > 1 | IgG_S2 > 1 | IgM_S2 > 1 |
-                                                                 IgG_NP > 1 | IgA_NP > 1 | IgM_NP > 1) ~ "Kreuzreaktivität mit anderem Coronavirus wahrscheinlich",
-      (Interpretation == "keine SARS-CoV-2 Serokonversion") & (IgG_S1 >= 0.9 | IgA_S1 >= 0.9 | IgM_S1 >= 0.9) ~ "S1 Reaktivität grenzwertig, bitte Verlaufsprobe einsenden",
+                                                                 IgG_NP > 1 | IgA_NP > 1 | IgM_NP > 1) ~ "*sarsk (Kreuzrkt whs)",
+      (Serokonversion == "ks (keine)") & (IgG_S1 >= 0.9 | IgA_S1 >= 0.9 | IgM_S1 >= 0.9) ~ "S1 Reaktivität grenzwertig, bitte Verlaufsprobe einsenden",
       TRUE ~ ""
     ))
   

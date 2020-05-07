@@ -163,15 +163,16 @@ server <- function(input, output, session) {
         net_mfi_foc_clean <-
             net_mfi_foc %>%
             select(Sample,
-                   Interpretation,
+                   Serokonversion,
                    IgG_Resultat, IgG_NP, IgG_S2, IgG_S1,
-                   IgA_Resultat, IgA_NP, IgA_S2, IgA_S1,
                    IgM_Resultat, IgM_NP, IgM_S2, IgM_S1,
+                   IgA_Resultat, IgA_NP, IgA_S2, IgA_S1,
                    Kommentar,
                    Fehler_count, Fehler_empty) %>%
             mutate(IgG_Resultat = if_else(IgG_Resultat, "pos", "neg"),
-                   IgA_Resultat = if_else(IgA_Resultat, "pos", "neg"),
-                   IgM_Resultat = if_else(IgM_Resultat, "pos", "neg"))
+                   IgM_Resultat = if_else(IgM_Resultat, "pos", "neg"),
+                   IgA_Resultat = if_else(IgA_Resultat, "pos", "neg")) %>%
+            arrange(Sample)
         
         net_mfi_foc_clean
     })
