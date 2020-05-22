@@ -39,6 +39,8 @@ shinyUI(fluidPage(
         
         checkboxInput("checkbox_blacklist", label = "Hide blacklisted viruses", value = FALSE),
         
+        textOutput("MS2_internal_control"),
+        
         verbatimTextOutput("value"),
         
         #hr(),

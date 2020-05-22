@@ -6,6 +6,7 @@ library(ggplot2)
 library(readr)
 library(DT)
 library(stringr)
+library(tidyselect)
 
 shinyServer(function(input, output) {
     
@@ -123,6 +124,14 @@ shinyServer(function(input, output) {
             arrange(desc(reads_total))
     })
     
+    MS2_reads <- reactive({
+        table_species() %>%
+            filter(str_detect(species, "MS2")) %>%
+            select(contains("RNA")) %>%
+            pull(1) %>%
+            sum()
+    })
+    
     species_selected <- reactive({
         table_species()[input$hoverIndexJS + 1, ] %>%
             pull(species)
@@ -185,5 +194,10 @@ shinyServer(function(input, output) {
     
     output$check_sample <- renderText({
         if (length(unique(substr(input$chosen_sample, 1, 10))) > 1) {"More than one sample selected!"}
+    })
+    
+    output$MS2_internal_control <- renderText({ 
+        paste0("the RNA sample contains: ", MS2_reads(), " reads assigned to MS2 \n
+               this equals xy reads per million filtered reads (RPM)")
     })
 })
