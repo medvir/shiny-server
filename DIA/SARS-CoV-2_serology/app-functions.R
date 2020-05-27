@@ -98,12 +98,18 @@ join_barcodes_isotypes <- function(barcodes, isotypes){
 # how many rows to skip ---------------------------------------------------
 
 skip_rows <- function(filepath, match){
+  
+  rows_until_data <-
+    read_csv(filepath, col_names = FALSE, skip_empty_rows = FALSE) %>%
+    pull(1) %>%
+    match("DataType:", .) - 6 # empty rows are somehow read twice that's why 6 are subtracted
+  
   count_row <-
-    read_csv(filepath, skip = 46, skip_empty_rows = FALSE) %>%
+    read_csv(filepath, skip = rows_until_data, skip_empty_rows = FALSE) %>%
     pull(2) %>%
     match(match, .)
     
-  return(count_row+46-1)
+  return(count_row+rows_until_data-1)
 }
 
 
