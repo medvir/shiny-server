@@ -18,6 +18,7 @@ read_barcodes <- function(barcodes_path){
   
   barcodes <-
     barcodes %>%
+    mutate_all(as.character) %>%
     pivot_longer(-row, names_to = "column", values_to = "Sample") %>%
     arrange(as.numeric(column)) %>%
     mutate(sample_nr = 1,
