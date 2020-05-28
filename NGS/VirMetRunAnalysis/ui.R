@@ -18,6 +18,7 @@ shinyUI(fluidPage(
                                     choices = sort(c("",
                                                      "Verena Kufner",
                                                      "Maryam Zaheri",
+                                                     "Gabriela Ziltener",
                                                      "Michael Huber",
                                                      "Stefan Schmutz"))),
                         numericInput("read_length", "Read length", value = 151)),
