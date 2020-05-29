@@ -173,7 +173,9 @@ get_net_mfi <- function(filepath, barcodes_isotypes, isotype_given=NA){
     net_mfi %>%
     filter(str_detect(Sample, pattern = regex("neg", ignore_case = TRUE))) %>%
     pivot_longer(-Sample, names_to = "target", values_to = "net_mfi_neg") %>%
-    select(-Sample)
+    group_by(target) %>%
+    summarise(net_mfi_neg = mean(net_mfi_neg)) %>%
+    ungroup()
   
   # foc = fold over cutoff
   cutoff = 3
