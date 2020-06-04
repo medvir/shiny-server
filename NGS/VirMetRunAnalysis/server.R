@@ -132,6 +132,19 @@ shinyServer(function(input, output) {
             sum()
     })
     
+    filtered_RNA_reads <- reactive({
+        reads_data() %>%
+            filter(sample %in% input$chosen_sample) %>%
+            filter(category == "passing_filter",
+                   str_detect(sample, "RNA")) %>%
+            pull(reads) %>%
+            sum()
+    })
+    
+    MS2_RPM <- reactive({
+        round(MS2_reads() / (filtered_RNA_reads()/1E6), digits = 0)
+    })
+    
     species_selected <- reactive({
         table_species()[input$hoverIndexJS + 1, ] %>%
             pull(species)
@@ -174,7 +187,8 @@ shinyServer(function(input, output) {
                            rows_selected = input$table_species_rows_selected,
                            checkbox_phages = input$checkbox_phages,
                            blacklist_file = tempblacklist,
-                           checkbox_blacklist = input$checkbox_blacklist
+                           checkbox_blacklist = input$checkbox_blacklist,
+                           MS2_RPM = MS2_RPM()
                            )
             
             rmarkdown::render(tempReport, output_file = file,
@@ -197,7 +211,7 @@ shinyServer(function(input, output) {
     })
     
     output$MS2_internal_control <- renderText({ 
-        paste0("the RNA sample contains: ", MS2_reads(), " reads assigned to MS2 \n
-               this equals xy reads per million filtered reads (RPM)")
+        paste0("the RNA sample contains ", MS2_reads(), " reads assigned to MS2 \n
+               this equals ", MS2_RPM(), " reads per million filtered reads (RPM)")
     })
 })

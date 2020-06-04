@@ -10,6 +10,7 @@ params:
   checkbox_phages: ""
   blacklist_file: ""
   checkbox_blacklist: ""
+  MS2_RPM: ""
 ---
 
 ```{r load-packages, include=FALSE}
@@ -88,6 +89,8 @@ t_info <-
                    value = params$sample_name)) %>%
   rbind(data.frame(key = "Quality-filtered reads (DNA/RNA)",
                    value = paste0(round(filtered_reads_dna/1000000, 3), "/", round(filtered_reads_rna/1000000, 3), " M"))) %>%
+  rbind(data.frame(key = "MS2 reads per million filtered reads",
+                   value = paste(params$MS2_RPM, "RPM"))) %>%
   rbind(data.frame(key = "Report date",
                    value = factor(Sys.Date()))) %>%
   rbind(data.frame(key = "Analyzed by",
