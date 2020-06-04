@@ -128,7 +128,7 @@ shinyServer(function(input, output) {
         table_species() %>%
             filter(str_detect(species, "MS2")) %>%
             select(contains("RNA")) %>%
-            pull(1) %>%
+            pull(1) %>% # CAUTION, only takes reads of first RNA sample if multiple are selected
             sum()
     })
     
