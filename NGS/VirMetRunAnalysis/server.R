@@ -125,14 +125,17 @@ shinyServer(function(input, output) {
     })
     
     MS2_reads <- reactive({
-        table_species() %>%
-            filter(str_detect(species, "MS2")) %>%
-            select(contains("RNA")) %>%
-            pull(1) %>% # CAUTION, only takes reads of first RNA sample if multiple are selected
+        req(!(is.null(input$chosen_sample)))
+        orgs_data() %>%
+            filter(sample %in% input$chosen_sample,
+                   str_detect(sample, "RNA"),
+                   str_detect(species, "MS2")) %>%
+            pull(reads) %>%
             sum()
     })
     
     filtered_RNA_reads <- reactive({
+        req(!(is.null(input$chosen_sample)))
         reads_data() %>%
             filter(sample %in% input$chosen_sample) %>%
             filter(category == "passing_filter",
@@ -142,6 +145,7 @@ shinyServer(function(input, output) {
     })
     
     MS2_RPM <- reactive({
+        req(!(is.null(input$chosen_sample)))
         round(MS2_reads() / (filtered_RNA_reads()/1E6), digits = 0)
     })
     
