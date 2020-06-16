@@ -38,7 +38,7 @@ shinyUI(fluidPage(
         
         checkboxInput("checkbox_phages", label = "Hide phages", value = FALSE),
         
-        checkboxInput("checkbox_blacklist", label = "Hide blacklisted viruses", value = FALSE),
+        checkboxInput("checkbox_blocklist", label = "Hide blocklisted viruses", value = FALSE),
         
         textOutput("MS2_internal_control"),
         

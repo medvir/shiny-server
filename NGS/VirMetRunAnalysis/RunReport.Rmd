@@ -8,8 +8,8 @@ params:
   user_name: ""
   rows_selected: ""
   checkbox_phages: ""
-  blacklist_file: ""
-  checkbox_blacklist: ""
+  blocklist_file: ""
+  checkbox_blocklist: ""
   MS2_RPM: ""
 ---
 
@@ -25,8 +25,8 @@ library(forcats)
 ```
 
 ```{r read-data, include=FALSE}
-blacklist <-
-  read_csv(params$blacklist_file)
+blocklist <-
+  read_csv(params$blocklist_file)
 
 orgs_data <-
   read_delim(params$orgs_file, "\t") %>%
@@ -44,11 +44,11 @@ if (isTRUE(params$checkbox_phages)) {
     filter(grepl("phage", ssciname, ignore.case = TRUE) == FALSE)
 }
 
-# if in shiny app selected, remove entries from blacklist provided
-if (isTRUE(params$checkbox_blacklist)) {
+# if in shiny app selected, remove entries from blocklist provided
+if (isTRUE(params$checkbox_blocklist)) {
   orgs_data <-
     orgs_data %>%
-    anti_join(blacklist, by = "stitle")
+    anti_join(blocklist, by = "stitle")
 }
 
 reads_data <-
@@ -150,7 +150,7 @@ domain_plot <-
   mutate(reads = sum(reads)) %>%
   sample_n(1) %>%
   ggplot(aes(x = fct_relevel(domain, rev(domain_order)), y = reads)) +
-  geom_col(aes(fill = workflow), colour = "black", position = "dodge") +
+  geom_col(aes(fill = workflow), colour = "block", position = "dodge") +
   scale_y_log10() +
   scale_fill_manual(values = c("white", "grey")) +
   coord_flip() +
@@ -203,21 +203,21 @@ kable(t_species_unselected)
 ```
 
 ```{r additional-statements, echo=FALSE, comment=NA}
-# Print statements in report if phages or blacklisted viruses were removed
+# Print statements in report if phages or blocklisted viruses were removed
 phages_removed_text <- ""
 if (isTRUE(params$checkbox_phages)) {
   phages_removed_text <- "Virus species containing 'phage' were excluded."
 }
 
-blacklisted_text <- ""
-if (isTRUE(params$checkbox_blacklist)) {
-  blacklisted_text <- "Blacklisted references[^2] were excluded."
+blocklisted_text <- ""
+if (isTRUE(params$checkbox_blocklist)) {
+  blocklisted_text <- "Blocklisted references[^2] were excluded."
 }
 
 ```
 
 `r phages_removed_text`
 
-`r blacklisted_text`
+`r blocklisted_text`
 
 [^2]: false annotated references

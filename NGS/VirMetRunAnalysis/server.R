@@ -15,8 +15,8 @@ shinyServer(function(input, output) {
         read_delim(input$reads_file$datapath, "\t")
     })
     
-    blacklist <-
-        read_csv("data/blacklist.csv")
+    blocklist <-
+        read_csv("data/blocklist.csv")
     
     orgs_data <- reactive({
         req(input$orgs_file)
@@ -34,10 +34,10 @@ shinyServer(function(input, output) {
             filter(grepl("phage", ssciname, ignore.case = TRUE) == FALSE)
         }
         
-        if (isTRUE(input$checkbox_blacklist)) {
+        if (isTRUE(input$checkbox_blocklist)) {
           orgs_data <-
             orgs_data %>%
-            anti_join(blacklist, by = "stitle")
+            anti_join(blocklist, by = "stitle")
         }
         
         orgs_data
@@ -181,8 +181,8 @@ shinyServer(function(input, output) {
             tempReport <- file.path(tempdir(), "report.Rmd")
             file.copy("RunReport.Rmd", tempReport, overwrite = TRUE)
             
-            tempblacklist <- file.path(tempdir(), "blacklist.csv")
-            file.copy("data/blacklist.csv", tempblacklist, overwrite = TRUE)
+            tempblocklist <- file.path(tempdir(), "blocklist.csv")
+            file.copy("data/blocklist.csv", tempblocklist, overwrite = TRUE)
             
             params <- list(orgs_file = input$orgs_file$datapath,
                            reads_file = input$reads_file$datapath,
@@ -190,8 +190,8 @@ shinyServer(function(input, output) {
                            user_name = input$user_name,
                            rows_selected = input$table_species_rows_selected,
                            checkbox_phages = input$checkbox_phages,
-                           blacklist_file = tempblacklist,
-                           checkbox_blacklist = input$checkbox_blacklist,
+                           blocklist_file = tempblocklist,
+                           checkbox_blocklist = input$checkbox_blocklist,
                            MS2_RPM = MS2_RPM()
                            )
             
