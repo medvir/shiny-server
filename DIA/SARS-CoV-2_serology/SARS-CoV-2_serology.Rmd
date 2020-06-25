@@ -44,60 +44,149 @@ options(knitr.kable.NA = "", knitr.table.format = "latex")
 
 names(table_output) <- sub("_", " ", names(table_output))
 
-
-table_output %>%
-  mutate(`IgG Resultat` = cell_spec(`IgG Resultat`, align = "r", background = if_else(`IgG Resultat` == "pos", "#bfbfbf", "#ffffff")),
-         `IgA Resultat` = cell_spec(`IgA Resultat`, align = "r", background = if_else(`IgA Resultat` == "pos", "#bfbfbf", "#ffffff")),
-         `IgM Resultat` = cell_spec(`IgM Resultat`, align = "r", background = if_else(`IgM Resultat` == "pos", "#bfbfbf", "#ffffff"))) %>%
-  
-  mutate(`IgG NP` = cell_spec(round(`IgG NP`, 1), align = "r",
-                              background = case_when(
-                                `IgG NP` > 1 ~ "#06aed5",
-                                `IgG NP` >= 0.9 ~ "#ffe74c",
-                                TRUE ~ "#ffffff")),
-         `IgG S2` = cell_spec(round(`IgG S2`, 1), align = "r",
-                              background = case_when(
-                                `IgG S2` > 1 ~ "#06aed5",
-                                `IgG S2` >= 0.9 ~ "#ffe74c",
-                                TRUE ~ "#ffffff")),
-         `IgG S1` = cell_spec(round(`IgG S1`, 1), align = "r",
-                              background = case_when(
-                                `IgG S1` > 1 ~ "#06aed5",
-                                `IgG S1` >= 0.9 ~ "#ffe74c",
-                                TRUE ~ "#ffffff"))) %>%
-  
+if (sum(str_detect(names(table_output), "RBD")) > 0){
+  table_output_print <-
+    table_output %>%
+    mutate(`IgG Resultat` = cell_spec(`IgG Resultat`, align = "r", background = if_else(`IgG Resultat` == "pos", "#bfbfbf", "#ffffff")),
+           `IgA Resultat` = cell_spec(`IgA Resultat`, align = "r", background = if_else(`IgA Resultat` == "pos", "#bfbfbf", "#ffffff")),
+           `IgM Resultat` = cell_spec(`IgM Resultat`, align = "r", background = if_else(`IgM Resultat` == "pos", "#bfbfbf", "#ffffff"))) %>%
+    
+    mutate(`IgG NP` = cell_spec(round(`IgG NP`, 1), align = "r",
+                                background = case_when(
+                                  `IgG NP` > 1 ~ "#06aed5",
+                                  `IgG NP` >= 0.9 ~ "#ffe74c",
+                                  TRUE ~ "#ffffff")),
+           `IgG S2` = cell_spec(round(`IgG S2`, 1), align = "r",
+                                background = case_when(
+                                  `IgG S2` > 1 ~ "#06aed5",
+                                  `IgG S2` >= 0.9 ~ "#ffe74c",
+                                  TRUE ~ "#ffffff")),
+           `IgG S1` = cell_spec(round(`IgG S1`, 1), align = "r",
+                                background = case_when(
+                                  `IgG S1` > 1 ~ "#06aed5",
+                                  `IgG S1` >= 0.9 ~ "#ffe74c",
+                                  TRUE ~ "#ffffff")),
+           `IgG RBD` = cell_spec(round(`IgG RBD`, 1), align = "r",
+                                 background = case_when(
+                                   `IgG RBD` > 1 ~ "#06aed5",
+                                   `IgG RBD` >= 0.9 ~ "#ffe74c",
+                                   TRUE ~ "#ffffff")),
+           `IgG HKU1` = cell_spec(round(`IgG HKU1`, 1), align = "r",
+                                  background = case_when(
+                                    `IgG HKU1` > 1 ~ "#06aed5",
+                                    `IgG HKU1` >= 0.9 ~ "#ffe74c",
+                                    TRUE ~ "#ffffff"))) %>%
+    
     mutate(`IgA NP` = cell_spec(round(`IgA NP`, 1), align = "r",
-                              background = case_when(
-                                `IgA NP` > 1 ~ "#06aed5",
-                                `IgA NP` >= 0.9 ~ "#ffe74c",
-                                TRUE ~ "#ffffff")),
-         `IgA S2` = cell_spec(round(`IgA S2`, 1), align = "r",
-                              background = case_when(
-                                `IgA S2` > 1 ~ "#06aed5",
-                                `IgA S2` >= 0.9 ~ "#ffe74c",
-                                TRUE ~ "#ffffff")),
-         `IgA S1` = cell_spec(round(`IgA S1`, 1), align = "r",
-                              background = case_when(
-                                `IgA S1` > 1 ~ "#06aed5",
-                                `IgA S1` >= 0.9 ~ "#ffe74c",
-                                TRUE ~ "#ffffff"))) %>%
-  
-      mutate(`IgM NP` = cell_spec(round(`IgM NP`, 1), align = "r",
-                              background = case_when(
-                                `IgM NP` > 1 ~ "#06aed5",
-                                `IgM NP` >= 0.9 ~ "#ffe74c",
-                                TRUE ~ "#ffffff")),
-         `IgM S2` = cell_spec(round(`IgM S2`, 1), align = "r",
-                              background = case_when(
-                                `IgM S2` > 1 ~ "#06aed5",
-                                `IgM S2` >= 0.9 ~ "#ffe74c",
-                                TRUE ~ "#ffffff")),
-         `IgM S1` = cell_spec(round(`IgM S1`, 1), align = "r",
-                              background = case_when(
-                                `IgM S1` > 1 ~ "#06aed5",
-                                `IgM S1` >= 0.9 ~ "#ffe74c",
-                                TRUE ~ "#ffffff"))) %>%
+                                background = case_when(
+                                  `IgA NP` > 1 ~ "#06aed5",
+                                  `IgA NP` >= 0.9 ~ "#ffe74c",
+                                  TRUE ~ "#ffffff")),
+           `IgA S2` = cell_spec(round(`IgA S2`, 1), align = "r",
+                                background = case_when(
+                                  `IgA S2` > 1 ~ "#06aed5",
+                                  `IgA S2` >= 0.9 ~ "#ffe74c",
+                                  TRUE ~ "#ffffff")),
+           `IgA S1` = cell_spec(round(`IgA S1`, 1), align = "r",
+                                background = case_when(
+                                  `IgA S1` > 1 ~ "#06aed5",
+                                  `IgA S1` >= 0.9 ~ "#ffe74c",
+                                  TRUE ~ "#ffffff")),
+           `IgA RBD` = cell_spec(round(`IgA RBD`, 1), align = "r",
+                                 background = case_when(
+                                   `IgA RBD` > 1 ~ "#06aed5",
+                                   `IgA RBD` >= 0.9 ~ "#ffe74c",
+                                   TRUE ~ "#ffffff")),
+           `IgA HKU1` = cell_spec(round(`IgA HKU1`, 1), align = "r",
+                                  background = case_when(
+                                    `IgA HKU1` > 1 ~ "#06aed5",
+                                    `IgA HKU1` >= 0.9 ~ "#ffe74c",
+                                    TRUE ~ "#ffffff"))) %>%
+    
+    mutate(`IgM NP` = cell_spec(round(`IgM NP`, 1), align = "r",
+                                background = case_when(
+                                  `IgM NP` > 1 ~ "#06aed5",
+                                  `IgM NP` >= 0.9 ~ "#ffe74c",
+                                  TRUE ~ "#ffffff")),
+           `IgM S2` = cell_spec(round(`IgM S2`, 1), align = "r",
+                                background = case_when(
+                                  `IgM S2` > 1 ~ "#06aed5",
+                                  `IgM S2` >= 0.9 ~ "#ffe74c",
+                                  TRUE ~ "#ffffff")),
+           `IgM S1` = cell_spec(round(`IgM S1`, 1), align = "r",
+                                background = case_when(
+                                  `IgM S1` > 1 ~ "#06aed5",
+                                  `IgM S1` >= 0.9 ~ "#ffe74c",
+                                  TRUE ~ "#ffffff")),
+           `IgM RBD` = cell_spec(round(`IgM RBD`, 1), align = "r",
+                                 background = case_when(
+                                   `IgM RBD` > 1 ~ "#06aed5",
+                                   `IgM RBD` >= 0.9 ~ "#ffe74c",
+                                   TRUE ~ "#ffffff")),
+           `IgM HKU1` = cell_spec(round(`IgM HKU1`, 1), align = "r",
+                                  background = case_when(
+                                    `IgM HKU1` > 1 ~ "#06aed5",
+                                    `IgM HKU1` >= 0.9 ~ "#ffe74c",
+                                    TRUE ~ "#ffffff")))
 
+} else{
+  table_output_print <-
+    table_output %>%
+    mutate(`IgG Resultat` = cell_spec(`IgG Resultat`, align = "r", background = if_else(`IgG Resultat` == "pos", "#bfbfbf", "#ffffff")),
+           `IgA Resultat` = cell_spec(`IgA Resultat`, align = "r", background = if_else(`IgA Resultat` == "pos", "#bfbfbf", "#ffffff")),
+           `IgM Resultat` = cell_spec(`IgM Resultat`, align = "r", background = if_else(`IgM Resultat` == "pos", "#bfbfbf", "#ffffff"))) %>%
+    
+    mutate(`IgG NP` = cell_spec(round(`IgG NP`, 1), align = "r",
+                                background = case_when(
+                                  `IgG NP` > 1 ~ "#06aed5",
+                                  `IgG NP` >= 0.9 ~ "#ffe74c",
+                                  TRUE ~ "#ffffff")),
+           `IgG S2` = cell_spec(round(`IgG S2`, 1), align = "r",
+                                background = case_when(
+                                  `IgG S2` > 1 ~ "#06aed5",
+                                  `IgG S2` >= 0.9 ~ "#ffe74c",
+                                  TRUE ~ "#ffffff")),
+           `IgG S1` = cell_spec(round(`IgG S1`, 1), align = "r",
+                                background = case_when(
+                                  `IgG S1` > 1 ~ "#06aed5",
+                                  `IgG S1` >= 0.9 ~ "#ffe74c",
+                                  TRUE ~ "#ffffff"))) %>%
+    
+    mutate(`IgA NP` = cell_spec(round(`IgA NP`, 1), align = "r",
+                                background = case_when(
+                                  `IgA NP` > 1 ~ "#06aed5",
+                                  `IgA NP` >= 0.9 ~ "#ffe74c",
+                                  TRUE ~ "#ffffff")),
+           `IgA S2` = cell_spec(round(`IgA S2`, 1), align = "r",
+                                background = case_when(
+                                  `IgA S2` > 1 ~ "#06aed5",
+                                  `IgA S2` >= 0.9 ~ "#ffe74c",
+                                  TRUE ~ "#ffffff")),
+           `IgA S1` = cell_spec(round(`IgA S1`, 1), align = "r",
+                                background = case_when(
+                                  `IgA S1` > 1 ~ "#06aed5",
+                                  `IgA S1` >= 0.9 ~ "#ffe74c",
+                                  TRUE ~ "#ffffff"))) %>%
+    
+    mutate(`IgM NP` = cell_spec(round(`IgM NP`, 1), align = "r",
+                                background = case_when(
+                                  `IgM NP` > 1 ~ "#06aed5",
+                                  `IgM NP` >= 0.9 ~ "#ffe74c",
+                                  TRUE ~ "#ffffff")),
+           `IgM S2` = cell_spec(round(`IgM S2`, 1), align = "r",
+                                background = case_when(
+                                  `IgM S2` > 1 ~ "#06aed5",
+                                  `IgM S2` >= 0.9 ~ "#ffe74c",
+                                  TRUE ~ "#ffffff")),
+           `IgM S1` = cell_spec(round(`IgM S1`, 1), align = "r",
+                                background = case_when(
+                                  `IgM S1` > 1 ~ "#06aed5",
+                                  `IgM S1` >= 0.9 ~ "#ffe74c",
+                                  TRUE ~ "#ffffff")))
+
+}
+
+table_output_print %>%
   kable(escape = F, booktabs = T, linesep = "") %>%
   kable_styling(latex_options = c("scale_down"))
   
