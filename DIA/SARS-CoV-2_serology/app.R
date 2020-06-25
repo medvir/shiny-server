@@ -173,18 +173,35 @@ server <- function(input, output, session) {
     table <- reactive({
         
         # only rename and select columns, no transformation/calculations should be done here
-        net_mfi_foc_clean <-
-            table_raw() %>%
-            rename(IgG_NP = IgG_NP_net_mfi_foc, IgG_S2 = IgG_S2_net_mfi_foc, IgG_S1 = IgG_S1_net_mfi_foc,
-                   IgM_NP = IgM_NP_net_mfi_foc, IgM_S2 = IgM_S2_net_mfi_foc, IgM_S1 = IgM_S1_net_mfi_foc,
-                   IgA_NP = IgA_NP_net_mfi_foc, IgA_S2 = IgA_S2_net_mfi_foc, IgA_S1 = IgA_S1_net_mfi_foc) %>%
-            select(Sample,
-                   Serokonversion,
-                   IgG_Resultat, IgG_NP, IgG_S2, IgG_S1,
-                   IgM_Resultat, IgM_NP, IgM_S2, IgM_S1,
-                   IgA_Resultat, IgA_NP, IgA_S2, IgA_S1,
-                   Kommentar,
-                   Fehler_count, Fehler_empty)
+        
+        if (sum(str_detect(names(table_raw()), "RBD")) > 0){
+            net_mfi_foc_clean <-
+                table_raw() %>%
+                rename(IgG_NP = IgG_NP_net_mfi_foc, IgG_S2 = IgG_S2_net_mfi_foc, IgG_S1 = IgG_S1_net_mfi_foc, IgG_RBD = IgG_RBD_net_mfi_foc, IgG_HKU1 = IgG_HKU1_net_mfi_foc,
+                       IgM_NP = IgM_NP_net_mfi_foc, IgM_S2 = IgM_S2_net_mfi_foc, IgM_S1 = IgM_S1_net_mfi_foc, IgM_RBD = IgM_RBD_net_mfi_foc, IgM_HKU1 = IgM_HKU1_net_mfi_foc,
+                       IgA_NP = IgA_NP_net_mfi_foc, IgA_S2 = IgA_S2_net_mfi_foc, IgA_S1 = IgA_S1_net_mfi_foc, IgA_RBD = IgA_RBD_net_mfi_foc, IgA_HKU1 = IgA_HKU1_net_mfi_foc) %>%
+                select(Sample,
+                       Serokonversion,
+                       IgG_Resultat, IgG_NP, IgG_S2, IgG_S1, IgG_RBD, IgG_HKU1,
+                       IgM_Resultat, IgM_NP, IgM_S2, IgM_S1, IgM_RBD, IgM_HKU1,
+                       IgA_Resultat, IgA_NP, IgA_S2, IgA_S1, IgA_RBD, IgA_HKU1,
+                       Kommentar,
+                       Fehler_count, Fehler_empty)
+        } else{
+            net_mfi_foc_clean <-
+                table_raw() %>%
+                rename(IgG_NP = IgG_NP_net_mfi_foc, IgG_S2 = IgG_S2_net_mfi_foc, IgG_S1 = IgG_S1_net_mfi_foc,
+                       IgM_NP = IgM_NP_net_mfi_foc, IgM_S2 = IgM_S2_net_mfi_foc, IgM_S1 = IgM_S1_net_mfi_foc,
+                       IgA_NP = IgA_NP_net_mfi_foc, IgA_S2 = IgA_S2_net_mfi_foc, IgA_S1 = IgA_S1_net_mfi_foc) %>%
+                select(Sample,
+                       Serokonversion,
+                       IgG_Resultat, IgG_NP, IgG_S2, IgG_S1,
+                       IgM_Resultat, IgM_NP, IgM_S2, IgM_S1,
+                       IgA_Resultat, IgA_NP, IgA_S2, IgA_S1,
+                       Kommentar,
+                       Fehler_count, Fehler_empty) 
+        }
+        
         
         net_mfi_foc_clean
     })
