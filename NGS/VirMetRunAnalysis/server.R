@@ -200,6 +200,93 @@ shinyServer(function(input, output) {
                               envir = new.env(parent = globalenv()))
         })
     
+    output$csv_table <- downloadHandler(
+        filename = function() {
+            paste0(substr(input$chosen_sample[1], 1, 13), ".csv")
+        },
+        content = function(file) {
+            req(input$orgs_file)
+            req(!(is.null(input$chosen_sample)))
+            
+            read_count_dna <-
+                reads_data() %>%
+                filter(sample == str_subset(input$chosen_sample, "DNA")) %>%
+                mutate(domain = case_when(
+                    category == "raw_reads" ~ "raw_reads",
+                    category == "passing_filter" ~ "quality_filtered_reads",
+                    category == "matching_humanGRCh38" ~ "human_reads",
+                    str_detect(category, "matching_bact") ~ "bacterial_reads",
+                    category == "matching_fungi1" ~ "fungal_reads",
+                    category == "matching_bt_ref" ~ "bovine_reads",
+                    category == "viral_reads" ~ "viral_reads",
+                    category == "undetermined_reads" ~ "undetermined_reads",
+                    TRUE ~ "none"
+                )) %>%
+                filter(domain != "none")
+            
+            read_count_rna <-
+                reads_data() %>%
+                filter(sample == str_subset(input$chosen_sample, "RNA")) %>%
+                mutate(domain = case_when(
+                    category == "raw_reads" ~ "raw_reads",
+                    category == "passing_filter" ~ "quality_filtered_reads",
+                    category == "matching_humanGRCh38" ~ "human_reads",
+                    str_detect(category, "matching_bact") ~ "bacterial_reads",
+                    category == "matching_fungi1" ~ "fungal_reads",
+                    category == "matching_bt_ref" ~ "bovine_reads",
+                    category == "viral_reads" ~ "viral_reads",
+                    category == "undetermined_reads" ~ "undetermined_reads",
+                    TRUE ~ "none"
+                )) %>%
+                filter(domain != "none")
+            
+            species_reported <-
+                table_species()[input$table_species_rows_selected, ] %>%
+                pull(species)
+            
+            read.delim(input$orgs_file$datapath, sep = "\t") %>%
+                filter(sample %in% input$chosen_sample) %>%
+                select(species, reads, sample) %>%
+                group_by(species, sample) %>%
+                summarise(reads_sum = sum(reads)) %>%
+                spread(key = sample, value = reads_sum, fill = 0) %>%
+                ungroup() %>%
+                rename(species_reads_dna = contains("DNA"),
+                       species_reads_rna = contains("RNA")) %>%
+                mutate(reported = if_else(species %in% species_reported, TRUE, FALSE),
+                       run_name = reads_data()$run[1],
+                       
+                       dna_sample_name = str_subset(input$chosen_sample, "DNA"),
+                       rna_sample_name = str_subset(input$chosen_sample, "RNA"),
+                       
+                       dna_raw_reads = filter(read_count_dna, domain == "raw_reads")$reads,
+                       rna_raw_reads = filter(read_count_rna, domain == "raw_reads")$reads,
+
+                       dna_quality_filtered_reads = filter(read_count_dna, domain == "quality_filtered_reads")$reads,
+                       rna_quality_filtered_reads = filter(read_count_rna, domain == "quality_filtered_reads")$reads,
+
+                       dna_human_reads = filter(read_count_dna, domain == "human_reads")$reads,
+                       rna_human_reads = filter(read_count_rna, domain == "human_reads")$reads,
+
+                       dna_bacterial_reads = sum(filter(read_count_dna, domain == "bacterial_reads")$reads),
+                       rna_bacterial_reads = sum(filter(read_count_rna, domain == "bacterial_reads")$reads),
+
+                       dna_fungal_reads = filter(read_count_dna, domain == "fungal_reads")$reads,
+                       rna_fungal_reads = filter(read_count_rna, domain == "fungal_reads")$reads,
+
+                       dna_bovine_reads = filter(read_count_dna, domain == "bovine_reads")$reads,
+                       rna_bovine_reads = filter(read_count_rna, domain == "bovine_reads")$reads,
+
+                       dna_viral_reads = filter(read_count_dna, domain == "viral_reads")$reads,
+                       rna_viral_reads = filter(read_count_rna, domain == "viral_reads")$reads,
+
+                       dna_undetermined_reads = filter(read_count_dna, domain == "undetermined_reads")$reads,
+                       rna_undetermined_reads = filter(read_count_rna, domain == "undetermined_reads")$reads,
+                       
+                       rna_internal_control_reads = MS2_reads()) %>%
+                write_csv(file)
+        })
+    
     output$samples_found <- renderUI({
         found_samples <- reads_data() %>% arrange(sample) %>% .$sample %>% unique() 
         selectInput("chosen_sample", "Choose one or more samples:", found_samples, multiple = TRUE,

@@ -24,7 +24,8 @@ shinyUI(fluidPage(
                         numericInput("read_length", "Read length", value = 151)),
                  column(4,
                         wellPanel(
-                                downloadButton("report", "Generate report"),
+                                downloadButton("report", "Generate pdf report"),
+                                downloadButton("csv_table", "Generate csv table"),
                                 span(h4(textOutput("check_sample")), style = "color:red")))),
         
         hr(),
