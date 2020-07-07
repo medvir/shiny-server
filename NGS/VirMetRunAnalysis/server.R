@@ -64,7 +64,27 @@ shinyServer(function(input, output) {
 
     reads_data <- reactive({
         req(input$reads_file)
+        
         read_delim(input$reads_file$datapath, "\t")
+        })
+    
+    reads_data_processed <- reactive({
+        req(input$reads_file)
+        
+        reads_data() %>%
+            filter(sample %in% input$chosen_sample) %>%
+            mutate(category_grouped = case_when(
+                category == "raw_reads" ~ "raw_reads",
+                category == "passing_filter" ~ "quality_filtered_reads",
+                category == "matching_humanGRCh38" ~ "human",
+                str_detect(category, "matching_bact") ~ "bacterial",
+                category == "matching_fungi1" ~ "fungal",
+                category == "matching_bt_ref" ~ "bovine",
+                category == "viral_reads" ~ "viral",
+                category == "undetermined_reads" ~ "undetermined",
+                TRUE ~ "none"
+            )) %>%
+            filter(!(category_grouped == "none"))
         })
     
     blocklist <-
@@ -122,8 +142,7 @@ shinyServer(function(input, output) {
 
     output$plot_run <- renderPlot({
         req(!(is.null(input$chosen_sample)))
-        reads_data() %>%
-            filter(sample %in% input$chosen_sample) %>%
+        reads_data_processed() %>%
             filter(category == "raw_reads" | category == "passing_filter") %>%
             mutate(quality = factor(category, levels = c("raw_reads", "passing_filter"))) %>%
             
@@ -143,25 +162,14 @@ shinyServer(function(input, output) {
     
     output$plot_domain <- renderPlot({
         req(!(is.null(input$chosen_sample)))
-        reads_data() %>%
-            filter(sample %in% input$chosen_sample) %>%
-            filter(!(category == "raw_reads" | category == "passing_filter" | category == "reads_to_blast")) %>%
-            mutate(domain = case_when(
-                str_detect(category, "matching_bact") ~ "bacterial",
-                category %in% c("viral_reads") ~ "viral",
-                category %in% c("matching_humanGRCh38") ~ "human",
-                category %in% c("undetermined_reads") ~ "undetermined",
-                category %in% c("matching_bt_ref") ~ "bovine",
-                category %in% c("matching_fungi1") ~ "fungal",
-                TRUE ~ "none"
-            )) %>%
-            mutate(domain = factor(as.character(domain), levels = c("human", "bacterial", "fungal", "bovine", "viral", "undetermined"))) %>%
-            filter(!(domain == "none")) %>%
+        reads_data_processed() %>%
+            filter(!(category == "raw_reads" | category == "passing_filter")) %>%
+            mutate(category_grouped = factor(as.character(category_grouped), levels = c("human", "bacterial", "fungal", "bovine", "viral", "undetermined"))) %>%
             group_by(sample) %>%
             mutate(percent = reads/sum(reads)) %>%
             
             ### plot
-            ggplot(aes(x = domain, y = percent, fill = domain)) +
+            ggplot(aes(x = category_grouped, y = percent, fill = category_grouped)) +
             geom_col(colour = "black") +
             scale_fill_manual(name = "",
                               values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00")) +
@@ -283,85 +291,50 @@ shinyServer(function(input, output) {
             req(!(is.null(input$chosen_sample)))
             
             read_count_dna <-
-                reads_data() %>%
-                filter(sample == str_subset(input$chosen_sample, "DNA")) %>%
-                mutate(domain = case_when(
-                    category == "raw_reads" ~ "raw_reads",
-                    category == "passing_filter" ~ "quality_filtered_reads",
-                    category == "matching_humanGRCh38" ~ "human_reads",
-                    str_detect(category, "matching_bact") ~ "bacterial_reads",
-                    category == "matching_fungi1" ~ "fungal_reads",
-                    category == "matching_bt_ref" ~ "bovine_reads",
-                    category == "viral_reads" ~ "viral_reads",
-                    category == "undetermined_reads" ~ "undetermined_reads",
-                    TRUE ~ "none"
-                )) %>%
-                filter(domain != "none")
+                reads_data_processed() %>%
+                filter(sample == str_subset(input$chosen_sample, "DNA"))
             
             read_count_rna <-
-                reads_data() %>%
-                filter(sample == str_subset(input$chosen_sample, "RNA")) %>%
-                mutate(domain = case_when(
-                    category == "raw_reads" ~ "raw_reads",
-                    category == "passing_filter" ~ "quality_filtered_reads",
-                    category == "matching_humanGRCh38" ~ "human_reads",
-                    str_detect(category, "matching_bact") ~ "bacterial_reads",
-                    category == "matching_fungi1" ~ "fungal_reads",
-                    category == "matching_bt_ref" ~ "bovine_reads",
-                    category == "viral_reads" ~ "viral_reads",
-                    category == "undetermined_reads" ~ "undetermined_reads",
-                    TRUE ~ "none"
-                )) %>%
-                filter(domain != "none")
+                reads_data_processed() %>%
+                filter(sample == str_subset(input$chosen_sample, "RNA"))
             
-            species_reported <-
-                table_species()[input$table_species_rows_selected, ] %>%
-                pull(species)
-            
-            read.delim(input$orgs_file$datapath, sep = "\t") %>%
-                filter(sample %in% input$chosen_sample) %>%
-                select(species, reads, sample) %>%
-                group_by(species, sample) %>%
-                summarise(reads_sum = sum(reads)) %>%
-                spread(key = sample, value = reads_sum, fill = 0) %>%
-                ungroup() %>%
+            read_table_species(orgs_data_complete(), input$chosen_sample) %>%
+                select(-reads_total) %>%
                 rename(species_reads_dna = contains("DNA"),
                        species_reads_rna = contains("RNA")) %>%
-                mutate(reported = if_else(species %in% species_reported, TRUE, FALSE),
+                mutate(reported = if_else(species %in% species_reported(), TRUE, FALSE),
                        run_name = reads_data()$run[1],
-                       
+
+                       molis_nr = unique(str_extract(input$chosen_sample, "\\d{10,}-*[A-z]*(?=-)")),
+
                        dna_sample_name = str_subset(input$chosen_sample, "DNA"),
                        rna_sample_name = str_subset(input$chosen_sample, "RNA"),
-                       
-                       dna_raw_reads = filter(read_count_dna, domain == "raw_reads")$reads,
-                       rna_raw_reads = filter(read_count_rna, domain == "raw_reads")$reads,
 
-                       dna_quality_filtered_reads = filter(read_count_dna, domain == "quality_filtered_reads")$reads,
-                       rna_quality_filtered_reads = filter(read_count_rna, domain == "quality_filtered_reads")$reads,
+                       dna_raw_reads = filter(read_count_dna, category_grouped == "raw_reads")$reads,
+                       rna_raw_reads = filter(read_count_rna, category_grouped == "raw_reads")$reads,
 
-                       dna_human_reads = filter(read_count_dna, domain == "human_reads")$reads,
-                       rna_human_reads = filter(read_count_rna, domain == "human_reads")$reads,
+                       dna_quality_filtered_reads = filter(read_count_dna, category_grouped == "quality_filtered_reads")$reads,
+                       rna_quality_filtered_reads = filter(read_count_rna, category_grouped == "quality_filtered_reads")$reads,
 
-                       dna_bacterial_reads = sum(filter(read_count_dna, domain == "bacterial_reads")$reads),
-                       rna_bacterial_reads = sum(filter(read_count_rna, domain == "bacterial_reads")$reads),
+                       dna_human_reads = filter(read_count_dna, category_grouped == "human")$reads,
+                       rna_human_reads = filter(read_count_rna, category_grouped == "human")$reads,
 
-                       dna_fungal_reads = filter(read_count_dna, domain == "fungal_reads")$reads,
-                       rna_fungal_reads = filter(read_count_rna, domain == "fungal_reads")$reads,
+                       dna_bacterial_reads = sum(filter(read_count_dna, category_grouped == "bacterial")$reads),
+                       rna_bacterial_reads = sum(filter(read_count_rna, category_grouped == "bacterial")$reads),
 
-                       dna_bovine_reads = filter(read_count_dna, domain == "bovine_reads")$reads,
-                       rna_bovine_reads = filter(read_count_rna, domain == "bovine_reads")$reads,
+                       dna_fungal_reads = filter(read_count_dna, category_grouped == "fungal")$reads,
+                       rna_fungal_reads = filter(read_count_rna, category_grouped == "fungal")$reads,
 
-                       dna_viral_reads = filter(read_count_dna, domain == "viral_reads")$reads,
-                       rna_viral_reads = filter(read_count_rna, domain == "viral_reads")$reads,
+                       dna_bovine_reads = filter(read_count_dna, category_grouped == "bovine")$reads,
+                       rna_bovine_reads = filter(read_count_rna, category_grouped == "bovine")$reads,
 
-                       dna_undetermined_reads = filter(read_count_dna, domain == "undetermined_reads")$reads,
-                       rna_undetermined_reads = filter(read_count_rna, domain == "undetermined_reads")$reads,
-                       
+                       dna_viral_reads = filter(read_count_dna, category_grouped == "viral")$reads,
+                       rna_viral_reads = filter(read_count_rna, category_grouped == "viral")$reads,
+
+                       dna_undetermined_reads = filter(read_count_dna, category_grouped == "undetermined")$reads,
+                       rna_undetermined_reads = filter(read_count_rna, category_grouped == "undetermined")$reads,
+
                        rna_internal_control_reads = MS2_reads()) %>%
                 write_csv(file)
         })
-    
-
-    
-
 })

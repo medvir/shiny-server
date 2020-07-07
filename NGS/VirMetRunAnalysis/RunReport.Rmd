@@ -32,7 +32,7 @@ reads_data <- params$reads_data
 ```
 
 ## Run Information
-```{r run-information, echo=FALSE, comment=NA, tidy=TRUE}
+```{r run-information, echo=FALSE, comment=NA, tidy=TRUE, warning=FALSE, message=FALSE}
 run_name <-
   reads_data$run[1]
 
@@ -135,7 +135,7 @@ domain_plot <-
 
 ## Detected[^1] Virus Species
 
-```{r list-relevant, results='asis', echo=FALSE}
+```{r list-relevant, results='asis', echo=FALSE, warning=FALSE, message=FALSE}
 t_species <-
   orgs_data_complete %>%
   filter(sample %in% params$sample_name) %>%
