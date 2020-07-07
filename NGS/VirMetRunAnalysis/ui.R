@@ -37,7 +37,7 @@ shinyUI(fluidPage(
                         h3("Distribution of sequencing reads into taxonomic categories"),
                         withLoader(plotOutput(outputId = "plot_domain"), type = "html", loader = "dnaspin"))),
         
-        checkboxInput("checkbox_phages", label = "Hide phages", value = FALSE),
+        checkboxInput("checkbox_phages", label = "Hide phages and endogenous retroviruses", value = FALSE),
         
         checkboxInput("checkbox_blocklist", label = "Hide blocklisted viruses", value = TRUE),
         

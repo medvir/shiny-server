@@ -22,12 +22,13 @@ read_orgs_data <- function(orgs_file, read_length, checkbox_phages, checkbox_blo
         mutate(covered_percent = round(covered_percent, 1))
     
     if (isTRUE(checkbox_phages)) {
-        phage_pattern <- "phage|escherichia|streptococcus|staphylococcus|bacillus|actinomyces|ostreococcus"
+        phage_endogenous_retrovirus_pattern <-
+            "phage|escherichia|streptococcus|staphylococcus|bacillus|actinomyces|ostreococcus|myoviridae|clostridium|shigella|haemophilus|endogenous retrovirus"
         
         orgs_data <-
             orgs_data %>%
-            filter(grepl(phage_pattern, species, ignore.case = TRUE) == FALSE) %>%
-            filter(grepl(phage_pattern, ssciname, ignore.case = TRUE) == FALSE)
+            filter(grepl(phage_endogenous_retrovirus_pattern, species, ignore.case = TRUE) == FALSE) %>%
+            filter(grepl(phage_endogenous_retrovirus_pattern, ssciname, ignore.case = TRUE) == FALSE)
     }
     
     if (isTRUE(checkbox_blocklist)) {
