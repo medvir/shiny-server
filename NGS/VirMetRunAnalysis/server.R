@@ -9,7 +9,52 @@ library(stringr)
 library(tidyselect)
 
 
+# define functions --------------------------------------------------------
 
+read_orgs_data <- function(orgs_file, read_length, checkbox_phages, checkbox_blocklist, blocklist){
+    # reads orgs_species_found.tsv, calculate the covered_score and returns the table
+    # with optional removing phages and entries from the blocklist
+    orgs_data <-
+        read.delim(orgs_file$datapath, sep = "\t") %>%
+        mutate(covered_percent = 100 * covered_region / seq_len) %>%
+        mutate(covered_exp = 100 * (1 - exp(-reads * read_length / seq_len))) %>%
+        mutate(covered_score = round(100 * covered_percent / covered_exp, 1)) %>%
+        mutate(covered_percent = round(covered_percent, 1))
+    
+    if (isTRUE(checkbox_phages)) {
+        phage_pattern <- "phage|escherichia|streptococcus|staphylococcus|bacillus|actinomyces|ostreococcus"
+        
+        orgs_data <-
+            orgs_data %>%
+            filter(grepl(phage_pattern, species, ignore.case = TRUE) == FALSE) %>%
+            filter(grepl(phage_pattern, ssciname, ignore.case = TRUE) == FALSE)
+    }
+    
+    if (isTRUE(checkbox_blocklist)) {
+        orgs_data <-
+            orgs_data %>%
+            anti_join(blocklist, by = "stitle")
+    }
+    
+    return(orgs_data)
+    
+}
+
+read_table_species <- function(orgs_data, chosen_sample){
+    # takes a orgs_data table and groups results by species
+    table_species <-
+        orgs_data %>%
+        filter(sample %in% chosen_sample) %>%
+        select(species, reads, sample) %>%
+        group_by(species, sample) %>%
+        summarise(reads_sum = sum(reads)) %>%
+        spread(key = sample, value = reads_sum, fill = 0) %>%
+        ungroup() %>%
+        mutate(reads_total = as.integer(rowSums(.[,-1], na.rm = TRUE))) %>%
+        arrange(desc(reads_total))
+    
+    return(table_species)
+}
 
 
 shinyServer(function(input, output) {
@@ -28,42 +73,16 @@ shinyServer(function(input, output) {
     
     orgs_data <- reactive({
         req(input$orgs_file)
-        orgs_data <-
-          read.delim(input$orgs_file$datapath, sep = "\t") %>%
-          mutate(covered_percent = 100 * covered_region / seq_len) %>%
-          mutate(covered_exp = 100 * (1 - exp(-reads * input$read_length / seq_len))) %>%
-          mutate(covered_score = round(100 * covered_percent / covered_exp, 1)) %>%
-          mutate(covered_percent = round(covered_percent, 1))
         
-        if (isTRUE(input$checkbox_phages)) {
-            phage_pattern <- "phage|escherichia|streptococcus|staphylococcus|bacillus|actinomyces|ostreococcus"
-            
-            orgs_data <-
-                orgs_data %>%
-                filter(grepl(phage_pattern, species, ignore.case = TRUE) == FALSE) %>%
-                filter(grepl(phage_pattern, ssciname, ignore.case = TRUE) == FALSE)
-        }
+        read_orgs_data(input$orgs_file, input$read_length, input$checkbox_phages, input$checkbox_blocklist, blocklist)
         
-        if (isTRUE(input$checkbox_blocklist)) {
-          orgs_data <-
-            orgs_data %>%
-            anti_join(blocklist, by = "stitle")
-        }
-        
-        orgs_data
         })
     
     table_species <- reactive({
         req(!(is.null(input$chosen_sample)))
-        orgs_data() %>%
-            filter(sample %in% input$chosen_sample) %>%
-            select(species, reads, sample) %>%
-            group_by(species, sample) %>%
-            summarise(reads_sum = sum(reads)) %>%
-            spread(key = sample, value = reads_sum, fill = 0) %>%
-            ungroup() %>%
-            mutate(reads_total = as.integer(rowSums(.[,-1], na.rm = TRUE))) %>%
-            arrange(desc(reads_total))
+        
+        read_table_species(orgs_data(), input$chosen_sample)
+        
         })
 
 
