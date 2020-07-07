@@ -8,15 +8,23 @@ library(DT)
 library(stringr)
 library(tidyselect)
 
+
+
+
+
 shinyServer(function(input, output) {
+
+# loading data ------------------------------------------------------------
+
     
     reads_data <- reactive({
         req(input$reads_file)
         read_delim(input$reads_file$datapath, "\t")
-    })
+        })
     
     blocklist <-
         read_csv("data/blocklist.csv")
+    
     
     orgs_data <- reactive({
         req(input$orgs_file)
@@ -28,10 +36,12 @@ shinyServer(function(input, output) {
           mutate(covered_percent = round(covered_percent, 1))
         
         if (isTRUE(input$checkbox_phages)) {
-          orgs_data <-
-            orgs_data %>%
-            filter(grepl("phage", species, ignore.case = TRUE) == FALSE) %>%
-            filter(grepl("phage", ssciname, ignore.case = TRUE) == FALSE)
+            phage_pattern <- "phage|escherichia|streptococcus|staphylococcus|bacillus|actinomyces|ostreococcus"
+            
+            orgs_data <-
+                orgs_data %>%
+                filter(grepl(phage_pattern, species, ignore.case = TRUE) == FALSE) %>%
+                filter(grepl(phage_pattern, ssciname, ignore.case = TRUE) == FALSE)
         }
         
         if (isTRUE(input$checkbox_blocklist)) {
@@ -41,8 +51,40 @@ shinyServer(function(input, output) {
         }
         
         orgs_data
+        })
+    
+    table_species <- reactive({
+        req(!(is.null(input$chosen_sample)))
+        orgs_data() %>%
+            filter(sample %in% input$chosen_sample) %>%
+            select(species, reads, sample) %>%
+            group_by(species, sample) %>%
+            summarise(reads_sum = sum(reads)) %>%
+            spread(key = sample, value = reads_sum, fill = 0) %>%
+            ungroup() %>%
+            mutate(reads_total = as.integer(rowSums(.[,-1], na.rm = TRUE))) %>%
+            arrange(desc(reads_total))
+        })
+
+
+# data checks -------------------------------------------------------------
+
+    output$samples_found <- renderUI({
+        found_samples <- reads_data() %>% arrange(sample) %>% .$sample %>% unique() 
+        selectInput("chosen_sample", "Choose one or more samples:", found_samples, multiple = TRUE,
+                    selected = found_samples[1], selectize = FALSE, size = 10)
     })
     
+    output$check_tsv <- renderText({
+        if (reads_data()$run[1] != orgs_data()$run[1]) {"Run IDs do not match!"}
+    })
+    
+    output$check_sample <- renderText({
+        if (length(unique(substr(input$chosen_sample, 1, 10))) > 1) {"More than one sample selected!"}
+    })    
+
+# create plots ------------------------------------------------------------
+
     output$plot_run <- renderPlot({
         req(!(is.null(input$chosen_sample)))
         reads_data() %>%
@@ -62,7 +104,7 @@ shinyServer(function(input, output) {
             theme(legend.position = "bottom") + theme(legend.title = element_blank()) +
             theme(axis.text.x  = element_text(angle = 90, vjust = 0.4, hjust = 1)) +
             scale_x_discrete(breaks = NULL)
-    })
+        })
     
     output$plot_domain <- renderPlot({
         req(!(is.null(input$chosen_sample)))
@@ -94,8 +136,11 @@ shinyServer(function(input, output) {
             theme(legend.position = "bottom") + theme(legend.title = element_blank()) +
             theme(axis.text.x  = element_text(angle = 90, vjust = 0.4, hjust = 1)) + 
             scale_x_discrete(breaks = NULL)
-    })
-    
+        })
+
+
+# create tables -----------------------------------------------------------
+
     output$table_ssciname <- DT::renderDataTable(
         filter = "top",
         rownames = FALSE,
@@ -110,19 +155,32 @@ shinyServer(function(input, output) {
                 arrange(desc(reads))
         })
     
+    species_selected <- reactive({
+        table_species()[input$hoverIndexJS + 1, ] %>%
+            pull(species)
+        })
     
-    table_species <- reactive({
-        req(!(is.null(input$chosen_sample)))
-        orgs_data() %>%
-            filter(sample %in% input$chosen_sample) %>%
-            select(species, reads, sample) %>%
-            group_by(species, sample) %>%
-            summarise(reads_sum = sum(reads)) %>%
-            spread(key = sample, value = reads_sum, fill = 0) %>%
-            ungroup() %>%
-            mutate(reads_total = as.integer(rowSums(.[,-1], na.rm = TRUE))) %>%
-            arrange(desc(reads_total))
-    })
+    output$table_species <- DT::renderDataTable(
+        filter = "top",
+        rownames = FALSE,
+        options = list(pageLength = 100,
+                       autoWidth = FALSE,
+                       ordering = FALSE,
+                       dom = 't',
+                       rowCallback = JS('function(row, data) {
+                                                  $(row).mouseenter(function(){
+                                                  var hover_index = $(this)[0]._DT_RowIndex
+                                                  /* console.log(hover_index); */
+                                                  Shiny.onInputChange("hoverIndexJS", hover_index);
+                                                  });
+                                          }')
+        ), 
+        {
+            table_species()
+        })
+
+
+# internal control --------------------------------------------------------
     
     MS2_reads <- reactive({
         req(!(is.null(input$chosen_sample)))
@@ -149,29 +207,14 @@ shinyServer(function(input, output) {
         round(MS2_reads() / (filtered_RNA_reads()/1E6), digits = 0)
     })
     
-    species_selected <- reactive({
-        table_species()[input$hoverIndexJS + 1, ] %>%
-            pull(species)
+    output$MS2_internal_control <- renderText({ 
+        paste0("the RNA sample contains ", MS2_reads(), " reads assigned to MS2 \n
+               this equals ", MS2_RPM(), " reads per million filtered reads (RPM)")
     })
-    
-    output$table_species <- DT::renderDataTable(
-        filter = "top",
-        rownames = FALSE,
-        options = list(pageLength = 100,
-                       autoWidth = FALSE,
-                       ordering = FALSE,
-                       dom = 't',
-                       rowCallback = JS('function(row, data) {
-                                                  $(row).mouseenter(function(){
-                                                  var hover_index = $(this)[0]._DT_RowIndex
-                                                  /* console.log(hover_index); */
-                                                  Shiny.onInputChange("hoverIndexJS", hover_index);
-                                                  });
-                                          }')
-        ), 
-        {
-            table_species()
-        })
+
+
+
+# create files for download -----------------------------------------------
     
     output$report <- downloadHandler(
         filename = function() {
@@ -287,22 +330,7 @@ shinyServer(function(input, output) {
                 write_csv(file)
         })
     
-    output$samples_found <- renderUI({
-        found_samples <- reads_data() %>% arrange(sample) %>% .$sample %>% unique() 
-        selectInput("chosen_sample", "Choose one or more samples:", found_samples, multiple = TRUE,
-                    selected = found_samples[1], selectize = FALSE, size = 10)
-    })
+
     
-    output$check_tsv <- renderText({
-        if (reads_data()$run[1] != orgs_data()$run[1]) {"Run IDs do not match!"}
-    })
-    
-    output$check_sample <- renderText({
-        if (length(unique(substr(input$chosen_sample, 1, 10))) > 1) {"More than one sample selected!"}
-    })
-    
-    output$MS2_internal_control <- renderText({ 
-        paste0("the RNA sample contains ", MS2_reads(), " reads assigned to MS2 \n
-               this equals ", MS2_RPM(), " reads per million filtered reads (RPM)")
-    })
+
 })
