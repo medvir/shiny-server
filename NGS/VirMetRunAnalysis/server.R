@@ -59,9 +59,9 @@ read_table_species <- function(orgs_data, chosen_sample){
 
 shinyServer(function(input, output) {
 
+
 # loading data ------------------------------------------------------------
 
-    
     reads_data <- reactive({
         req(input$reads_file)
         read_delim(input$reads_file$datapath, "\t")
@@ -102,6 +102,7 @@ shinyServer(function(input, output) {
         if (length(unique(substr(input$chosen_sample, 1, 10))) > 1) {"More than one sample selected!"}
     })    
 
+
 # create plots ------------------------------------------------------------
 
     output$plot_run <- renderPlot({
@@ -134,17 +135,17 @@ shinyServer(function(input, output) {
                 str_detect(category, "matching_bact") ~ "bacterial",
                 category %in% c("viral_reads") ~ "viral",
                 category %in% c("matching_humanGRCh38") ~ "human",
-                category %in% c("undetermined_reads") ~ "unknown",
+                category %in% c("undetermined_reads") ~ "undetermined",
                 category %in% c("matching_bt_ref") ~ "bovine",
                 category %in% c("matching_fungi1") ~ "fungal",
                 TRUE ~ "none"
             )) %>%
-            mutate(domain = factor(as.character(domain), levels = c("human", "bacterial", "fungal", "bovine", "viral", "unknown"))) %>%
+            mutate(domain = factor(as.character(domain), levels = c("human", "bacterial", "fungal", "bovine", "viral", "undetermined"))) %>%
             filter(!(domain == "none")) %>%
             group_by(sample) %>%
             mutate(percent = reads/sum(reads)) %>%
             
-            ### plot        
+            ### plot
             ggplot(aes(x = domain, y = percent, fill = domain)) +
             geom_col(colour = "black") +
             scale_fill_manual(name = "",
@@ -200,10 +201,11 @@ shinyServer(function(input, output) {
 
 
 # internal control --------------------------------------------------------
-    
+
     MS2_reads <- reactive({
         req(!(is.null(input$chosen_sample)))
-        orgs_data() %>%
+        
+        read_orgs_data(input$orgs_file, input$read_length, checkbox_phages=FALSE, input$checkbox_blocklist, blocklist) %>%
             filter(sample %in% input$chosen_sample,
                    str_detect(sample, "RNA"),
                    str_detect(species, "MS2")) %>%
