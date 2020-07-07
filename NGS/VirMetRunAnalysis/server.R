@@ -305,7 +305,7 @@ shinyServer(function(input, output) {
                 mutate(reported = if_else(species %in% species_reported(), TRUE, FALSE),
                        run_name = reads_data()$run[1],
 
-                       molis_nr = unique(str_extract(input$chosen_sample, "\\d{10,}-*[A-z]*(?=-)")),
+                       molis_nr = unique(str_extract(input$chosen_sample, "\\d{10,}")),
 
                        dna_sample_name = str_subset(input$chosen_sample, "DNA"),
                        rna_sample_name = str_subset(input$chosen_sample, "RNA"),
