@@ -74,14 +74,29 @@ shinyServer(function(input, output) {
     orgs_data <- reactive({
         req(input$orgs_file)
         
+        # returns table to show in the app
         read_orgs_data(input$orgs_file, input$read_length, input$checkbox_phages, input$checkbox_blocklist, blocklist)
         
         })
+    
+    orgs_data_complete <- reactive({
+        req(input$orgs_file)
+        
+        # returns complete table (except blocklisted entries) to include in the report
+        read_orgs_data(input$orgs_file, input$read_length, checkbox_phages=FALSE, input$checkbox_blocklist, blocklist)
+        
+    })
     
     table_species <- reactive({
         req(!(is.null(input$chosen_sample)))
         
         read_table_species(orgs_data(), input$chosen_sample)
+        
+        })
+    
+    species_reported <- reactive({
+        table_species()[input$table_species_rows_selected, ] %>%
+        pull(species)
         
         })
 
@@ -234,9 +249,8 @@ shinyServer(function(input, output) {
     })
 
 
-
 # create files for download -----------------------------------------------
-    
+
     output$report <- downloadHandler(
         filename = function() {
             paste0(substr(input$chosen_sample[1], 1, 13), ".pdf")
@@ -245,16 +259,12 @@ shinyServer(function(input, output) {
             tempReport <- file.path(tempdir(), "report.Rmd")
             file.copy("RunReport.Rmd", tempReport, overwrite = TRUE)
             
-            tempblocklist <- file.path(tempdir(), "blocklist.csv")
-            file.copy("data/blocklist.csv", tempblocklist, overwrite = TRUE)
-            
-            params <- list(orgs_file = input$orgs_file$datapath,
-                           reads_file = input$reads_file$datapath,
+            params <- list(orgs_data_complete = orgs_data_complete(),
+                           reads_data = reads_data(),
                            sample_name = input$chosen_sample,
                            user_name = input$user_name,
-                           rows_selected = input$table_species_rows_selected,
-                           checkbox_phages = input$checkbox_phages,
-                           blocklist_file = tempblocklist,
+                           species_reported = species_reported(),
+                           blocklist = blocklist,
                            checkbox_blocklist = input$checkbox_blocklist,
                            MS2_RPM = MS2_RPM()
                            )

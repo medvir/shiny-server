@@ -2,13 +2,12 @@
 title: "VirMet Report"
 output: pdf_document
 params:
-  orgs_file: ""
-  reads_file: ""
+  orgs_data_complete: ""
+  reads_data: ""
   sample_name: ""
   user_name: ""
-  rows_selected: ""
-  checkbox_phages: ""
-  blocklist_file: ""
+  species_reported: ""
+  blocklist: ""
   checkbox_blocklist: ""
   MS2_RPM: ""
 ---
@@ -25,34 +24,11 @@ library(forcats)
 ```
 
 ```{r read-data, include=FALSE}
-blocklist <-
-  read_csv(params$blocklist_file)
 
-orgs_data <-
-  read_delim(params$orgs_file, "\t") %>%
-  mutate(covered_percent = 100 * covered_region / seq_len,
-         covered_max = 100 * reads * 151 / seq_len,
-         covered_max = if_else(covered_max > 100, 100, covered_max),
-         covered_score = round(100 * covered_percent / covered_max, 1),
-         covered_percent = round(covered_percent, 1))
+orgs_data_complete <- params$orgs_data_complete
 
-# if in shiny app selected, remove entries containing "phage"
-if (isTRUE(params$checkbox_phages)) {
-  orgs_data <-
-    orgs_data %>%
-    filter(grepl("phage", species, ignore.case = TRUE) == FALSE) %>%
-    filter(grepl("phage", ssciname, ignore.case = TRUE) == FALSE)
-}
+reads_data <- params$reads_data
 
-# if in shiny app selected, remove entries from blocklist provided
-if (isTRUE(params$checkbox_blocklist)) {
-  orgs_data <-
-    orgs_data %>%
-    anti_join(blocklist, by = "stitle")
-}
-
-reads_data <-
-  read_delim(params$reads_file, "\t")
 ```
 
 ## Run Information
@@ -161,7 +137,7 @@ domain_plot <-
 
 ```{r list-relevant, results='asis', echo=FALSE}
 t_species <-
-  orgs_data %>%
+  orgs_data_complete %>%
   filter(sample %in% params$sample_name) %>%
   mutate(workflow = case_when(
     str_detect(sample, "DNA") ~ "DNA workflow",
@@ -177,10 +153,11 @@ t_species <-
   arrange(desc(total)) %>%
   select(-percent)
 
-t_species_selected <-
-  t_species[params$rows_selected, ]
+species_reported <- params$species_reported
 
-#if (nrows(t_species_selected)) >= 1 {kable(t_species_selected)}
+t_species_selected <-
+  t_species %>%
+  filter(species %in% species_reported)
 
 if (nrow(t_species_selected) == 0) {
     cat("No relevant virus species detected.")
@@ -203,11 +180,7 @@ kable(t_species_unselected)
 ```
 
 ```{r additional-statements, echo=FALSE, comment=NA}
-# Print statements in report if phages or blocklisted viruses were removed
-phages_removed_text <- ""
-if (isTRUE(params$checkbox_phages)) {
-  phages_removed_text <- "Virus species containing 'phage' were excluded."
-}
+# Print statements in report if blocklisted viruses were removed
 
 blocklisted_text <- ""
 if (isTRUE(params$checkbox_blocklist)) {
@@ -215,8 +188,6 @@ if (isTRUE(params$checkbox_blocklist)) {
 }
 
 ```
-
-`r phages_removed_text`
 
 `r blocklisted_text`
 
