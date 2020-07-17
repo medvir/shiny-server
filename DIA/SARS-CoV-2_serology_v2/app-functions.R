@@ -288,38 +288,45 @@ net_mfi1_flagged <- set_flag(net_mfi1, 20, 40.05, 55.26, 539.74)
 
 test_result <- function(net_mfi_soc, IgG_NP_gw, IgG_RBD_gw, IgG_S1_gw){
   
+  # the result of each of the 12 parameter can either be
+  # positive (1), negative (0) or intermediate (0.5)
+  
   net_mfi_soc_result <-
     net_mfi_soc %>%
-    mutate(IgG_Resultat_S1 = IgG_S1_net_mfi_soc > 1,
-           IgA_Resultat_S1 = IgA_S1_net_mfi_soc > 1,
-           IgM_Resultat_S1 = IgM_S1_net_mfi_soc > 1) %>%
-    mutate(IgG_Resultat_S2 = IgG_S2_net_mfi_soc > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
-           IgA_Resultat_S2 = IgA_S2_net_mfi_soc > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
-           IgM_Resultat_S2 = IgM_S2_net_mfi_soc > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0)) %>%
-    mutate(IgG_Resultat_NP = IgG_NP_net_mfi_soc > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
-           IgA_Resultat_NP = IgA_NP_net_mfi_soc > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0),
-           IgM_Resultat_NP = IgM_NP_net_mfi_soc > 1 & (IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 > 0)) %>%
-    mutate(IgG_Resultat = IgG_Resultat_S1 | IgG_Resultat_S2 | IgG_Resultat_NP,
-           IgA_Resultat = IgA_Resultat_S1 | IgA_Resultat_S2 | IgA_Resultat_NP,
-           IgM_Resultat = IgM_Resultat_S1 | IgM_Resultat_S2 | IgM_Resultat_NP) %>%
+    mutate(IgG_Resultat_S1 = if_else(IgG_S1_net_mfi_soc > 1, 1, if_else(IgG_S1_net_mfi_soc > IgG_S1_gw, 0.5, 0)),
+           IgA_Resultat_S1 = if_else(IgA_S1_net_mfi_soc > 1, 1, 0),
+           IgM_Resultat_S1 = if_else(IgM_S1_net_mfi_soc > 1, 1, 0)) %>%
+    mutate(IgG_Resultat_S2 = if_else(IgG_S2_net_mfi_soc > 1, 1, 0),
+           IgA_Resultat_S2 = if_else(IgA_S2_net_mfi_soc > 1, 1, 0),
+           IgM_Resultat_S2 = if_else(IgM_S2_net_mfi_soc > 1, 1, 0)) %>%
+    mutate(IgG_Resultat_NP = if_else(IgG_NP_net_mfi_soc > 1, 1, if_else(IgG_NP_net_mfi_soc > IgG_NP_gw, 0.5, 0)),
+           IgA_Resultat_NP = if_else(IgA_NP_net_mfi_soc > 1, 1, 0),
+           IgM_Resultat_NP = if_else(IgM_NP_net_mfi_soc > 1, 1, 0)) %>%
+    mutate(IgG_Resultat_RBD = if_else(IgG_RBD_net_mfi_soc > 1, 1, if_else(IgG_RBD_net_mfi_soc > IgG_RBD_gw, 0.5, 0)),
+           IgA_Resultat_RBD = if_else(IgA_RBD_net_mfi_soc > 1, 1, 0),
+           IgM_Resultat_RBD = if_else(IgM_RBD_net_mfi_soc > 1, 1, 0)) %>%
+    mutate(Resultat_sum = IgG_Resultat_S1+IgA_Resultat_S1+IgM_Resultat_S1+
+                          IgG_Resultat_S2+IgA_Resultat_S2+IgM_Resultat_S2+
+                          IgG_Resultat_NP+IgA_Resultat_NP+IgM_Resultat_NP+
+                          IgG_Resultat_RBD+IgA_Resultat_RBD+IgM_Resultat_RBD,
+           Resultat_sum_IgG = IgG_Resultat_S1+IgG_Resultat_S2+IgG_Resultat_NP+IgG_Resultat_RBD,
+           Resultat_n_pos = (IgG_Resultat_S1==1)+(IgA_Resultat_S1==1)+(IgM_Resultat_S1==1)+
+                            (IgG_Resultat_S2==1)+(IgA_Resultat_S2==1)+(IgM_Resultat_S2==1)+
+                            (IgG_Resultat_NP==1)+(IgA_Resultat_NP==1)+(IgM_Resultat_NP==1)+
+                            (IgG_Resultat_RBD==1)+(IgA_Resultat_RBD==1)+(IgM_Resultat_RBD==1)) %>%
     mutate(Serokonversion = case_when(
-      IgG_Resultat_S1 == 1 ~ "fs (fortgeschritten)",
-      IgA_Resultat_S1 + IgM_Resultat_S1 > 0 ~ "ps (partiell)",
-      IgG_Resultat_S1 + IgA_Resultat_S1 + IgM_Resultat_S1 < 3 ~ "ks (keine)"
-    )) %>%
-    mutate(Kommentar = case_when(
-      (Serokonversion == "ks (keine)") & (IgG_S1_net_mfi_soc > 1 | IgA_S1_net_mfi_soc > 1 | IgM_S1_net_mfi_soc > 1 |
-                                          IgG_S2_net_mfi_soc > 1 | IgA_S2_net_mfi_soc > 1 | IgM_S2_net_mfi_soc > 1 |
-                                          IgG_NP_net_mfi_soc > 1 | IgA_NP_net_mfi_soc > 1 | IgM_NP_net_mfi_soc > 1) ~ "*sarsk (Kreuzrkt whs)",
-      (Serokonversion == "ks (keine)") & (IgG_S1_net_mfi_soc >= 0.9 | IgA_S1_net_mfi_soc >= 0.9 | IgM_S1_net_mfi_soc >= 0.9) ~ "S1 Reaktivität grenzwertig, bitte Verlaufsprobe einsenden",
-      TRUE ~ ""
+      (Resultat_sum >= 2) & (Resultat_sum_IgG >= 0.5) ~ "Positiv, fortgeschritten",
+      (Resultat_sum >= 2) & (Resultat_sum_IgG == 0) ~ "Positiv, partiell",
+      (IgG_Resultat_S1 == 1 | IgG_Resultat_NP == 1 | IgG_Resultat_RBD == 1) | (Resultat_sum_IgG >= 0.5 & Resultat_n_pos == 1) ~ "Schwach reaktiv",
+      Resultat_n_pos == 1 ~ "Indeterminat",
+      TRUE ~ "Negativ"
     ))
   
   return(net_mfi_soc_result)
 }
 
-#net_mfi2_flagged_result <- test_result(net_mfi2_flagged)
-#net_mfi3_flagged_result <- test_result(net_mfi3_flagged)
+net_mfi1_flagged_result <- test_result(net_mfi1_flagged, 0.884, 0.714, 0.895)
+
 
 # create gt table ---------------------------------------------------------
 
@@ -335,7 +342,7 @@ create_gt <- function(table){
         style = cell_fill(color = "#FFE74C"),
         locations = cells_body(
           columns = vars(IgG_NP),
-          rows = IgG_NP >= 0.9)
+          rows = IgG_NP >= 0.884)
       ) %>%
       tab_style(
         style = cell_fill(color = "#06AED5"),
@@ -344,12 +351,6 @@ create_gt <- function(table){
           rows = IgG_NP > 1)
       ) %>%
       
-      tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgG_S2),
-          rows = IgG_S2 >= 0.9)
-      ) %>%
       tab_style(
         style = cell_fill(color = "#06AED5"),
         locations = cells_body(
@@ -361,7 +362,7 @@ create_gt <- function(table){
         style = cell_fill(color = "#FFE74C"),
         locations = cells_body(
           columns = vars(IgG_S1),
-          rows = IgG_S1 >= 0.9)
+          rows = IgG_S1 >= 0.895)
       ) %>%
       tab_style(
         style = cell_fill(color = "#06AED5"),
@@ -374,7 +375,7 @@ create_gt <- function(table){
         style = cell_fill(color = "#FFE74C"),
         locations = cells_body(
           columns = vars(IgG_RBD),
-          rows = IgG_RBD >= 0.9)
+          rows = IgG_RBD >= 0.714)
       ) %>%
       tab_style(
         style = cell_fill(color = "#06AED5"),
@@ -383,26 +384,7 @@ create_gt <- function(table){
           rows = IgG_RBD > 1)
       ) %>%
       
-      tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgG_HKU1),
-          rows = IgG_HKU1 >= 0.9)
-      ) %>%
-      tab_style(
-        style = cell_fill(color = "#06AED5"),
-        locations = cells_body(
-          columns = vars(IgG_HKU1),
-          rows = IgG_HKU1 > 1)
-      ) %>%
       
-      
-      tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgA_NP),
-          rows = IgA_NP >= 0.9)
-      ) %>%
       tab_style(
         style = cell_fill(color = "#06AED5"),
         locations = cells_body(
@@ -411,24 +393,12 @@ create_gt <- function(table){
       ) %>%
       
       tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgA_S2),
-          rows = IgA_S2 >= 0.9)
-      ) %>%
-      tab_style(
         style = cell_fill(color = "#06AED5"),
         locations = cells_body(
           columns = vars(IgA_S2),
           rows = IgA_S2 > 1)
       ) %>%
       
-      tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgA_S1),
-          rows = IgA_S1 >= 0.9)
-      ) %>%
       tab_style(
         style = cell_fill(color = "#06AED5"),
         locations = cells_body(
@@ -437,38 +407,13 @@ create_gt <- function(table){
       ) %>%
       
       tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgA_RBD),
-          rows = IgA_RBD >= 0.9)
-      ) %>%
-      tab_style(
         style = cell_fill(color = "#06AED5"),
         locations = cells_body(
           columns = vars(IgA_RBD),
           rows = IgA_RBD > 1)
       ) %>%
       
-      tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgA_HKU1),
-          rows = IgA_HKU1 >= 0.9)
-      ) %>%
-      tab_style(
-        style = cell_fill(color = "#06AED5"),
-        locations = cells_body(
-          columns = vars(IgA_HKU1),
-          rows = IgA_HKU1 > 1)
-      ) %>%
       
-      
-      tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgM_NP),
-          rows = IgM_NP >= 0.9)
-      ) %>%
       tab_style(
         style = cell_fill(color = "#06AED5"),
         locations = cells_body(
@@ -477,24 +422,12 @@ create_gt <- function(table){
       ) %>%
       
       tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgM_S2),
-          rows = IgM_S2 >= 0.9)
-      ) %>%
-      tab_style(
         style = cell_fill(color = "#06AED5"),
         locations = cells_body(
           columns = vars(IgM_S2),
           rows = IgM_S2 > 1)
       ) %>%
       
-      tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgM_S1),
-          rows = IgM_S1 >= 0.9)
-      ) %>%
       tab_style(
         style = cell_fill(color = "#06AED5"),
         locations = cells_body(
@@ -503,57 +436,18 @@ create_gt <- function(table){
       ) %>%
       
       tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgM_RBD),
-          rows = IgM_RBD >= 0.9)
-      ) %>%
-      tab_style(
         style = cell_fill(color = "#06AED5"),
         locations = cells_body(
           columns = vars(IgM_RBD),
           rows = IgM_RBD > 1)
       ) %>%
       
-      tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgM_HKU1),
-          rows = IgM_HKU1 >= 0.9)
-      ) %>%
-      tab_style(
-        style = cell_fill(color = "#06AED5"),
-        locations = cells_body(
-          columns = vars(IgM_HKU1),
-          rows = IgM_HKU1 > 1)
-      ) %>%
-      
-      
-      tab_style(
-        style = cell_fill(color = "#bfbfbf"),
-        locations = cells_body(
-          columns = vars(IgG_Resultat),
-          rows = IgG_Resultat == "pos")
-      ) %>%
-      tab_style(
-        style = cell_fill(color = "#bfbfbf"),
-        locations = cells_body(
-          columns = vars(IgA_Resultat),
-          rows = IgA_Resultat == "pos")
-      ) %>%
-      tab_style(
-        style = cell_fill(color = "#bfbfbf"),
-        locations = cells_body(
-          columns = vars(IgM_Resultat),
-          rows = IgM_Resultat == "pos")
-      ) %>%
       
       fmt_number(
         columns = c(ends_with("NP"),
                     ends_with("S2"),
                     ends_with("S1"),
-                    ends_with("RBD"),
-                    ends_with("HKU1")),
+                    ends_with("RBD")),
         decimals = 1
       )
   } else{
@@ -566,7 +460,7 @@ create_gt <- function(table){
         style = cell_fill(color = "#FFE74C"),
         locations = cells_body(
           columns = vars(IgG_NP),
-          rows = IgG_NP >= 0.9)
+          rows = IgG_NP >= 0.884)
       ) %>%
       tab_style(
         style = cell_fill(color = "#06AED5"),
@@ -575,12 +469,6 @@ create_gt <- function(table){
           rows = IgG_NP > 1)
       ) %>%
       
-      tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgG_S2),
-          rows = IgG_S2 >= 0.9)
-      ) %>%
       tab_style(
         style = cell_fill(color = "#06AED5"),
         locations = cells_body(
@@ -592,7 +480,7 @@ create_gt <- function(table){
         style = cell_fill(color = "#FFE74C"),
         locations = cells_body(
           columns = vars(IgG_S1),
-          rows = IgG_S1 >= 0.9)
+          rows = IgG_S1 >= 0.895)
       ) %>%
       tab_style(
         style = cell_fill(color = "#06AED5"),
@@ -603,12 +491,6 @@ create_gt <- function(table){
       
       
       tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgA_NP),
-          rows = IgA_NP >= 0.9)
-      ) %>%
-      tab_style(
         style = cell_fill(color = "#06AED5"),
         locations = cells_body(
           columns = vars(IgA_NP),
@@ -616,24 +498,12 @@ create_gt <- function(table){
       ) %>%
       
       tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgA_S2),
-          rows = IgA_S2 >= 0.9)
-      ) %>%
-      tab_style(
         style = cell_fill(color = "#06AED5"),
         locations = cells_body(
           columns = vars(IgA_S2),
           rows = IgA_S2 > 1)
       ) %>%
       
-      tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgA_S1),
-          rows = IgA_S1 >= 0.9)
-      ) %>%
       tab_style(
         style = cell_fill(color = "#06AED5"),
         locations = cells_body(
@@ -643,24 +513,12 @@ create_gt <- function(table){
       
       
       tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgM_NP),
-          rows = IgM_NP >= 0.9)
-      ) %>%
-      tab_style(
         style = cell_fill(color = "#06AED5"),
         locations = cells_body(
           columns = vars(IgM_NP),
           rows = IgM_NP > 1)
       ) %>%
       
-      tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgM_S2),
-          rows = IgM_S2 >= 0.9)
-      ) %>%
       tab_style(
         style = cell_fill(color = "#06AED5"),
         locations = cells_body(
@@ -669,37 +527,12 @@ create_gt <- function(table){
       ) %>%
       
       tab_style(
-        style = cell_fill(color = "#FFE74C"),
-        locations = cells_body(
-          columns = vars(IgM_S1),
-          rows = IgM_S1 >= 0.9)
-      ) %>%
-      tab_style(
         style = cell_fill(color = "#06AED5"),
         locations = cells_body(
           columns = vars(IgM_S1),
           rows = IgM_S1 > 1)
       ) %>%
       
-      
-      tab_style(
-        style = cell_fill(color = "#bfbfbf"),
-        locations = cells_body(
-          columns = vars(IgG_Resultat),
-          rows = IgG_Resultat == "pos")
-      ) %>%
-      tab_style(
-        style = cell_fill(color = "#bfbfbf"),
-        locations = cells_body(
-          columns = vars(IgA_Resultat),
-          rows = IgA_Resultat == "pos")
-      ) %>%
-      tab_style(
-        style = cell_fill(color = "#bfbfbf"),
-        locations = cells_body(
-          columns = vars(IgM_Resultat),
-          rows = IgM_Resultat == "pos")
-      ) %>%
       
       fmt_number(
         columns = c(ends_with("NP"),

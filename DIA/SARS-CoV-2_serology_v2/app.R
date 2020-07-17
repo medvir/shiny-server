@@ -9,7 +9,7 @@ source("app-functions.R", local = TRUE)
 # shiny ui ----------------------------------------------------------------
 
 ui <- fluidPage(
-    titlePanel("SARS-CoV-2 serology"),
+    titlePanel("SARS-CoV-2 serology - Version 2"),
     tags$head(tags$style(HTML("hr {border-top: 1px solid #949998;}"))),
     fluidRow(
         column(2,
@@ -56,10 +56,10 @@ server <- function(input, output, session) {
         req(input$barcodes_file)
         
         # Use fixed path for debugging, uncomment following lines and comment "req"
-        # barcodes_path <- "data/200420_BARCODES.xlsx"
-        # igg_path <- "data/200420_plate_1_IgG_20200420_121133.csv"
-        # iga_path <- "data/200420_plate_1_IgA_20200420_122957.csv"
-        # igm_path <- "data/200420_plate_1_IgM_20200420_125709.csv"
+        # barcodes_path <- "data/200706_BARCODES_Ciao_4.xlsx"
+        # igg_path <- "data/200706_Ciao_4_IgG_20200707_104333.csv"
+        # iga_path <- "data/200706_Ciao_4_IgA_20200707_141245.csv"
+        # igm_path <- "data/200706_Ciao_4_IgM_20200707_164242.csv"
         
         
 
@@ -167,9 +167,6 @@ server <- function(input, output, session) {
         
         net_mfi_soc <-
             test_result(net_mfi_soc, IgG_NP_gw, IgG_RBD_gw, IgG_S1_gw) %>%
-            mutate(IgG_Resultat = if_else(IgG_Resultat, "pos", "neg"),
-                   IgM_Resultat = if_else(IgM_Resultat, "pos", "neg"),
-                   IgA_Resultat = if_else(IgA_Resultat, "pos", "neg")) %>%
             arrange(Sample)
         
         net_mfi_soc
@@ -184,15 +181,14 @@ server <- function(input, output, session) {
         if (sum(str_detect(names(table_raw()), "RBD")) > 0){
             net_mfi_soc_clean <-
                 table_raw() %>%
-                rename(IgG_NP = IgG_NP_net_mfi_soc, IgG_S2 = IgG_S2_net_mfi_soc, IgG_S1 = IgG_S1_net_mfi_soc, IgG_RBD = IgG_RBD_net_mfi_soc, IgG_HKU1 = IgG_HKU1_net_mfi_soc,
-                       IgM_NP = IgM_NP_net_mfi_soc, IgM_S2 = IgM_S2_net_mfi_soc, IgM_S1 = IgM_S1_net_mfi_soc, IgM_RBD = IgM_RBD_net_mfi_soc, IgM_HKU1 = IgM_HKU1_net_mfi_soc,
-                       IgA_NP = IgA_NP_net_mfi_soc, IgA_S2 = IgA_S2_net_mfi_soc, IgA_S1 = IgA_S1_net_mfi_soc, IgA_RBD = IgA_RBD_net_mfi_soc, IgA_HKU1 = IgA_HKU1_net_mfi_soc) %>%
+                rename(IgG_NP = IgG_NP_net_mfi_soc, IgG_S2 = IgG_S2_net_mfi_soc, IgG_S1 = IgG_S1_net_mfi_soc, IgG_RBD = IgG_RBD_net_mfi_soc,
+                       IgM_NP = IgM_NP_net_mfi_soc, IgM_S2 = IgM_S2_net_mfi_soc, IgM_S1 = IgM_S1_net_mfi_soc, IgM_RBD = IgM_RBD_net_mfi_soc,
+                       IgA_NP = IgA_NP_net_mfi_soc, IgA_S2 = IgA_S2_net_mfi_soc, IgA_S1 = IgA_S1_net_mfi_soc, IgA_RBD = IgA_RBD_net_mfi_soc,) %>%
                 select(Sample,
                        Serokonversion,
-                       IgG_Resultat, IgG_NP, IgG_S2, IgG_S1, IgG_RBD, IgG_HKU1,
-                       IgM_Resultat, IgM_NP, IgM_S2, IgM_S1, IgM_RBD, IgM_HKU1,
-                       IgA_Resultat, IgA_NP, IgA_S2, IgA_S1, IgA_RBD, IgA_HKU1,
-                       Kommentar,
+                       IgG_NP, IgG_S2, IgG_S1, IgG_RBD,
+                       IgM_NP, IgM_S2, IgM_S1, IgM_RBD,
+                       IgA_NP, IgA_S2, IgA_S1, IgA_RBD,
                        Fehler_count, Fehler_empty)
         } else{
             net_mfi_soc_clean <-
@@ -202,10 +198,9 @@ server <- function(input, output, session) {
                        IgA_NP = IgA_NP_net_mfi_soc, IgA_S2 = IgA_S2_net_mfi_soc, IgA_S1 = IgA_S1_net_mfi_soc) %>%
                 select(Sample,
                        Serokonversion,
-                       IgG_Resultat, IgG_NP, IgG_S2, IgG_S1,
-                       IgM_Resultat, IgM_NP, IgM_S2, IgM_S1,
-                       IgA_Resultat, IgA_NP, IgA_S2, IgA_S1,
-                       Kommentar,
+                       IgG_NP, IgG_S2, IgG_S1,
+                       IgM_NP, IgM_S2, IgM_S1,
+                       IgA_NP, IgA_S2, IgA_S1,
                        Fehler_count, Fehler_empty) 
         }
         
@@ -273,7 +268,14 @@ server <- function(input, output, session) {
             table_raw() %>%
                 select(-starts_with("IgG_Resultat_"),
                        -starts_with("IgM_Resultat_"),
-                       -starts_with("IgA_Resultat_")) %>%
+                       -starts_with("IgA_Resultat_"),
+                       -Resultat_sum, -Resultat_sum_IgG, -Resultat_n_pos) %>%
+                rename(IgG_HKU_net_mfi = IgG_HKU1,
+                       IgA_HKU_net_mfi = IgA_HKU1,
+                       IgM_HKU_net_mfi = IgM_HKU1,
+                       IgG_Empty_net_mfi = IgG_Empty,
+                       IgA_Empty_net_mfi = IgA_Empty,
+                       IgM_Empty_net_mfi = IgM_Empty) %>%
                 mutate(assay_date = assay_date(),
                        plate_number = plate_number()) %>%
                 write_csv(file)
