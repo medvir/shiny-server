@@ -31,7 +31,7 @@ read_barcodes <- function(barcodes_path){
   
 }
 
-barcodes1 <- read_barcodes("data/200706_BARCODES_Ciao_4.xlsx")
+# barcodes1 <- read_barcodes("data/200706_BARCODES_Ciao_4.xlsx")
 
 
 # read isotypes -----------------------------------------------------------
@@ -79,7 +79,7 @@ read_isotypes <- function(barcodes_path){
   
 }
 
-isotypes1 <- read_isotypes("data/200706_BARCODES_Ciao_4.xlsx")
+# isotypes1 <- read_isotypes("data/200706_BARCODES_Ciao_4.xlsx")
 
 
 # join barcodes and isotypes ----------------------------------------------
@@ -88,7 +88,7 @@ join_barcodes_isotypes <- function(barcodes, isotypes){
   return(left_join(barcodes, isotypes, by = "Location"))
 }
 
-barcodes_isotypes1 <- join_barcodes_isotypes(barcodes1, isotypes1)
+# barcodes_isotypes1 <- join_barcodes_isotypes(barcodes1, isotypes1)
 
 
 # how many rows to skip ---------------------------------------------------
@@ -139,14 +139,14 @@ get_count <- function(filepath, barcodes_isotypes, isotype_given=NA){
   return(count)
 }
 
-igg_count1 <- get_count("data/200706_Ciao_4_IgG_20200707_104333.csv", barcodes_isotypes1, "IgG")
-iga_count1 <- get_count("data/200706_Ciao_4_IgA_20200707_141245.csv", barcodes_isotypes1, "IgA")
-igm_count1 <- get_count("data/200706_Ciao_4_IgM_20200707_164242.csv", barcodes_isotypes1, "IgM")
-
-count1 <-
-  igg_count1 %>%
-  left_join(iga_count1, by = c("Sample")) %>%
-  left_join(igm_count1, by = c("Sample"))
+# igg_count1 <- get_count("data/200706_Ciao_4_IgG_20200707_104333.csv", barcodes_isotypes1, "IgG")
+# iga_count1 <- get_count("data/200706_Ciao_4_IgA_20200707_141245.csv", barcodes_isotypes1, "IgA")
+# igm_count1 <- get_count("data/200706_Ciao_4_IgM_20200707_164242.csv", barcodes_isotypes1, "IgM")
+# 
+# count1 <-
+#   igg_count1 %>%
+#   left_join(iga_count1, by = c("Sample")) %>%
+#   left_join(igm_count1, by = c("Sample"))
 
 
 # get net mfi data --------------------------------------------------------
@@ -219,21 +219,22 @@ get_net_mfi <- function(filepath, barcodes_isotypes, isotype_given=NA){
   return(net_mfi_full)
 }
 
-igg_net_mfi1 <- get_net_mfi("data/200706_Ciao_4_IgG_20200707_104333.csv", barcodes_isotypes1, "IgG")
-iga_net_mfi1 <- get_net_mfi("data/200706_Ciao_4_IgA_20200707_141245.csv", barcodes_isotypes1, "IgA")
-igm_net_mfi1 <- get_net_mfi("data/200706_Ciao_4_IgM_20200707_164242.csv", barcodes_isotypes1, "IgM")
-
-net_mfi1 <-
-  igg_net_mfi1 %>%
-  left_join(iga_net_mfi1, by = c("Sample")) %>%
-  left_join(igm_net_mfi1, by = c("Sample"))
+# igg_net_mfi1 <- get_net_mfi("data/200706_Ciao_4_IgG_20200707_104333.csv", barcodes_isotypes1, "IgG")
+# iga_net_mfi1 <- get_net_mfi("data/200706_Ciao_4_IgA_20200707_141245.csv", barcodes_isotypes1, "IgA")
+# igm_net_mfi1 <- get_net_mfi("data/200706_Ciao_4_IgM_20200707_164242.csv", barcodes_isotypes1, "IgM")
+# 
+# net_mfi1 <-
+#   igg_net_mfi1 %>%
+#   left_join(iga_net_mfi1, by = c("Sample")) %>%
+#   left_join(igm_net_mfi1, by = c("Sample"))
 
 
 # set flag ----------------------------------------------------------------
 
 set_flag <- function(net_mfi_soc, min_count, above_cutoff_IgG, above_cutoff_IgA, above_cutoff_IgM){
   
-  if (sum(str_detect(names(net_mfi_soc), "RBD")) > 0){
+  if ((sum(str_detect(names(net_mfi_soc), "RBD")) > 0) & sum(str_detect(names(net_mfi_soc), "HKU")) > 0){
+    # if RBD and HKU was measured
     net_mfi_soc_flagged <-
       net_mfi_soc %>%
       mutate(IgG_NP_count_flag = if_else(as.numeric(IgG_NP_count) < min_count, "IgG NP", NULL),
@@ -256,7 +257,29 @@ set_flag <- function(net_mfi_soc, min_count, above_cutoff_IgG, above_cutoff_IgA,
              IgA_Empty_flag = if_else(IgA_Empty > above_cutoff_IgA, "IgA", NULL),
              IgM_Empty_flag = if_else(IgM_Empty > above_cutoff_IgM, "IgM", NULL)) %>%
       unite(Fehler_empty, ends_with("empty_flag"), na.rm=TRUE, sep = ", ")
-  } else{
+  } else if((sum(str_detect(names(net_mfi_soc), "RBD")) > 0) & sum(str_detect(names(net_mfi_soc), "HKU")) == 0) {
+    # if RBD was measured but not HKU
+    net_mfi_soc_flagged <-
+      net_mfi_soc %>%
+      mutate(IgG_NP_count_flag = if_else(as.numeric(IgG_NP_count) < min_count, "IgG NP", NULL),
+             IgG_S2_count_flag = if_else(as.numeric(IgG_S2_count) < min_count, "IgG S2", NULL),
+             IgG_S1_count_flag = if_else(as.numeric(IgG_S1_count) < min_count, "IgG S1", NULL),
+             IgG_RBD_count_flag = if_else(as.numeric(IgG_RBD_count) < min_count, "IgG RBD", NULL),
+             IgA_NP_count_flag = if_else(as.numeric(IgA_NP_count) < min_count, "IgA NP", NULL),
+             IgA_S2_count_flag = if_else(as.numeric(IgA_S2_count) < min_count, "IgA S2", NULL),
+             IgA_S1_count_flag = if_else(as.numeric(IgA_S1_count) < min_count, "IgA S1", NULL),
+             IgA_RBD_count_flag = if_else(as.numeric(IgA_RBD_count) < min_count, "IgA RBD", NULL),
+             IgM_NP_count_flag = if_else(as.numeric(IgM_NP_count) < min_count, "IgM NP", NULL),
+             IgM_S2_count_flag = if_else(as.numeric(IgM_S2_count) < min_count, "IgM S2", NULL),
+             IgM_S1_count_flag = if_else(as.numeric(IgM_S1_count) < min_count, "IgM S1", NULL),
+             IgM_RBD_count_flag = if_else(as.numeric(IgM_RBD_count) < min_count, "IgM RBD", NULL)) %>%
+      unite(Fehler_count, ends_with("count_flag"), na.rm=TRUE, sep = ", ") %>%
+      mutate(IgG_Empty_flag = if_else(IgG_Empty > above_cutoff_IgG, "IgG", NULL),
+             IgA_Empty_flag = if_else(IgA_Empty > above_cutoff_IgA, "IgA", NULL),
+             IgM_Empty_flag = if_else(IgM_Empty > above_cutoff_IgM, "IgM", NULL)) %>%
+      unite(Fehler_empty, ends_with("empty_flag"), na.rm=TRUE, sep = ", ")
+  }else{
+    # if neither RBD or HKU was measured
     net_mfi_soc_flagged <-
       net_mfi_soc %>%
       mutate(IgG_NP_count_flag = if_else(as.numeric(IgG_NP_count) < min_count, "IgG NP", NULL),
@@ -280,8 +303,8 @@ set_flag <- function(net_mfi_soc, min_count, above_cutoff_IgG, above_cutoff_IgA,
   return(net_mfi_soc_flagged)
 }
 
-net_mfi1 <- left_join(net_mfi1, count1, by = c("Sample"))
-net_mfi1_flagged <- set_flag(net_mfi1, 20, 40.05, 55.26, 539.74)
+# net_mfi1 <- left_join(net_mfi1, count1, by = c("Sample"))
+# net_mfi1_flagged <- set_flag(net_mfi1, 20, 40.05, 55.26, 539.74)
 
 
 # test result -------------------------------------------------------------
@@ -329,7 +352,7 @@ test_result <- function(net_mfi_soc, IgG_NP_gw, IgG_RBD_gw, IgG_S1_gw){
   return(net_mfi_soc_result)
 }
 
-net_mfi1_flagged_result <- test_result(net_mfi1_flagged, 0.884, 0.714, 0.895)
+# net_mfi1_flagged_result <- test_result(net_mfi1_flagged, 0.884, 0.714, 0.895)
 
 
 # create gt table ---------------------------------------------------------

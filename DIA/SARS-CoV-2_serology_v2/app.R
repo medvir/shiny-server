@@ -265,21 +265,36 @@ server <- function(input, output, session) {
             paste0(assay_date(), "_", plate_number(), ".csv")
         },
         content = function(file) {
-            table_raw() %>%
-                select(-starts_with("IgG_Resultat_"),
-                       -starts_with("IgM_Resultat_"),
-                       -starts_with("IgA_Resultat_"),
-                       -Resultat_sum, -Resultat_sum_IgG, -Resultat_n_pos) %>%
-                rename(IgG_HKU_net_mfi = IgG_HKU1,
-                       IgA_HKU_net_mfi = IgA_HKU1,
-                       IgM_HKU_net_mfi = IgM_HKU1,
-                       IgG_Empty_net_mfi = IgG_Empty,
-                       IgA_Empty_net_mfi = IgA_Empty,
-                       IgM_Empty_net_mfi = IgM_Empty) %>%
-                mutate(assay_date = assay_date(),
-                       plate_number = plate_number(),
-                       interpretation_version = "2.0.0") %>%
-                write_csv(file)
+            if (sum(str_detect(names(table_raw()), "HKU")) > 0){
+                table_raw() %>%
+                    select(-starts_with("IgG_Resultat_"),
+                           -starts_with("IgM_Resultat_"),
+                           -starts_with("IgA_Resultat_"),
+                           -Resultat_sum, -Resultat_sum_IgG, -Resultat_n_pos) %>%
+                    rename(IgG_HKU_net_mfi = IgG_HKU1,
+                           IgA_HKU_net_mfi = IgA_HKU1,
+                           IgM_HKU_net_mfi = IgM_HKU1,
+                           IgG_Empty_net_mfi = IgG_Empty,
+                           IgA_Empty_net_mfi = IgA_Empty,
+                           IgM_Empty_net_mfi = IgM_Empty) %>%
+                    mutate(assay_date = assay_date(),
+                           plate_number = plate_number(),
+                           interpretation_version = "2.0.0") %>%
+                    write_csv(file)
+            } else{
+                table_raw() %>%
+                    select(-starts_with("IgG_Resultat_"),
+                           -starts_with("IgM_Resultat_"),
+                           -starts_with("IgA_Resultat_"),
+                           -Resultat_sum, -Resultat_sum_IgG, -Resultat_n_pos) %>%
+                    rename(IgG_Empty_net_mfi = IgG_Empty,
+                           IgA_Empty_net_mfi = IgA_Empty,
+                           IgM_Empty_net_mfi = IgM_Empty) %>%
+                    mutate(assay_date = assay_date(),
+                           plate_number = plate_number(),
+                           interpretation_version = "2.0.0") %>%
+                    write_csv(file)
+            }
         }
     )
     
