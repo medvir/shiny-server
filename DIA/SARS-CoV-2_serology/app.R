@@ -268,7 +268,8 @@ server <- function(input, output, session) {
                        -starts_with("IgM_Resultat_"),
                        -starts_with("IgA_Resultat_")) %>%
                 mutate(assay_date = assay_date(),
-                       plate_number = plate_number()) %>%
+                       plate_number = plate_number(),
+                       interpretation_version = "1.0.0") %>%
                 write_csv(file)
         }
     )

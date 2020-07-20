@@ -277,7 +277,8 @@ server <- function(input, output, session) {
                        IgA_Empty_net_mfi = IgA_Empty,
                        IgM_Empty_net_mfi = IgM_Empty) %>%
                 mutate(assay_date = assay_date(),
-                       plate_number = plate_number()) %>%
+                       plate_number = plate_number(),
+                       interpretation_version = "2.0.0") %>%
                 write_csv(file)
         }
     )
