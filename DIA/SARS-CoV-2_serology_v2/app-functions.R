@@ -313,11 +313,15 @@ test_result <- function(net_mfi_soc, IgG_NP_gw, IgG_RBD_gw, IgG_S1_gw){
            Resultat_n_pos = (IgG_Resultat_S1==1)+(IgA_Resultat_S1==1)+(IgM_Resultat_S1==1)+
                             (IgG_Resultat_S2==1)+(IgA_Resultat_S2==1)+(IgM_Resultat_S2==1)+
                             (IgG_Resultat_NP==1)+(IgA_Resultat_NP==1)+(IgM_Resultat_NP==1)+
-                            (IgG_Resultat_RBD==1)+(IgA_Resultat_RBD==1)+(IgM_Resultat_RBD==1)) %>%
+                            (IgG_Resultat_RBD==1)+(IgA_Resultat_RBD==1)+(IgM_Resultat_RBD==1),
+           Resultat_n_pos_IgA_IgM = (IgA_Resultat_S1==1)+(IgM_Resultat_S1==1)+
+                                    (IgA_Resultat_S2==1)+(IgM_Resultat_S2==1)+
+                                    (IgA_Resultat_NP==1)+(IgM_Resultat_NP==1)+
+                                    (IgA_Resultat_RBD==1)+(IgM_Resultat_RBD==1)) %>%
     mutate(Serokonversion = case_when(
       (Resultat_sum >= 2) & (Resultat_sum_IgG >= 0.5) ~ "Positiv, fortgeschritten",
       (Resultat_sum >= 2) & (Resultat_sum_IgG == 0) ~ "Positiv, partiell",
-      (IgG_Resultat_S1 == 1 | IgG_Resultat_NP == 1 | IgG_Resultat_RBD == 1) | (Resultat_sum_IgG >= 0.5 & Resultat_n_pos == 1) ~ "Schwach reaktiv",
+      (IgG_Resultat_S1 == 1 | IgG_Resultat_NP == 1 | IgG_Resultat_RBD == 1) | (Resultat_sum_IgG >= 0.5 & Resultat_n_pos_IgA_IgM == 1) ~ "Schwach reaktiv",
       Resultat_n_pos == 1 ~ "Indeterminat",
       TRUE ~ "Negativ"
     ))
