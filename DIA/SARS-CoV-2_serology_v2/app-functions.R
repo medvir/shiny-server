@@ -32,6 +32,7 @@ read_barcodes <- function(barcodes_path){
 }
 
 # barcodes1 <- read_barcodes("data/200706_BARCODES_Ciao_4.xlsx")
+# barcodes2 <- read_barcodes("data/200721_BARCODES_Ciao_33.xlsx")
 
 
 # read isotypes -----------------------------------------------------------
@@ -80,6 +81,7 @@ read_isotypes <- function(barcodes_path){
 }
 
 # isotypes1 <- read_isotypes("data/200706_BARCODES_Ciao_4.xlsx")
+# isotypes2 <- read_isotypes("data/200721_BARCODES_Ciao_33.xlsx")
 
 
 # join barcodes and isotypes ----------------------------------------------
@@ -89,6 +91,7 @@ join_barcodes_isotypes <- function(barcodes, isotypes){
 }
 
 # barcodes_isotypes1 <- join_barcodes_isotypes(barcodes1, isotypes1)
+# barcodes_isotypes2 <- join_barcodes_isotypes(barcodes2, isotypes2)
 
 
 # how many rows to skip ---------------------------------------------------
@@ -147,6 +150,8 @@ get_count <- function(filepath, barcodes_isotypes, isotype_given=NA){
 #   igg_count1 %>%
 #   left_join(iga_count1, by = c("Sample")) %>%
 #   left_join(igm_count1, by = c("Sample"))
+# 
+# count2 <- get_count("data/200721_Ciao_33_IgA_G_M_20200721_144831.csv", barcodes_isotypes2)
 
 
 # get net mfi data --------------------------------------------------------
@@ -177,7 +182,9 @@ get_net_mfi <- function(filepath, barcodes_isotypes, isotype_given=NA){
   
   net_mfi_empty <-
     net_mfi %>%
-    select(Sample, empty = ends_with("_Empty"))
+    select(Sample, ends_with("_Empty")) %>%
+    pivot_longer(-Sample, names_to = "target", values_to = "empty") %>%
+    separate(target, c("isotype", NA))
 
   # soc = signal over cutoff
   # cutoff fold over empty beads
@@ -205,13 +212,15 @@ get_net_mfi <- function(filepath, barcodes_isotypes, isotype_given=NA){
   net_mfi_soc <-
     net_mfi %>%
     pivot_longer(-Sample, names_to = "target", values_to = "net_mfi") %>%
-    left_join(net_mfi_empty, by = c("Sample")) %>%
+    separate(target, c("isotype", "target")) %>%
+    mutate(target = paste(isotype, target, sep = "_")) %>%
+    left_join(net_mfi_empty, by = c("Sample", "isotype")) %>%
     left_join(cutoff, by = c("target")) %>%
     mutate(net_mfi_soc = net_mfi/(cutoff*empty)) %>%
     filter(!is.na(net_mfi_soc)) %>%
     select(Sample, target, net_mfi_soc) %>%
     pivot_wider(names_from = target, values_from = net_mfi_soc)
-  
+
   net_mfi_full <-
     net_mfi %>%
     left_join(net_mfi_soc, by = c("Sample"), suffix = c("_net_mfi", "_net_mfi_soc"))
@@ -227,6 +236,8 @@ get_net_mfi <- function(filepath, barcodes_isotypes, isotype_given=NA){
 #   igg_net_mfi1 %>%
 #   left_join(iga_net_mfi1, by = c("Sample")) %>%
 #   left_join(igm_net_mfi1, by = c("Sample"))
+# 
+# net_mfi2 <- get_net_mfi("data/200721_Ciao_33_IgA_G_M_20200721_144831.csv", barcodes_isotypes2)
 
 
 # set flag ----------------------------------------------------------------
@@ -305,6 +316,9 @@ set_flag <- function(net_mfi_soc, min_count, above_cutoff_IgG, above_cutoff_IgA,
 
 # net_mfi1 <- left_join(net_mfi1, count1, by = c("Sample"))
 # net_mfi1_flagged <- set_flag(net_mfi1, 20, 40.05, 55.26, 539.74)
+# 
+# net_mfi2 <- left_join(net_mfi2, count2, by = c("Sample"))
+# net_mfi2_flagged <- set_flag(net_mfi2, 20, 40.05, 55.26, 539.74)
 
 
 # test result -------------------------------------------------------------
