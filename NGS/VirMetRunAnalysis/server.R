@@ -28,13 +28,14 @@ read_orgs_data <- function(orgs_file, read_length, checkbox_phages, checkbox_blo
         orgs_data <-
             orgs_data %>%
             filter(grepl(phage_endogenous_retrovirus_pattern, species, ignore.case = TRUE) == FALSE) %>%
+            filter(grepl(phage_endogenous_retrovirus_pattern, stitle, ignore.case = TRUE) == FALSE) %>%
             filter(grepl(phage_endogenous_retrovirus_pattern, ssciname, ignore.case = TRUE) == FALSE)
     }
     
     if (isTRUE(checkbox_blocklist)) {
         orgs_data <-
             orgs_data %>%
-            anti_join(blocklist, by = "stitle")
+            anti_join(blocklist, by = "accn")
     }
     
     return(orgs_data)
