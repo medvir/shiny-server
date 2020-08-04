@@ -70,32 +70,36 @@ server <- function(input, output, session) {
             date_all_in_one <- strsplit(all_in_one_name, "_")[[1]][1]
             date_barcodes <- strsplit(input$barcodes_file$name, "_")[[1]][1]
             
-            if (date_all_in_one != date_barcodes) {
-                stop("Check uploaded Files (dates do not match)")
-            }
+            validate(
+                need(date_all_in_one == date_barcodes,
+                     "Check uploaded Files (dates do not match)")
+            )
         } else {
             date_igg <- strsplit(igg_name, "_")[[1]][1]
             plate_igg <- paste0(strsplit(igg_name, "_")[[1]][2:3], collapse = " ")
             
-            if (isFALSE(str_detect(igg_name, pattern = regex("igg", ignore_case = TRUE)))){
-                stop("Check Luminex output for IgG ('IgG' is not part of the filename)")
-            }
+            validate(
+                need(isTRUE(str_detect(igg_name, pattern = regex("igg", ignore_case = TRUE))),
+                     "Check Luminex output for IgG ('IgG' is not part of the filename)")
+            )
             
             
             date_iga <- strsplit(input$iga_file$name, "_")[[1]][1]
             plate_iga <- paste0(strsplit(input$iga_file$name, "_")[[1]][2:3], collapse = " ")
             
-            if (isFALSE(str_detect(iga_name, pattern = regex("iga", ignore_case = TRUE)))){
-                stop("Check Luminex output for IgA ('IgA' is not part of the filename)")
-            }
+            validate(
+                need(isTRUE(str_detect(iga_name, pattern = regex("iga", ignore_case = TRUE))),
+                     "Check Luminex output for IgA ('IgA' is not part of the filename)")
+            )
             
             
             date_igm <- strsplit(input$igm_file$name, "_")[[1]][1]
             plate_igm <- paste0(strsplit(input$igm_file$name, "_")[[1]][2:3], collapse = " ")
             
-            if (isFALSE(str_detect(igm_name, pattern = regex("igm", ignore_case = TRUE)))){
-                stop("Check Luminex output for IgM ('IgM' is not part of the filename)")
-            }
+            validate(
+                need(isTRUE(str_detect(igm_name, pattern = regex("igm", ignore_case = TRUE))),
+                     "Check Luminex output for IgM ('IgM' is not part of the filename)")
+            )
             
             date_barcodes <- strsplit(input$barcodes_file$name, "_")[[1]][1]
             
@@ -103,15 +107,16 @@ server <- function(input, output, session) {
             date = c(date_igg, date_iga, date_igm, date_barcodes)
             plate = c(plate_igg, plate_iga, plate_igm)
             
-            if (length(unique(date)) != 1){
-                stop("Check uploaded Files (not all dates are equal)")
-            }
+            validate(
+                need(length(unique(date)) == 1,
+                     "Check uploaded Files (not all dates are equal)")
+            )
             
-            if (length(unique(plate)) != 1){
-                stop("Check uploaded Files (not all plate numbers are equal)")
-            }
+            validate(
+                need(length(unique(plate)) == 1,
+                     "Check uploaded Files (not all plate numbers are equal)")
+            )
         }
-
         
         # Prepare Barcodes --------------------------------------------------------
         
