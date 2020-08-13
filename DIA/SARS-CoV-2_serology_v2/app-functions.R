@@ -74,7 +74,6 @@ read_isotypes <- function(barcodes_path){
     fill(isotype) %>%
     left_join(full_plate, by = "column") %>%
     select(Location, isotype)
-
   
   return(isotypes)
   
@@ -136,6 +135,7 @@ get_count <- function(filepath, barcodes_isotypes, isotype_given=NA){
     pivot_longer(-Location, names_to = "target", values_to = "count") %>%
     left_join(barcodes_isotypes, by = "Location") %>%
     mutate(isotype_target = paste0(isotype, "_", target, "_count")) %>%
+    arrange(match(isotype, c("IgG", "IgA", "IgM"))) %>%
     select(-Location, -target, -isotype) %>%
     pivot_wider(names_from = isotype_target, values_from = count)
   
@@ -223,7 +223,8 @@ get_net_mfi <- function(filepath, barcodes_isotypes, isotype_given=NA){
 
   net_mfi_full <-
     net_mfi %>%
-    left_join(net_mfi_soc, by = c("Sample"), suffix = c("_net_mfi", "_net_mfi_soc"))
+    left_join(net_mfi_soc, by = c("Sample"), suffix = c("_net_mfi", "_net_mfi_soc")) %>%
+    select(Sample, starts_with("IgG"), starts_with("IgA"), starts_with("IgM"))
   
   return(net_mfi_full)
 }
