@@ -23,7 +23,8 @@ R packages can be installed with the following commands:
 `sudo su - -c "R -e \"install.packages('janitor', repos='https://cran.rstudio.com/')\""`  
 `sudo su - -c "R -e \"install.packages('gt', repos='https://cran.rstudio.com/')\""`  
 `sudo su - -c "R -e \"install.packages('webshot', repos='https://cran.rstudio.com/')\""`  
-`sudo su - -c "R -e \"install.packages('tinytex', repos='https://cran.rstudio.com/')\""`
+`sudo su - -c "R -e \"install.packages('tinytex', repos='https://cran.rstudio.com/')\""`  
+`sudo su - -c "R -e \"install.packages('gghighlight', repos='https://cran.rstudio.com/')\""`
 
 To be able to save a gt table, install phantomJS according following [installation description](https://gist.github.com/telbiyski/ec56a92d7114b8631c906c18064ce620#file-install-phantomjs-2-1-1-ubuntu).
 
