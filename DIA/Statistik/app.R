@@ -60,14 +60,14 @@ server <- function(input, output) {
                         mutate(Code = ifelse(Einsender == "HIVANO" & Code == "H06UST", "XXX", Code)) %>%
                 
                         ### assign new code to SARS PCR C23F*
-                        mutate(Code = ifelse(Code == "C23FKP", "C23FK", Code)) %>%
-                        mutate(Code = ifelse(Code == "C23FPU", "C23FK", Code)) #%>%
+                        mutate(Code = ifelse(Code %in% c("C23FK", "C23FKP", "C23GK", "C23GKA", "C23GKU", "C23FPU"), "C23GK", Code)) #%>%
                         
                         ### filter out SARS
-                        #filter(!Code %in% c("C23FK", "C23RS", "C23PS"))
+                        #filter(!Code %in% c("C23FK", "C23RS", "C23PS", "C23FKP", "C23GK", "C23GKA", "C23GKU"))
         })
         
         data_filter = reactive({
+                #print(data() %>% pull(Code) %>% unique())
                 data() %>%
                         filter(Eingangsdatum >= input$date[1] & Eingangsdatum <= input$date[2]) %>%
                         select(-Eingangsdatum)
@@ -85,7 +85,6 @@ server <- function(input, output) {
                         ungroup() %>%
                         mutate(Gesamttotal = sum(Subtotal)) %>%
                         select(-Einsender, -type, -Code, -Pathogen, -Analyse)
-                
         })
         
         Verfahren = reactive({
