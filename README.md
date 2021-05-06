@@ -1,4 +1,10 @@
+[![Lifecycle: deprecated](https://lifecycle.r-lib.org/articles/figures/lifecycle-deprecated.svg)](https://lifecycle.r-lib.org/articles/stages.html#deprecated)
+
 # Shiny Server on UZH ScienceCloud
+
+## Deprecation notice
+This repository holds all old shiny apps when we had this one repository for all apps.  
+In the meantime all apps are contained in their own repository to better keep them apart and develop them individually.
 
 ## Installation
 
